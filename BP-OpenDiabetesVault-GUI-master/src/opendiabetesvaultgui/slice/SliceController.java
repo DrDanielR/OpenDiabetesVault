@@ -13,6 +13,7 @@ import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Point2D;
 import javafx.scene.chart.ScatterChart;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
@@ -35,12 +36,16 @@ public class SliceController extends FatherController implements Initializable {
 
     @FXML
     private AnchorPane anchorpane;
-    
+
     @FXML
     private ListView<String> listviewfilterelements;
 
     @FXML
     private Pane filtercombinationfield;
+
+    private double mousePositionX;
+
+    private double mousePositionY;
 
     @FXML
     private void doFilter(ActionEvent event) {
@@ -73,8 +78,8 @@ public class SliceController extends FatherController implements Initializable {
 
         //Nach dem Drag and drop
         listviewfilterelements.setOnDragDone(new EventHandler<DragEvent>() {
-            public void handle(DragEvent event) {               
-              
+            public void handle(DragEvent event) {
+
             }
         });
 
@@ -120,15 +125,25 @@ public class SliceController extends FatherController implements Initializable {
                 if (db.hasString()) {
                     Label test = new Label();
                     test.setText(db.getString());
-                    test.setLayoutX(event.getScreenX());
-                    test.setLayoutY(event.getScreenY()-110);
-                    
-                    anchorpane.getChildren().add(test);
+                    test.setLayoutX(mousePositionX);
+                    test.setLayoutY(mousePositionY);
+
+                    filtercombinationfield.getChildren().add(test);
                     success = true;
                 }
                 event.setDropCompleted(success);
 
                 event.consume();
+            }
+        });
+
+        filtercombinationfield.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                mousePositionX = event.getSceneX();
+                System.out.println(mousePositionX);
+                mousePositionY = event.getSceneY();
+                System.out.println(mousePositionX);
             }
         });
 
