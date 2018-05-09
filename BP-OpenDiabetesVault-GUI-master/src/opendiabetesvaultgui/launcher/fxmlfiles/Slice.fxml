@@ -9,7 +9,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane id="AnchorPane" prefHeight="632.0" prefWidth="919.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="opendiabetesvaultgui.slice.SliceController">
+<AnchorPane id="AnchorPane" fx:id="anchorpane" prefHeight="632.0" prefWidth="919.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="opendiabetesvaultgui.slice.SliceController">
    <children>
       <GridPane layoutX="14.0" layoutY="-7.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="632.0" prefWidth="919.0">
         <columnConstraints>
@@ -32,13 +32,11 @@
               </yAxis>
             </StackedAreaChart>
             <Button fx:id="filterbutton" mnemonicParsing="false" onAction="#doFilter" text="Filter" GridPane.columnIndex="2" GridPane.rowIndex="2" />
-            <TableView prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2" GridPane.rowIndex="2">
-              <columns>
-                <TableColumn prefWidth="75.0" text="C1" />
-                <TableColumn prefWidth="75.0" text="C2" />
-              </columns>
-            </TableView>
-            <ListView fx:id="listviewfilterelements" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowSpan="2" />
+            <ListView fx:id="listviewfilterelements" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowSpan="2">
+               <GridPane.margin>
+                  <Insets top="6.0" />
+               </GridPane.margin></ListView>
+            <Pane fx:id="filtercombinationfield" prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2" GridPane.rowIndex="2" />
          </children>
       </GridPane>
    </children>
