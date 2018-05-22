@@ -11,7 +11,7 @@
 
 <AnchorPane id="AnchorPane" fx:id="anchorpane" prefHeight="632.0" prefWidth="919.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="opendiabetesvaultgui.slice.SliceController">
    <children>
-      <GridPane layoutX="14.0" layoutY="-7.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="632.0" prefWidth="919.0">
+      <GridPane fx:id="gridPane" layoutX="14.0" layoutY="-7.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="632.0" prefWidth="919.0">
         <columnConstraints>
           <ColumnConstraints hgrow="SOMETIMES" maxWidth="345.0" minWidth="10.0" prefWidth="162.0" />
           <ColumnConstraints hgrow="SOMETIMES" maxWidth="486.0" minWidth="10.0" prefWidth="486.0" />
@@ -31,12 +31,16 @@
                 <NumberAxis side="LEFT" />
               </yAxis>
             </StackedAreaChart>
-            <Button fx:id="filterbutton" mnemonicParsing="false" onAction="#doFilter" text="Filter" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+            <Button fx:id="filterbutton" mnemonicParsing="false" onAction="#doFilter" prefHeight="25.0" prefWidth="142.0" text="Filter" GridPane.columnIndex="2" GridPane.rowIndex="2" />
             <ListView fx:id="listviewfilterelements" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowSpan="2">
                <GridPane.margin>
                   <Insets top="6.0" />
                </GridPane.margin></ListView>
-            <Pane fx:id="filtercombinationfield" prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: white;" GridPane.columnSpan="2" GridPane.rowIndex="2" />
+            <Pane fx:id="filtercombinationfield" prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: white;" GridPane.columnSpan="2" GridPane.rowIndex="2">
+               <children>
+                  <Button layoutY="2.0" mnemonicParsing="false" onAction="#undoFiltercombinationfield" text="Undo" />
+                  <ToggleButton layoutX="46.0" layoutY="2.0" mnemonicParsing="false" text="next" />
+               </children></Pane>
          </children>
       </GridPane>
    </children>

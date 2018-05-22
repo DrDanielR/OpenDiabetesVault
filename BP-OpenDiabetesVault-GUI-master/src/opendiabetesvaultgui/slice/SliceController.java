@@ -14,7 +14,9 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Point2D;
+import javafx.scene.Node;
 import javafx.scene.chart.ScatterChart;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
@@ -24,8 +26,14 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.ClosePath;
+import javafx.scene.shape.Line;
+import javafx.scene.shape.LineTo;
+import javafx.scene.shape.MoveTo;
+import javafx.scene.shape.Path;
 import opendiabetesvaultgui.launcher.FatherController;
 
 /**
@@ -35,7 +43,7 @@ import opendiabetesvaultgui.launcher.FatherController;
 public class SliceController extends FatherController implements Initializable {
 
     @FXML
-    private AnchorPane anchorpane;
+    private GridPane gridPane;
 
     @FXML
     private ListView<String> listviewfilterelements;
@@ -43,17 +51,39 @@ public class SliceController extends FatherController implements Initializable {
     @FXML
     private Pane filtercombinationfield;
 
+    @FXML
+    private Button filterbutton;
+
     private double mousePositionX;
 
     private double mousePositionY;
+    
+    private double lastmousePositionX;
+
+    private double lastmousePositionY;
+    
+    private int filtercombinationfieldComponents;
 
     @FXML
     private void doFilter(ActionEvent event) {
-
+        
+    }
+    
+    @FXML
+    private void undoFiltercombinationfield(ActionEvent event)
+    {
+        
+        if(filtercombinationfield.getChildren().size() > filtercombinationfieldComponents)
+        {
+            filtercombinationfield.getChildren().remove(filtercombinationfield.getChildren().size()-1);
+        }
+        
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        
+        filtercombinationfieldComponents = filtercombinationfield.getChildren().size();
 
         //addItems to listview
         ObservableList<String> items = listviewfilterelements.getItems();
@@ -89,6 +119,10 @@ public class SliceController extends FatherController implements Initializable {
                 if (event.getGestureSource() != filtercombinationfield
                         && event.getDragboard().hasString()) {
                     event.acceptTransferModes(TransferMode.ANY);
+                    mousePositionX = event.getX();
+                    mousePositionY = event.getY();
+
+                    filterbutton.setText("X: " + mousePositionX + " Y: " + mousePositionY);
                 }
 
                 event.consume();
@@ -129,24 +163,29 @@ public class SliceController extends FatherController implements Initializable {
                     test.setLayoutY(mousePositionY);
 
                     filtercombinationfield.getChildren().add(test);
+                    
+                    if(lastmousePositionX != 0 || lastmousePositionY != 0 )
+                    {                        
+                        Path connectingLines = new Path(
+                                new MoveTo(lastmousePositionX, lastmousePositionY), 
+                                new LineTo(mousePositionX, mousePositionY), 
+                                new ClosePath()
+                        );
+                        
+                        filtercombinationfield.getChildren().add(connectingLines);
+                    }
+                    
+                    lastmousePositionX = mousePositionX;
+                    lastmousePositionY = mousePositionY;
+                    
+                    
                     success = true;
                 }
                 event.setDropCompleted(success);
 
                 event.consume();
             }
-        });
-
-        filtercombinationfield.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                mousePositionX = event.getSceneX();
-                System.out.println(mousePositionX);
-                mousePositionY = event.getSceneY();
-                System.out.println(mousePositionX);
-            }
-        });
-
+        });        
     }
 
 }
