@@ -6,6 +6,8 @@
 package opendiabetesvaultgui.slice;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -17,9 +19,11 @@ import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.chart.ScatterChart;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
@@ -29,6 +33,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import javafx.scene.shape.ClosePath;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.LineTo;
@@ -53,16 +58,19 @@ public class SliceController extends FatherController implements Initializable {
 
     @FXML
     private Button filterbutton;
-
+    
+    @FXML
+    private CheckBox checkboxcombinemode;
+    
     private double mousePositionX;
 
-    private double mousePositionY;
-    
-    private double lastmousePositionX;
-
-    private double lastmousePositionY;
+    private double mousePositionY;    
     
     private int filtercombinationfieldComponents;
+    
+    private List<FilterNode> filterNodes;
+    
+    private boolean combineMode = false;
 
     @FXML
     private void doFilter(ActionEvent event) {
@@ -75,7 +83,20 @@ public class SliceController extends FatherController implements Initializable {
         
         if(filtercombinationfield.getChildren().size() > filtercombinationfieldComponents)
         {
-            filtercombinationfield.getChildren().remove(filtercombinationfield.getChildren().size()-1);
+            if(filtercombinationfield.getChildren().size() == filtercombinationfieldComponents+1)
+                filtercombinationfield.getChildren().remove(filtercombinationfield.getChildren().size()-1);
+            else
+            {
+                //remove line and Node
+                filtercombinationfield.getChildren().remove(filtercombinationfield.getChildren().size()-1);
+                filtercombinationfield.getChildren().remove(filtercombinationfield.getChildren().size()-1);
+            }
+                
+            if(filterNodes.get(filterNodes.size()-1).getFilterNodes().size() == 0)
+                filterNodes.remove(filterNodes.size()-1);
+            else
+                filterNodes.get(filterNodes.size()-1).getFilterNodes().remove(filterNodes.get(filterNodes.size()-1).getFilterNodes().size()-1);
+            
         }
         
     }
@@ -83,14 +104,17 @@ public class SliceController extends FatherController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         
+        filterNodes = new ArrayList<>();
+        
+        //Backup für undo
         filtercombinationfieldComponents = filtercombinationfield.getChildren().size();
+        
+        //checkbox am beginn off
+        checkboxcombinemode.setSelected(false);
 
         //addItems to listview
         ObservableList<String> items = listviewfilterelements.getItems();
-        items.add("AndFilter");
-        items.add("OrFilter");
-        items.add("TimestampFilter");
-        items.add("TypeFilter");
+        items.addAll(FilterDummyUtil.getAllFilters());
 
         //Dragevent for Listview
         listviewfilterelements.setOnDragDetected(new EventHandler<MouseEvent>() {
@@ -157,27 +181,50 @@ public class SliceController extends FatherController implements Initializable {
                 Dragboard db = event.getDragboard();
                 boolean success = false;
                 if (db.hasString()) {
+                    
+                    FilterNode tmpNode = new FilterNode(mousePositionX, mousePositionY, FilterDummyUtil.combinesFilter(db.getString()));
                     Label test = new Label();
                     test.setText(db.getString());
-                    test.setLayoutX(mousePositionX);
-                    test.setLayoutY(mousePositionY);
-
+                    test.setLayoutX(tmpNode.getPositionX());
+                    test.setLayoutY(tmpNode.getPositionY());                    
+                    
                     filtercombinationfield.getChildren().add(test);
                     
-                    if(lastmousePositionX != 0 || lastmousePositionY != 0 )
+                    if(filterNodes.size()>0 && !checkboxcombinemode.isSelected())
                     {                        
                         Path connectingLines = new Path(
-                                new MoveTo(lastmousePositionX, lastmousePositionY), 
-                                new LineTo(mousePositionX, mousePositionY), 
+                                new MoveTo(filterNodes.get(filterNodes.size()-1).getPositionX(), filterNodes.get(filterNodes.size()-1).getPositionY()), 
+                                new LineTo(tmpNode.getPositionX(), tmpNode.getPositionY()), 
+                                new ClosePath()
+                        );
+                        
+                        filtercombinationfield.getChildren().add(connectingLines);                       
+                        filterNodes.add(tmpNode);                       
+                        
+                    }
+                    else if(filterNodes.size()>0 && checkboxcombinemode.isSelected())
+                    {
+                        Path connectingLines = new Path(
+                                new MoveTo(filterNodes.get(filterNodes.size()-1).getPositionX(), filterNodes.get(filterNodes.size()-1).getPositionY()), 
+                                new LineTo(tmpNode.getPositionX(), tmpNode.getPositionY()), 
                                 new ClosePath()
                         );
                         
                         filtercombinationfield.getChildren().add(connectingLines);
+                        
+                        if(tmpNode.isCombineFilter())
+                            filterNodes.add(tmpNode);
+                        else
+                            filterNodes.get(filterNodes.size()-1).getFilterNodes().add(tmpNode);                        
                     }
+                    else
+                        filterNodes.add(tmpNode);
                     
-                    lastmousePositionX = mousePositionX;
-                    lastmousePositionY = mousePositionY;
+                    //alle zusammen???
                     
+                    //erlauben und nicht erlauben undo überarbeiten
+                    if(tmpNode.isCombineFilter())
+                        checkboxcombinemode.setSelected(true);
                     
                     success = true;
                 }
