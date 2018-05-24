@@ -14,15 +14,19 @@ import java.util.List;
  */
 public class FilterDummyUtil {
     public static final int ANDFILTER = 1;
+    public static final String ANDFILTERPARAMETERS = null;
     private static final String AND_FILTER = "AndFilter";
     
     public static final int ORFILTER = 2;
+    public static final String ORFILTERPARAMETERS = null;
     private static final String OR_FILTER = "OrFilter";
     
     public static final int TYPEFILTER = 3;
+    public static final String TYPEFILTERPARAMETERS = "type:";
     private static final String TYPE_FILTER = "TypeFilter";
     
-    public static final int TIMESTAMPFILTER = 4;    
+    public static final int TIMESTAMPFILTER = 4;
+    public static final String TIMESTAMPFILTERPARAMETERS = "from: ;to:";    
     private static final String TIME_STAMP_FILTER = "TimeStampFilter";
 
     public static int getIdFromName(String name) {
@@ -36,6 +40,21 @@ public class FilterDummyUtil {
             result = TYPEFILTER;
         else if(name.equals(TIME_STAMP_FILTER))
             result = TIMESTAMPFILTER;
+        
+        return result;
+    }
+
+    public static String getParametersFromName(String name) {
+        String result = null;
+         
+        if(name.equals(AND_FILTER))
+            result = ANDFILTERPARAMETERS;
+        else if(name.equals(OR_FILTER))
+            result = ORFILTERPARAMETERS;
+        else if(name.equals(TYPE_FILTER))
+            result = TYPEFILTERPARAMETERS;
+        else if(name.equals(TIME_STAMP_FILTER))
+            result = TIMESTAMPFILTERPARAMETERS;
         
         return result;
     }    

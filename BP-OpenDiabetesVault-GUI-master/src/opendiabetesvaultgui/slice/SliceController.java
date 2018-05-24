@@ -8,6 +8,7 @@ package opendiabetesvaultgui.slice;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -18,11 +19,14 @@ import javafx.fxml.Initializable;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.chart.ScatterChart;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.DragEvent;
@@ -39,6 +43,7 @@ import javafx.scene.shape.Line;
 import javafx.scene.shape.LineTo;
 import javafx.scene.shape.MoveTo;
 import javafx.scene.shape.Path;
+import jdk.nashorn.internal.objects.NativeArray;
 import opendiabetesvaultgui.launcher.FatherController;
 
 /**
@@ -58,57 +63,77 @@ public class SliceController extends FatherController implements Initializable {
 
     @FXML
     private Button filterbutton;
-    
+
     @FXML
     private CheckBox checkboxcombinemode;
-    
+
     private double mousePositionX;
 
-    private double mousePositionY;    
-    
+    private double mousePositionY;
+
     private int filtercombinationfieldComponents;
-    
+
     private List<FilterNode> filterNodes;
-    
+
     private boolean combineMode = false;
 
     @FXML
     private void doFilter(ActionEvent event) {
-        
-    }
-    
-    @FXML
-    private void undoFiltercombinationfield(ActionEvent event)
-    {
-        
-        if(filtercombinationfield.getChildren().size() > filtercombinationfieldComponents)
-        {
-            if(filtercombinationfield.getChildren().size() == filtercombinationfieldComponents+1)
-                filtercombinationfield.getChildren().remove(filtercombinationfield.getChildren().size()-1);
-            else
-            {
-                //remove line and Node
-                filtercombinationfield.getChildren().remove(filtercombinationfield.getChildren().size()-1);
-                filtercombinationfield.getChildren().remove(filtercombinationfield.getChildren().size()-1);
+        Alert alert = new Alert(AlertType.INFORMATION);
+
+        String nodes = "";
+
+        for (FilterNode filterNode : filterNodes) {
+
+            nodes += "#FILTER#" + filterNode.getName();
+            if (filterNode.getParameters() != null) {
+                nodes += filterNode.getParameters();
             }
-                
-            if(filterNodes.get(filterNodes.size()-1).getFilterNodes().size() == 0)
-                filterNodes.remove(filterNodes.size()-1);
-            else
-                filterNodes.get(filterNodes.size()-1).getFilterNodes().remove(filterNodes.get(filterNodes.size()-1).getFilterNodes().size()-1);
-            
+
+            for (FilterNode filterNode1 : filterNode.getFilterNodes()) {
+                nodes += filterNode1.getName();
+                if (filterNode.getParameters() != null) {
+                    nodes += filterNode1.getParameters();
+                }
+            }
+
         }
-        
+
+        alert.setContentText(nodes);
+        alert.show();
+
+    }
+
+    @FXML
+    private void undoFiltercombinationfield(ActionEvent event) {
+
+        if (filtercombinationfield.getChildren().size() > filtercombinationfieldComponents) {
+            if (filtercombinationfield.getChildren().size() == filtercombinationfieldComponents + 1) {
+                filtercombinationfield.getChildren().remove(filtercombinationfield.getChildren().size() - 1);
+            } else {
+                //remove line and Node
+                filtercombinationfield.getChildren().remove(filtercombinationfield.getChildren().size() - 1);
+                filtercombinationfield.getChildren().remove(filtercombinationfield.getChildren().size() - 1);
+            }
+
+            if (filterNodes.get(filterNodes.size() - 1).getFilterNodes().size() == 0) {
+                filterNodes.remove(filterNodes.size() - 1);
+            } else {
+                filterNodes.get(filterNodes.size() - 1).getFilterNodes().remove(filterNodes.get(filterNodes.size() - 1).getFilterNodes().size() - 1);
+            }
+
+        }
+
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        
+
         filterNodes = new ArrayList<>();
-        
+
         //Backup für undo
         filtercombinationfieldComponents = filtercombinationfield.getChildren().size();
-        
+
         //checkbox am beginn off
         checkboxcombinemode.setSelected(false);
 
@@ -181,58 +206,69 @@ public class SliceController extends FatherController implements Initializable {
                 Dragboard db = event.getDragboard();
                 boolean success = false;
                 if (db.hasString()) {
-                    
-                    FilterNode tmpNode = new FilterNode(mousePositionX, mousePositionY, FilterDummyUtil.combinesFilter(db.getString()));
+                    String name = db.getString();
+                    TextInputDialog dialog = new TextInputDialog();
+
+                    //Input für Values
+                    Optional<String> values = null;
+                    if (FilterDummyUtil.getParametersFromName(name) != null) {
+                        dialog = new TextInputDialog(FilterDummyUtil.getParametersFromName(name));
+                        dialog.setContentText("Werte:");
+                        values = dialog.showAndWait();
+                    }
+
+                    FilterNode tmpNode = new FilterNode(name, mousePositionX, mousePositionY, FilterDummyUtil.combinesFilter(name));
+                    if (values != null && values.isPresent()) {
+                        tmpNode.setParameters(values.get());
+                    }
                     Label test = new Label();
                     test.setText(db.getString());
                     test.setLayoutX(tmpNode.getPositionX());
-                    test.setLayoutY(tmpNode.getPositionY());                    
-                    
+                    test.setLayoutY(tmpNode.getPositionY());
+
                     filtercombinationfield.getChildren().add(test);
-                    
-                    if(filterNodes.size()>0 && !checkboxcombinemode.isSelected())
-                    {                        
+
+                    if (filterNodes.size() > 0 && !checkboxcombinemode.isSelected()) {
                         Path connectingLines = new Path(
-                                new MoveTo(filterNodes.get(filterNodes.size()-1).getPositionX(), filterNodes.get(filterNodes.size()-1).getPositionY()), 
-                                new LineTo(tmpNode.getPositionX(), tmpNode.getPositionY()), 
+                                new MoveTo(filterNodes.get(filterNodes.size() - 1).getPositionX(), filterNodes.get(filterNodes.size() - 1).getPositionY()),
+                                new LineTo(tmpNode.getPositionX(), tmpNode.getPositionY()),
                                 new ClosePath()
                         );
-                        
-                        filtercombinationfield.getChildren().add(connectingLines);                       
-                        filterNodes.add(tmpNode);                       
-                        
-                    }
-                    else if(filterNodes.size()>0 && checkboxcombinemode.isSelected())
-                    {
-                        Path connectingLines = new Path(
-                                new MoveTo(filterNodes.get(filterNodes.size()-1).getPositionX(), filterNodes.get(filterNodes.size()-1).getPositionY()), 
-                                new LineTo(tmpNode.getPositionX(), tmpNode.getPositionY()), 
-                                new ClosePath()
-                        );
-                        
+
                         filtercombinationfield.getChildren().add(connectingLines);
-                        
-                        if(tmpNode.isCombineFilter())
-                            filterNodes.add(tmpNode);
-                        else
-                            filterNodes.get(filterNodes.size()-1).getFilterNodes().add(tmpNode);                        
-                    }
-                    else
                         filterNodes.add(tmpNode);
-                    
+
+                    } else if (filterNodes.size() > 0 && checkboxcombinemode.isSelected()) {
+                        Path connectingLines = new Path(
+                                new MoveTo(filterNodes.get(filterNodes.size() - 1).getPositionX(), filterNodes.get(filterNodes.size() - 1).getPositionY()),
+                                new LineTo(tmpNode.getPositionX(), tmpNode.getPositionY()),
+                                new ClosePath()
+                        );
+
+                        filtercombinationfield.getChildren().add(connectingLines);
+
+                        if (tmpNode.isCombineFilter()) {
+                            filterNodes.add(tmpNode);
+                        } else {
+                            filterNodes.get(filterNodes.size() - 1).getFilterNodes().add(tmpNode);
+                        }
+                    } else {
+                        filterNodes.add(tmpNode);
+                    }
+
                     //alle zusammen???
-                    
                     //erlauben und nicht erlauben undo überarbeiten
-                    if(tmpNode.isCombineFilter())
+                    if (tmpNode.isCombineFilter()) {
                         checkboxcombinemode.setSelected(true);
-                    
+                    }
+
                     success = true;
                 }
                 event.setDropCompleted(success);
 
                 event.consume();
             }
-        });        
+        });
     }
 
 }

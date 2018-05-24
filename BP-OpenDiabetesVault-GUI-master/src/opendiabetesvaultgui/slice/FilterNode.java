@@ -5,6 +5,7 @@
  */
 package opendiabetesvaultgui.slice;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -15,7 +16,9 @@ public class FilterNode {
     
     private List<FilterNode> filterNodes;
     
-    private List<String> Parameters;
+    private String name;
+    
+    private String parameters;
     
     private boolean combineFilter;
     
@@ -23,10 +26,20 @@ public class FilterNode {
        
     private double positionY;
 
-    public FilterNode(double positionX, double positionY, boolean combineFilter) {
+    public FilterNode(String name, double positionX, double positionY, boolean combineFilter) {
+        this.name = name;
         this.positionX = positionX;
         this.positionY = positionY;        
         this.combineFilter = combineFilter;
+        filterNodes = new ArrayList<>();
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public List<FilterNode> getFilterNodes() {
@@ -37,12 +50,12 @@ public class FilterNode {
         this.filterNodes = filterNodes;
     }
 
-    public List<String> getParameters() {
-        return Parameters;
+    public String getParameters() {
+        return parameters;
     }
 
-    public void setParameters(List<String> Parameters) {
-        this.Parameters = Parameters;
+    public void setParameters(String parameters) {
+        this.parameters = parameters;
     }
 
     public boolean isCombineFilter() {
