@@ -24,6 +24,7 @@ import javafx.scene.chart.ScatterChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.chart.XYChart.Data;
 import javafx.scene.chart.XYChart.Series;
+import javafx.scene.control.Accordion;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
@@ -31,6 +32,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TabPane;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.input.ClipboardContent;
@@ -41,6 +43,8 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.ClosePath;
@@ -71,7 +75,7 @@ public class SliceController extends FatherController implements Initializable {
 
     @FXML
     private CheckBox checkboxcombinemode;
-    
+
     @FXML
     private LineChart<Number, Number> filterchart;
 
@@ -84,6 +88,8 @@ public class SliceController extends FatherController implements Initializable {
     private List<FilterNode> filterNodes;
 
     private boolean combineMode = false;
+
+    private VBox lastVBox;
 
     @FXML
     private void doFilter(ActionEvent event) {
@@ -99,7 +105,7 @@ public class SliceController extends FatherController implements Initializable {
             }
 
             for (FilterNode filterNode1 : filterNode.getFilterNodes()) {
-                nodes += "#SUBFILTER#" +filterNode1.getName();
+                nodes += "#SUBFILTER#" + filterNode1.getName();
                 if (filterNode.getParameters() != null) {
                     nodes += filterNode1.getParameters();
                 }
@@ -110,17 +116,14 @@ public class SliceController extends FatherController implements Initializable {
         alert.setContentText(nodes);
         alert.show();
     }
-    
-    
-            
+
     @FXML
     private void changeCheckbox(ActionEvent event) {
-        if(!checkboxcombinemode.isSelected())
-        {
+        if (!checkboxcombinemode.isSelected()) {
             checkboxcombinemode.setDisable(true);
             checkboxcombinemode.setSelected(false);
         }
-            
+
     }
 
     @FXML
@@ -149,7 +152,7 @@ public class SliceController extends FatherController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
 
         checkboxcombinemode.setDisable(true);
-        
+
         filterNodes = new ArrayList<>();
 
         //Backup für undo
@@ -227,6 +230,8 @@ public class SliceController extends FatherController implements Initializable {
                 Dragboard db = event.getDragboard();
                 boolean success = false;
                 if (db.hasString()) {
+                    VBox vBox = new VBox();
+
                     String name = db.getString();
                     TextInputDialog dialog = new TextInputDialog();
 
@@ -243,18 +248,26 @@ public class SliceController extends FatherController implements Initializable {
                         tmpNode.setParameters(values.get());
                     }
                     Label label = new Label();
-                    if(tmpNode.getParameters() != null)
-                        label.setText(db.getString() +"\n" + tmpNode.getParameters());
-                    else
+                    if (tmpNode.getParameters() != null) {
+                        label.setText(db.getString() + "\n" + tmpNode.getParameters());
+                    } else {
                         label.setText(db.getString());
-                    
-                    label.setStyle("-fx-border-color:black; -fx-background-color: lightblue;");
-                    label.setLayoutX(tmpNode.getPositionX());
-                    label.setLayoutY(tmpNode.getPositionY());
+                    }
 
-                    filtercombinationfield.getChildren().add(label);
+                    label.setStyle("-fx-border-color:black; -fx-background-color: lightblue;");
+                    vBox.getChildren().add(label);
+
+                    vBox.setLayoutX(tmpNode.getPositionX());
+                    vBox.setLayoutY(tmpNode.getPositionY());
+
+                    
 
                     if (filterNodes.size() > 0 && !checkboxcombinemode.isSelected()) {
+                        
+                        filtercombinationfield.getChildren().add(vBox);
+                        lastVBox = vBox;
+                        
+                        //neues keine combination
                         Path connectingLines = new Path(
                                 new MoveTo(filterNodes.get(filterNodes.size() - 1).getPositionX(), filterNodes.get(filterNodes.size() - 1).getPositionY()),
                                 new LineTo(tmpNode.getPositionX(), tmpNode.getPositionY()),
@@ -265,20 +278,28 @@ public class SliceController extends FatherController implements Initializable {
                         filterNodes.add(tmpNode);
 
                     } else if (filterNodes.size() > 0 && checkboxcombinemode.isSelected()) {
-                        Path connectingLines = new Path(
-                                new MoveTo(filterNodes.get(filterNodes.size() - 1).getPositionX(), filterNodes.get(filterNodes.size() - 1).getPositionY()),
-                                new LineTo(tmpNode.getPositionX(), tmpNode.getPositionY()),
-                                new ClosePath()
-                        );
-
-                        filtercombinationfield.getChildren().add(connectingLines);
-
+                        //neues mit kombination
                         if (tmpNode.isCombineFilter()) {
+                            
+                            filtercombinationfield.getChildren().add(vBox);
+                            lastVBox = vBox;
+                            
+                            Path connectingLines = new Path(
+                                    new MoveTo(filterNodes.get(filterNodes.size() - 1).getPositionX(), filterNodes.get(filterNodes.size() - 1).getPositionY()),
+                                    new LineTo(tmpNode.getPositionX(), tmpNode.getPositionY()),
+                                    new ClosePath()
+                            );
+
+                            filtercombinationfield.getChildren().add(connectingLines);
+
                             filterNodes.add(tmpNode);
                         } else {
                             filterNodes.get(filterNodes.size() - 1).getFilterNodes().add(tmpNode);
+                            lastVBox.getChildren().add(label);
                         }
                     } else {
+                        filtercombinationfield.getChildren().add(vBox);
+                        lastVBox = vBox;
                         filterNodes.add(tmpNode);
                     }
 
