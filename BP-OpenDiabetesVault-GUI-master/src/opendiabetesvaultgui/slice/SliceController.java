@@ -18,7 +18,12 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
+import javafx.scene.chart.LineChart;
+import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.ScatterChart;
+import javafx.scene.chart.XYChart;
+import javafx.scene.chart.XYChart.Data;
+import javafx.scene.chart.XYChart.Series;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
@@ -66,6 +71,9 @@ public class SliceController extends FatherController implements Initializable {
 
     @FXML
     private CheckBox checkboxcombinemode;
+    
+    @FXML
+    private LineChart<Number, Number> filterchart;
 
     private double mousePositionX;
 
@@ -91,7 +99,7 @@ public class SliceController extends FatherController implements Initializable {
             }
 
             for (FilterNode filterNode1 : filterNode.getFilterNodes()) {
-                nodes += filterNode1.getName();
+                nodes += "#SUBFILTER#" +filterNode1.getName();
                 if (filterNode.getParameters() != null) {
                     nodes += filterNode1.getParameters();
                 }
@@ -101,7 +109,18 @@ public class SliceController extends FatherController implements Initializable {
 
         alert.setContentText(nodes);
         alert.show();
-
+    }
+    
+    
+            
+    @FXML
+    private void changeCheckbox(ActionEvent event) {
+        if(!checkboxcombinemode.isSelected())
+        {
+            checkboxcombinemode.setDisable(true);
+            checkboxcombinemode.setSelected(false);
+        }
+            
     }
 
     @FXML
@@ -129,6 +148,8 @@ public class SliceController extends FatherController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 
+        checkboxcombinemode.setDisable(true);
+        
         filterNodes = new ArrayList<>();
 
         //Backup für undo
@@ -171,7 +192,7 @@ public class SliceController extends FatherController implements Initializable {
                     mousePositionX = event.getX();
                     mousePositionY = event.getY();
 
-                    filterbutton.setText("X: " + mousePositionX + " Y: " + mousePositionY);
+                    //filterbutton.setText("X: " + mousePositionX + " Y: " + mousePositionY);
                 }
 
                 event.consume();
@@ -221,12 +242,17 @@ public class SliceController extends FatherController implements Initializable {
                     if (values != null && values.isPresent()) {
                         tmpNode.setParameters(values.get());
                     }
-                    Label test = new Label();
-                    test.setText(db.getString());
-                    test.setLayoutX(tmpNode.getPositionX());
-                    test.setLayoutY(tmpNode.getPositionY());
+                    Label label = new Label();
+                    if(tmpNode.getParameters() != null)
+                        label.setText(db.getString() +"\n" + tmpNode.getParameters());
+                    else
+                        label.setText(db.getString());
+                    
+                    label.setStyle("-fx-border-color:black; -fx-background-color: lightblue;");
+                    label.setLayoutX(tmpNode.getPositionX());
+                    label.setLayoutY(tmpNode.getPositionY());
 
-                    filtercombinationfield.getChildren().add(test);
+                    filtercombinationfield.getChildren().add(label);
 
                     if (filterNodes.size() > 0 && !checkboxcombinemode.isSelected()) {
                         Path connectingLines = new Path(
@@ -260,6 +286,7 @@ public class SliceController extends FatherController implements Initializable {
                     //erlauben und nicht erlauben undo überarbeiten
                     if (tmpNode.isCombineFilter()) {
                         checkboxcombinemode.setSelected(true);
+                        checkboxcombinemode.setDisable(false);
                     }
 
                     success = true;

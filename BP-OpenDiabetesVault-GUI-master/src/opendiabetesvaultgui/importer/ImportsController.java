@@ -227,7 +227,7 @@ public class ImportsController extends FatherController
         String file = "export/" + pluginManager.pluginToString(plugin) + "-0.0.1/"
                 + pluginManager.pluginToString(plugin) + ".properties";
 
-        List<List<VaultEntry>> importedData = new ArrayList<>();
+        setImportedData(new ArrayList<>());
         List<List<VaultEntry>> interpretedData = new ArrayList<>();
         Properties pro = new Properties();
         pro.load(new FileInputStream(file));
@@ -327,9 +327,9 @@ public class ImportsController extends FatherController
                             = pluginManager.getPluginFromString(Interpreter.class,
                                     (String) selectInterpreter.getSelectionModel().getSelectedItem());
 
-                    for (int h = 0; h < importedData.size(); h++) {
+                    for (int h = 0; h < getImportedData().size(); h++) {
 
-                        interpretedData.add(interpreter.interpret(importedData.get(h)));
+                        interpretedData.add(interpreter.interpret(getImportedData().get(h)));
                     }
                 });
             }
@@ -464,7 +464,7 @@ public class ImportsController extends FatherController
 
                 for (int k = 0; k < dataArray.length; k++) {
 
-                    importedData.add(plugin.importData(dataArray[k]));
+                    getImportedData().add(plugin.importData(dataArray[k]));
 
                 }
                 MainWindowController.setImported(true);

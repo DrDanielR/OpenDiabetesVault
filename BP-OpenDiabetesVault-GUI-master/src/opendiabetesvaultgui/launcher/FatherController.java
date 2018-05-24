@@ -6,9 +6,11 @@
 package opendiabetesvaultgui.launcher;
 
 import com.sun.javafx.stage.StageHelper;
+import de.opendiabetes.vault.container.VaultEntry;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.prefs.Preferences;
@@ -30,6 +32,17 @@ import javafx.stage.Screen;
  */
 public class FatherController {
 
+    private List<List<VaultEntry>> importedData;
+
+    public void setImportedData(List<List<VaultEntry>> importedData) {
+        this.importedData = importedData;
+    }
+
+    public List<List<VaultEntry>> getImportedData() {
+        return importedData;
+    }
+    
+    
     /**
      * The stage of the main window.
      */

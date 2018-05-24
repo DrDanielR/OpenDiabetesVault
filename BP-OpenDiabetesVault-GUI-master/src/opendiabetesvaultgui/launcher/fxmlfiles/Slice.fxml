@@ -14,23 +14,15 @@
       <GridPane fx:id="gridPane" layoutX="14.0" layoutY="-7.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="671.0" prefWidth="1180.0">
         <columnConstraints>
           <ColumnConstraints hgrow="SOMETIMES" maxWidth="345.0" minWidth="10.0" prefWidth="162.0" />
-          <ColumnConstraints hgrow="SOMETIMES" maxWidth="486.0" minWidth="10.0" prefWidth="486.0" />
-            <ColumnConstraints hgrow="SOMETIMES" maxWidth="293.0" minWidth="10.0" prefWidth="255.0" />
+          <ColumnConstraints hgrow="SOMETIMES" maxWidth="582.0" minWidth="10.0" prefWidth="582.0" />
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="293.0" minWidth="10.0" prefWidth="197.0" />
         </columnConstraints>
         <rowConstraints>
           <RowConstraints maxHeight="319.0" minHeight="10.0" prefHeight="205.0" vgrow="SOMETIMES" />
-          <RowConstraints maxHeight="317.0" minHeight="10.0" prefHeight="185.0" vgrow="SOMETIMES" />
-          <RowConstraints maxHeight="202.0" minHeight="10.0" prefHeight="202.0" vgrow="SOMETIMES" />
+          <RowConstraints maxHeight="317.0" minHeight="10.0" prefHeight="181.0" vgrow="SOMETIMES" />
+          <RowConstraints maxHeight="292.0" minHeight="10.0" prefHeight="263.0" vgrow="SOMETIMES" />
         </rowConstraints>
          <children>
-            <StackedAreaChart prefHeight="258.0" prefWidth="475.0" GridPane.columnSpan="2" GridPane.rowSpan="2">
-              <xAxis>
-                <NumberAxis side="BOTTOM" />
-              </xAxis>
-              <yAxis>
-                <NumberAxis side="LEFT" />
-              </yAxis>
-            </StackedAreaChart>
             <Button fx:id="filterbutton" mnemonicParsing="false" onAction="#doFilter" prefHeight="25.0" prefWidth="142.0" text="Filter" GridPane.columnIndex="2" GridPane.rowIndex="2" />
             <ListView fx:id="listviewfilterelements" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowSpan="2">
                <GridPane.margin>
@@ -39,8 +31,16 @@
             <Pane fx:id="filtercombinationfield" prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: white;" GridPane.columnSpan="2" GridPane.rowIndex="2">
                <children>
                   <Button layoutY="2.0" mnemonicParsing="false" onAction="#undoFiltercombinationfield" text="Undo" />
-                  <CheckBox fx:id="checkboxcombinemode" layoutX="66.0" layoutY="6.0" mnemonicParsing="false" prefHeight="17.0" prefWidth="109.0" text="Combine" />
+                  <CheckBox fx:id="checkboxcombinemode" layoutX="66.0" layoutY="6.0" mnemonicParsing="false" onAction="#changeCheckbox" prefHeight="17.0" prefWidth="109.0" text="Combine" />
                </children></Pane>
+            <LineChart fx:id="filterchart" GridPane.columnSpan="2" GridPane.rowSpan="2">
+              <xAxis>
+                <CategoryAxis side="BOTTOM" />
+              </xAxis>
+              <yAxis>
+                <NumberAxis side="LEFT" />
+              </yAxis>
+            </LineChart>
          </children>
       </GridPane>
    </children>
