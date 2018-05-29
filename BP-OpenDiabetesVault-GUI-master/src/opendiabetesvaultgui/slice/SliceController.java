@@ -6,6 +6,13 @@
 package opendiabetesvaultgui.slice;
 
 import de.opendiabetes.vault.container.VaultEntry;
+import de.opendiabetes.vault.container.VaultEntryType;
+import de.opendiabetes.vault.container.VaultEntryTypeGroup;
+import de.opendiabetes.vault.processing.filter.FilterResult;
+import de.opendiabetes.vault.processing.filter.TypeGroupFilter;
+import de.opendiabetes.vault.processing.filter.VaultEntryTypeFilter;
+import de.opendiabetes.vault.processing.filter.options.TypeGroupFilterOption;
+import de.opendiabetes.vault.processing.filter.options.VaultEntryTypeFilterOption;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -55,6 +62,7 @@ import javafx.scene.shape.MoveTo;
 import javafx.scene.shape.Path;
 import jdk.nashorn.internal.objects.NativeArray;
 import opendiabetesvaultgui.launcher.FatherController;
+import opendiabetesvaultgui.launcher.MainWindowController;
 
 /**
  *
@@ -79,6 +87,12 @@ public class SliceController extends FatherController implements Initializable {
 
     @FXML
     private LineChart<Number, Number> filterchart;
+    
+    @FXML
+    private NumberAxis filterChartXaxis;
+    
+    @FXML
+    private NumberAxis filterChartYaxis;
 
     private double mousePositionX;
 
@@ -91,6 +105,8 @@ public class SliceController extends FatherController implements Initializable {
     private boolean combineMode = false;
 
     private VBox lastVBox;
+    
+    private List<VaultEntry> completeImportedData;
 
     @FXML
     private void doFilter(ActionEvent event) {
@@ -150,10 +166,36 @@ public class SliceController extends FatherController implements Initializable {
         }
 
     }
+    
+    private void populateChart()
+    {
+        //Teststuff
+        VaultEntryTypeFilter vaultEntryTypeFilter = new VaultEntryTypeFilter(new VaultEntryTypeFilterOption(VaultEntryType.EXERCISE_LOW));
+        
+        XYChart.Series series = new XYChart.Series();
+        series.setName("EXERCISE_LOW");
+        XYChart.Data data;        
+        
+        FilterResult filterResult = vaultEntryTypeFilter.filter(completeImportedData);
+        
+        int index = 0;
+        for (VaultEntry vaultEntry : filterResult.filteredData) {
+            data = new Data(index, vaultEntry.getValue());            
+            series.getData().add(data);
+            index++;
+        }
+        
+        filterchart.getData().add(series);
+    }
+    
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 
+        combineImportedData();
+        
+        populateChart();
+        
         checkboxcombinemode.setDisable(true);
 
         filterNodes = new ArrayList<>();
@@ -320,6 +362,13 @@ public class SliceController extends FatherController implements Initializable {
                 event.consume();
             }
         });
+    }
+
+    private void combineImportedData() {
+        completeImportedData =  new ArrayList<>();        
+        for (List<VaultEntry> list : MainWindowController.getImportedData()) {
+            completeImportedData.addAll(list);
+        }
     }
 
 }

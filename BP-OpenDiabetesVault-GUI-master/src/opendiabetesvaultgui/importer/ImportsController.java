@@ -109,6 +109,7 @@ public class ImportsController extends FatherController
 
     private final String defaultHelpPagePath = "/resources/default.md";
     //private  PluginHelpController pluginHelpController;
+    private List<List<VaultEntry>> importedData;
 
     /**
      * initializes the controller class.
@@ -226,7 +227,7 @@ public class ImportsController extends FatherController
         String file = "export/" + pluginManager.pluginToString(plugin) + "-0.0.1/"
                 + pluginManager.pluginToString(plugin) + ".properties";
 
-        setImportedData(new ArrayList<>());
+        importedData = new ArrayList<>();
         List<List<VaultEntry>> interpretedData = new ArrayList<>();
         Properties pro = new Properties();
         pro.load(new FileInputStream(file));
@@ -327,9 +328,9 @@ public class ImportsController extends FatherController
                             = pluginManager.getPluginFromString(Interpreter.class,
                                     (String) selectInterpreter.getSelectionModel().getSelectedItem());
 
-                    for (int h = 0; h < getImportedData().size(); h++) {
+                    for (int h = 0; h < importedData.size(); h++) {
 
-                        interpretedData.add(interpreter.interpret(getImportedData().get(h)));
+                        interpretedData.add(interpreter.interpret(importedData.get(h)));
                     }
                 });
             }
@@ -464,10 +465,11 @@ public class ImportsController extends FatherController
 
                 for (int k = 0; k < dataArray.length; k++) {
 
-                    getImportedData().add(plugin.importData(dataArray[k]));
+                    importedData.add(plugin.importData(dataArray[k]));
 
                 }
                 MainWindowController.setImported(true);
+                MainWindowController.setImportedData(importedData);
                 interpreterButton.setDisable(false);
 
             } catch (Exception ex) {

@@ -31,17 +31,6 @@ import javafx.stage.Screen;
  * @author Schwind Laptop
  */
 public class FatherController {
-
-    private List<List<VaultEntry>> importedData;
-
-    public void setImportedData(List<List<VaultEntry>> importedData) {
-        this.importedData = importedData;
-    }
-
-    public List<List<VaultEntry>> getImportedData() {
-        return importedData;
-    }
-    
     
     /**
      * The stage of the main window.

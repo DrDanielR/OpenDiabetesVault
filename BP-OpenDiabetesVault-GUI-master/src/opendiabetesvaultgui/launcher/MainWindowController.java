@@ -5,11 +5,13 @@
  */
 package opendiabetesvaultgui.launcher;
 
+import de.opendiabetes.vault.container.VaultEntry;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
@@ -786,6 +788,16 @@ public class MainWindowController extends FatherController
      */
     public static void setImported(final boolean isImported) {
         MainWindowController.imported = isImported;
+    }
+    
+    private static List<List<VaultEntry>> importedData;
+
+    public static void setImportedData(final List<List<VaultEntry>> importedData) {
+        MainWindowController.importedData = importedData;
+    }
+
+    public static List<List<VaultEntry>> getImportedData() {
+        return importedData;
     }
 
     /**
