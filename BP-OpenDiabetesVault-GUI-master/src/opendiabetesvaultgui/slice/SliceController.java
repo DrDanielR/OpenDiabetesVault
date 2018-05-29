@@ -5,6 +5,7 @@
  */
 package opendiabetesvaultgui.slice;
 
+import de.opendiabetes.vault.container.VaultEntry;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -115,6 +116,8 @@ public class SliceController extends FatherController implements Initializable {
 
         alert.setContentText(nodes);
         alert.show();
+        
+        VaultEntry vaultEntry = new VaultEntry();
     }
 
     @FXML

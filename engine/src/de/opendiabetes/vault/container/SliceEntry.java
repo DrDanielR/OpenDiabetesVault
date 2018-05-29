@@ -19,7 +19,7 @@ package de.opendiabetes.vault.container;
 import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
-import static de.opendiabetes.vault.plugin.util.TimestampUtils.copyTimestamp;
+import de.opendiabetes.vault.util.TimestampUtils;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -87,7 +87,7 @@ public class SliceEntry {
      * @param duration  The value that duration will be set to.
      */
     public SliceEntry(final Date timestamp, final long duration) {
-        this.timestamp = copyTimestamp(timestamp);
+        this.timestamp = TimestampUtils.copyTimestamp(timestamp);
         this.duration = duration;
 //        this.type = type;
     }
@@ -113,7 +113,7 @@ public class SliceEntry {
      * @return The timestamp of the SliceEntry.
      */
     public Date getTimestamp() {
-        return copyTimestamp(timestamp);
+        return TimestampUtils.copyTimestamp(timestamp);
     }
 
     /**
@@ -122,7 +122,7 @@ public class SliceEntry {
      * @param timestamp The value that the timestamp will be set to.
      */
     public void setTimestamp(final Date timestamp) {
-        this.timestamp = copyTimestamp(timestamp);
+        this.timestamp = TimestampUtils.copyTimestamp(timestamp);
     }
 
     /**

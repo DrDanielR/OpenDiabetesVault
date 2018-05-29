@@ -335,4 +335,15 @@ public class TimestampUtils {
         return result;
     }
 
+    /**
+     * Copies the specified date for secure getting and setting. This addresses
+     * the possible malicious code vulnerability introduced by the mutability of
+     * dates.
+     *
+     * @param date The date to be copied.
+     * @return The safe copy of the date.
+     */
+    public static Date copyTimestamp(final Date date) {
+        return new Date(date.getTime());
+    }
 }

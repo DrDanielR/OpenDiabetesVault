@@ -134,10 +134,8 @@ public class ImportsController extends FatherController
         pluginManager = OpenDiabetesPluginManager.getInstance();
 
         // the interpreter and import plugin lists
-        importPlugins = pluginManager.
-                getPluginIDsOfType(FileImporter.class);
-        interpreterPlugins = pluginManager.
-                getPluginIDsOfType(Interpreter.class);
+        importPlugins = pluginManager.getPluginIDsOfType(FileImporter.class);
+        interpreterPlugins = pluginManager.getPluginIDsOfType(Interpreter.class);
 
         for (int i = 0; i < importPlugins.size(); i++) {
             FileImporter plugin = pluginManager.
@@ -218,6 +216,7 @@ public class ImportsController extends FatherController
 
         try {
             tmp = pluginManager.getHelpFilePath(plugin, HelpLanguage.LANG_EN).toString();
+//            tmp = pluginManager.getHelpFilePath(plugin).toString();
         } catch (Exception ex) {
             tmp = defaultHelpPagePath;
         }
@@ -302,6 +301,7 @@ public class ImportsController extends FatherController
                     String helpPagePath;
                     try {
                         helpPagePath = pluginManager.getHelpFilePath(interpreterPlugin, HelpLanguage.LANG_EN).toString();
+//                        helpPagePath = pluginManager.getHelpFilePath(interpreterPlugin).toString();
                     } catch (Exception ex) {
                         helpPagePath = defaultHelpPagePath;
                     }

@@ -1,8 +1,6 @@
 package de.opendiabetes.vault.testhelper;
 
 import de.opendiabetes.vault.container.VaultEntry;
-import de.opendiabetes.vault.plugin.exporter.MLExporter.MLExporter;
-import de.opendiabetes.vault.plugin.exporter.FileExporter;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
@@ -30,9 +28,9 @@ import java.util.List;
 public class Tester {
 
     public static void main(String[] args) throws ParseException, IOException {
-        FileExporter mLExporter = new MLExporter();
-        List<VaultEntry> data = StaticDataset.getStaticDataset();
-        mLExporter.exportDataToFile("export", data);
+        //FileExporter mLExporter = new MLExporter();
+        //List<VaultEntry> data = StaticDataset.getStaticDataset();
+        //mLExporter.exportDataToFile("export", data);
 
     }
 

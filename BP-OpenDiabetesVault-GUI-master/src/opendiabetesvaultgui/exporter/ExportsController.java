@@ -157,6 +157,7 @@ public class ExportsController extends FatherController implements Initializable
         String tmp;
         try {
             tmp = pluginManager.getHelpFilePath(plugin, HelpLanguage.LANG_EN).toString();
+            //tmp = pluginManager.getHelpFilePath(plugin).toString();
         } catch (Exception ex) {
             tmp = "/resources/default.md";
         }

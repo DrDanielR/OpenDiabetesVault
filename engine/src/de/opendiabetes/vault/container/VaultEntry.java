@@ -22,7 +22,7 @@ import com.google.gson.reflect.TypeToken;
 import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
-import static de.opendiabetes.vault.plugin.util.TimestampUtils.copyTimestamp;
+import de.opendiabetes.vault.util.TimestampUtils;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -145,7 +145,7 @@ public class VaultEntry implements Serializable {
     public VaultEntry(final VaultEntryType type, final Date timestamp, final double value) {
         this();
         this.type = type;
-        this.timestamp = copyTimestamp(timestamp);
+        this.timestamp = TimestampUtils.copyTimestamp(timestamp);
         this.value = value;
     }
 
@@ -158,7 +158,7 @@ public class VaultEntry implements Serializable {
     public VaultEntry(final VaultEntryType type, final Date timestamp) {
         this();
         this.type = type;
-        this.timestamp = copyTimestamp(timestamp);
+        this.timestamp = TimestampUtils.copyTimestamp(timestamp);
         this.value = VALUE_UNUSED;
     }
 
@@ -251,7 +251,7 @@ public class VaultEntry implements Serializable {
      * @return The timestamp of the VaultEntry.
      */
     public Date getTimestamp() {
-        return copyTimestamp(timestamp);
+        return TimestampUtils.copyTimestamp(timestamp);
     }
 
     /**
