@@ -790,16 +790,6 @@ public class MainWindowController extends FatherController
         MainWindowController.imported = isImported;
     }
     
-    private static List<List<VaultEntry>> importedData;
-
-    public static void setImportedData(final List<List<VaultEntry>> importedData) {
-        MainWindowController.importedData = importedData;
-    }
-
-    public static List<List<VaultEntry>> getImportedData() {
-        return importedData;
-    }
-
     /**
      *
      * @return selected

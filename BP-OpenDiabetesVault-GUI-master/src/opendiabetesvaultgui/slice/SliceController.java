@@ -8,6 +8,7 @@ package opendiabetesvaultgui.slice;
 import de.opendiabetes.vault.container.VaultEntry;
 import de.opendiabetes.vault.container.VaultEntryType;
 import de.opendiabetes.vault.container.VaultEntryTypeGroup;
+import de.opendiabetes.vault.data.VaultDao;
 import de.opendiabetes.vault.processing.filter.FilterResult;
 import de.opendiabetes.vault.processing.filter.TypeGroupFilter;
 import de.opendiabetes.vault.processing.filter.VaultEntryTypeFilter;
@@ -106,7 +107,9 @@ public class SliceController extends FatherController implements Initializable {
 
     private VBox lastVBox;
     
-    private List<VaultEntry> completeImportedData;
+    private List<VaultEntry> importedData;
+    
+    private VaultDao vaultDao;
 
     @FXML
     private void doFilter(ActionEvent event) {
@@ -176,7 +179,7 @@ public class SliceController extends FatherController implements Initializable {
         series.setName("EXERCISE_LOW");
         XYChart.Data data;        
         
-        FilterResult filterResult = vaultEntryTypeFilter.filter(completeImportedData);
+        FilterResult filterResult = vaultEntryTypeFilter.filter(importedData);
         
         int index = 0;
         for (VaultEntry vaultEntry : filterResult.filteredData) {
@@ -192,7 +195,11 @@ public class SliceController extends FatherController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 
-        combineImportedData();
+        
+        //Daten importieren
+        vaultDao = VaultDao.getInstance();
+        
+        importedData = vaultDao.queryAllVaultEntries();
         
         populateChart();
         
@@ -363,12 +370,4 @@ public class SliceController extends FatherController implements Initializable {
             }
         });
     }
-
-    private void combineImportedData() {
-        completeImportedData =  new ArrayList<>();        
-        for (List<VaultEntry> list : MainWindowController.getImportedData()) {
-            completeImportedData.addAll(list);
-        }
-    }
-
 }

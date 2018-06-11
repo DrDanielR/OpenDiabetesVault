@@ -6,6 +6,7 @@
 package opendiabetesvaultgui.importer;
 
 import de.opendiabetes.vault.container.VaultEntry;
+import de.opendiabetes.vault.data.VaultDao;
 import de.opendiabetes.vault.plugin.common.OpenDiabetesPlugin.StatusListener;
 import de.opendiabetes.vault.plugin.fileimporter.FileImporter;
 import de.opendiabetes.vault.plugin.interpreter.Interpreter;
@@ -468,8 +469,17 @@ public class ImportsController extends FatherController
                     importedData.add(plugin.importData(dataArray[k]));
 
                 }
+                
+                VaultDao.initializeDb();
+                VaultDao vaultDao = VaultDao.getInstance();
+                
+                for (List<VaultEntry> list1 : importedData) {
+                    for (VaultEntry vaultEntry : list1) {
+                        vaultDao.putEntry(vaultEntry);
+                    }
+                }
+                
                 MainWindowController.setImported(true);
-                MainWindowController.setImportedData(importedData);
                 interpreterButton.setDisable(false);
 
             } catch (Exception ex) {
