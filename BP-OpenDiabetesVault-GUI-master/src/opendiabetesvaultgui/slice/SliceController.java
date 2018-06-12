@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
@@ -38,10 +39,13 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Separator;
 import javafx.scene.control.TabPane;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.input.ClipboardContent;
@@ -84,16 +88,40 @@ public class SliceController extends FatherController implements Initializable {
     private Button filterbutton;
 
     @FXML
-    private CheckBox checkboxcombinemode;
+    private LineChart<Number, Number> filterchart;
 
     @FXML
-    private LineChart<Number, Number> filterchart;
-    
-    @FXML
     private NumberAxis filterChartXaxis;
-    
+
     @FXML
     private NumberAxis filterChartYaxis;
+
+    @FXML
+    private ChoiceBox firstColumnChoiceBox;
+
+    @FXML
+    private ChoiceBox secondColumnChoiceBox;
+
+    @FXML
+    private ChoiceBox thirdColumnChoiceBox;
+
+    @FXML
+    private ChoiceBox fourthColumnChoiceBox;
+
+    @FXML
+    private ChoiceBox fifthColumnChoiceBox;
+
+    @FXML
+    private Separator firstColumnSeparator;
+
+    @FXML
+    private Separator secondColumnSeparator;
+
+    @FXML
+    private Separator thirdColumnSeparator;
+
+    @FXML
+    private Separator fourthColumnSeparator;
 
     private double mousePositionX;
 
@@ -101,14 +129,17 @@ public class SliceController extends FatherController implements Initializable {
 
     private int filtercombinationfieldComponents;
 
-    private List<FilterNode> filterNodes;
+    private List<FilterNode> firstColumnFilterNodes = new ArrayList<>();
+    private List<FilterNode> secondColumnFilterNodes = new ArrayList<>();    
+    private List<FilterNode> thirdColumnFilterNodes = new ArrayList<>();
+    private List<FilterNode> fourthColumnFilterNodes = new ArrayList<>();
+    private List<FilterNode> fifthColumnFilterNodes = new ArrayList<>();
+    
 
     private boolean combineMode = false;
 
-    private VBox lastVBox;
-    
     private List<VaultEntry> importedData;
-    
+
     private VaultDao vaultDao;
 
     @FXML
@@ -116,36 +147,47 @@ public class SliceController extends FatherController implements Initializable {
         Alert alert = new Alert(AlertType.INFORMATION);
 
         String nodes = "";
+        //Iterate Over all Columns
+        for (FilterNode filterNode : firstColumnFilterNodes) {
 
-        for (FilterNode filterNode : filterNodes) {
-
-            nodes += "#FILTER#" + filterNode.getName();
+            nodes += "#"+ firstColumnChoiceBox.getSelectionModel().getSelectedItem() +"#" + filterNode.getName();
             if (filterNode.getParameters() != null) {
                 nodes += filterNode.getParameters();
             }
+        }
+        for (FilterNode filterNode : secondColumnFilterNodes) {
 
-            for (FilterNode filterNode1 : filterNode.getFilterNodes()) {
-                nodes += "#SUBFILTER#" + filterNode1.getName();
-                if (filterNode.getParameters() != null) {
-                    nodes += filterNode1.getParameters();
-                }
+            nodes += "#"+ secondColumnChoiceBox.getSelectionModel().getSelectedItem() +"#" + filterNode.getName();
+            if (filterNode.getParameters() != null) {
+                nodes += filterNode.getParameters();
             }
+        }
+        for (FilterNode filterNode : thirdColumnFilterNodes) {
 
+            nodes += "#"+ thirdColumnChoiceBox.getSelectionModel().getSelectedItem() +"#" + filterNode.getName();
+            if (filterNode.getParameters() != null) {
+                nodes += filterNode.getParameters();
+            }
+        }
+        for (FilterNode filterNode : fourthColumnFilterNodes) {
+
+            nodes += "#"+ fourthColumnChoiceBox.getSelectionModel().getSelectedItem() +"#" + filterNode.getName();
+            if (filterNode.getParameters() != null) {
+                nodes += filterNode.getParameters();
+            }
+        }
+        for (FilterNode filterNode : fifthColumnFilterNodes) {
+
+            nodes += "#"+ fifthColumnChoiceBox.getSelectionModel().getSelectedItem() +"#" + filterNode.getName();
+            if (filterNode.getParameters() != null) {
+                nodes += filterNode.getParameters();
+            }
         }
 
         alert.setContentText(nodes);
         alert.show();
-        
+
         VaultEntry vaultEntry = new VaultEntry();
-    }
-
-    @FXML
-    private void changeCheckbox(ActionEvent event) {
-        if (!checkboxcombinemode.isSelected()) {
-            checkboxcombinemode.setDisable(true);
-            checkboxcombinemode.setSelected(false);
-        }
-
     }
 
     @FXML
@@ -160,62 +202,72 @@ public class SliceController extends FatherController implements Initializable {
                 filtercombinationfield.getChildren().remove(filtercombinationfield.getChildren().size() - 1);
             }
 
+            /**
             if (filterNodes.get(filterNodes.size() - 1).getFilterNodes().size() == 0) {
                 filterNodes.remove(filterNodes.size() - 1);
             } else {
                 filterNodes.get(filterNodes.size() - 1).getFilterNodes().remove(filterNodes.get(filterNodes.size() - 1).getFilterNodes().size() - 1);
             }
+            **/
 
         }
 
     }
-    
-    private void populateChart()
-    {
+
+    private void populateChart() {
         //Teststuff
         VaultEntryTypeFilter vaultEntryTypeFilter = new VaultEntryTypeFilter(new VaultEntryTypeFilterOption(VaultEntryType.EXERCISE_LOW));
-        
+
         XYChart.Series series = new XYChart.Series();
         series.setName("EXERCISE_LOW");
-        XYChart.Data data;        
-        
+        XYChart.Data data;
+
         FilterResult filterResult = vaultEntryTypeFilter.filter(importedData);
-        
+
         int index = 0;
         for (VaultEntry vaultEntry : filterResult.filteredData) {
-            data = new Data(index, vaultEntry.getValue());            
+            data = new Data(index, vaultEntry.getValue());
             series.getData().add(data);
             index++;
         }
-        
+
         filterchart.getData().add(series);
     }
-    
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-
         
         //Daten importieren
         vaultDao = VaultDao.getInstance();
-        
         importedData = vaultDao.queryAllVaultEntries();
-        
-        populateChart();
-        
-        checkboxcombinemode.setDisable(true);
 
-        filterNodes = new ArrayList<>();
+        //Grafik laden ggf. erstmal heutigen Tag
+        populateChart();
+
+        //ToDo ChocieBox füllen Mit registrierten Combine Filter
+        ObservableList itemsForChocieBox = FXCollections.observableArrayList(FilterDummyUtil.getCombineFilter());        
+        
+        firstColumnChoiceBox.setItems(itemsForChocieBox);
+        firstColumnChoiceBox.getSelectionModel().selectFirst();
+
+        secondColumnChoiceBox.setItems(itemsForChocieBox);
+        secondColumnChoiceBox.getSelectionModel().selectFirst();
+
+        thirdColumnChoiceBox.setItems(itemsForChocieBox);
+        thirdColumnChoiceBox.getSelectionModel().selectFirst();
+
+        fourthColumnChoiceBox.setItems(itemsForChocieBox);
+        fourthColumnChoiceBox.getSelectionModel().selectFirst();
+
+        fifthColumnChoiceBox.setItems(itemsForChocieBox);
+        fifthColumnChoiceBox.getSelectionModel().selectFirst();
 
         //Backup für undo
         filtercombinationfieldComponents = filtercombinationfield.getChildren().size();
 
-        //checkbox am beginn off
-        checkboxcombinemode.setSelected(false);
-
         //addItems to listview
         ObservableList<String> items = listviewfilterelements.getItems();
-        items.addAll(FilterDummyUtil.getAllFilters());
+        items.addAll(FilterDummyUtil.getAllNotCombineFilters());
 
         //Dragevent for Listview
         listviewfilterelements.setOnDragDetected(new EventHandler<MouseEvent>() {
@@ -282,7 +334,6 @@ public class SliceController extends FatherController implements Initializable {
                 Dragboard db = event.getDragboard();
                 boolean success = false;
                 if (db.hasString()) {
-                    VBox vBox = new VBox();
 
                     String name = db.getString();
                     TextInputDialog dialog = new TextInputDialog();
@@ -295,7 +346,7 @@ public class SliceController extends FatherController implements Initializable {
                         values = dialog.showAndWait();
                     }
 
-                    FilterNode tmpNode = new FilterNode(name, mousePositionX, mousePositionY, FilterDummyUtil.combinesFilter(name));
+                    FilterNode tmpNode = new FilterNode(name, mousePositionX, mousePositionY);
                     if (values != null && values.isPresent()) {
                         tmpNode.setParameters(values.get());
                     }
@@ -306,67 +357,47 @@ public class SliceController extends FatherController implements Initializable {
                         label.setText(db.getString());
                     }
 
-                    label.setStyle("-fx-border-color:black; -fx-background-color: lightblue;");
-                    vBox.getChildren().add(label);
+                    label.setStyle("-fx-border-color:black;");
 
-                    vBox.setLayoutX(tmpNode.getPositionX());
-                    vBox.setLayoutY(tmpNode.getPositionY());
+                    calculateLabelPosition(tmpNode);
 
-                    
+                    label.setLayoutX(tmpNode.getPositionX());
+                    label.setLayoutY(tmpNode.getPositionY());
 
-                    if (filterNodes.size() > 0 && !checkboxcombinemode.isSelected()) {
-                        
-                        filtercombinationfield.getChildren().add(vBox);
-                        lastVBox = vBox;
-                        
-                        //neues keine combination
-                        Path connectingLines = new Path(
-                                new MoveTo(filterNodes.get(filterNodes.size() - 1).getPositionX(), filterNodes.get(filterNodes.size() - 1).getPositionY()),
-                                new LineTo(tmpNode.getPositionX(), tmpNode.getPositionY()),
-                                new ClosePath()
-                        );
-
-                        filtercombinationfield.getChildren().add(connectingLines);
-                        filterNodes.add(tmpNode);
-
-                    } else if (filterNodes.size() > 0 && checkboxcombinemode.isSelected()) {
-                        //neues mit kombination
-                        if (tmpNode.isCombineFilter()) {
-                            
-                            filtercombinationfield.getChildren().add(vBox);
-                            lastVBox = vBox;
-                            
-                            Path connectingLines = new Path(
-                                    new MoveTo(filterNodes.get(filterNodes.size() - 1).getPositionX(), filterNodes.get(filterNodes.size() - 1).getPositionY()),
-                                    new LineTo(tmpNode.getPositionX(), tmpNode.getPositionY()),
-                                    new ClosePath()
-                            );
-
-                            filtercombinationfield.getChildren().add(connectingLines);
-
-                            filterNodes.add(tmpNode);
-                        } else {
-                            filterNodes.get(filterNodes.size() - 1).getFilterNodes().add(tmpNode);
-                            lastVBox.getChildren().add(label);
-                        }
-                    } else {
-                        filtercombinationfield.getChildren().add(vBox);
-                        lastVBox = vBox;
-                        filterNodes.add(tmpNode);
-                    }
-
-                    //alle zusammen???
-                    //erlauben und nicht erlauben undo überarbeiten
-                    if (tmpNode.isCombineFilter()) {
-                        checkboxcombinemode.setSelected(true);
-                        checkboxcombinemode.setDisable(false);
-                    }
+                    filtercombinationfield.getChildren().add(label);
 
                     success = true;
                 }
                 event.setDropCompleted(success);
 
                 event.consume();
+            }
+
+            private void calculateLabelPosition(FilterNode tmpNode) {
+
+                int paddingleft = 150;
+                int paddingright = 10;
+                
+                tmpNode.setPositionY(mousePositionY);
+                
+                if (mousePositionX < firstColumnSeparator.getLayoutX()) {
+                    tmpNode.setPositionX(firstColumnSeparator.getLayoutX()-paddingleft);
+                    firstColumnFilterNodes.add(tmpNode);
+                } else if (mousePositionX < secondColumnSeparator.getLayoutX()) {
+                    tmpNode.setPositionX(secondColumnSeparator.getLayoutX()-paddingleft);
+                    secondColumnFilterNodes.add(tmpNode);
+                } else if (mousePositionX < thirdColumnSeparator.getLayoutX()) {
+                    tmpNode.setPositionX(thirdColumnSeparator.getLayoutX()-paddingleft);
+                    thirdColumnFilterNodes.add(tmpNode);
+                } else if (mousePositionX < fourthColumnSeparator.getLayoutX()) {
+                    tmpNode.setPositionX(fourthColumnSeparator.getLayoutX()-paddingleft);
+                    fourthColumnFilterNodes.add(tmpNode);
+                }else
+                {
+                    tmpNode.setPositionX(fourthColumnSeparator.getLayoutX()+paddingright);
+                    fifthColumnFilterNodes.add(tmpNode);
+                }
+
             }
         });
     }

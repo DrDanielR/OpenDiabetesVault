@@ -14,24 +14,18 @@ import java.util.List;
  */
 public class FilterNode {
     
-    private List<FilterNode> filterNodes;
-    
     private String name;
     
     private String parameters;
-    
-    private boolean combineFilter;
     
     private double positionX;
        
     private double positionY;
 
-    public FilterNode(String name, double positionX, double positionY, boolean combineFilter) {
+    public FilterNode(String name, double positionX, double positionY) {
         this.name = name;
         this.positionX = positionX;
-        this.positionY = positionY;        
-        this.combineFilter = combineFilter;
-        filterNodes = new ArrayList<>();
+        this.positionY = positionY;                
     }
 
     public String getName() {
@@ -42,28 +36,12 @@ public class FilterNode {
         this.name = name;
     }
 
-    public List<FilterNode> getFilterNodes() {
-        return filterNodes;
-    }
-
-    public void setFilterNodes(List<FilterNode> filterNodes) {
-        this.filterNodes = filterNodes;
-    }
-
     public String getParameters() {
         return parameters;
     }
 
     public void setParameters(String parameters) {
         this.parameters = parameters;
-    }
-
-    public boolean isCombineFilter() {
-        return combineFilter;
-    }
-
-    public void setCombineFilter(boolean combineFilter) {
-        this.combineFilter = combineFilter;
     }
 
     public double getPositionX() {
