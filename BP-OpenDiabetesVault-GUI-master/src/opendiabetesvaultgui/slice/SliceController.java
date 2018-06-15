@@ -141,6 +141,7 @@ public class SliceController extends FatherController implements Initializable {
     private List<VaultEntry> importedData;
 
     private VaultDao vaultDao;
+    private FilterDummyUtil filterDummyUtil;
 
     @FXML
     private void doFilter(ActionEvent event) {
@@ -241,11 +242,14 @@ public class SliceController extends FatherController implements Initializable {
         vaultDao = VaultDao.getInstance();
         importedData = vaultDao.queryAllVaultEntries();
 
+        filterDummyUtil = new FilterDummyUtil();
+        
+        
         //Grafik laden ggf. erstmal heutigen Tag
         populateChart();
 
         //ToDo ChocieBox füllen Mit registrierten Combine Filter
-        ObservableList itemsForChocieBox = FXCollections.observableArrayList(FilterDummyUtil.getCombineFilter());        
+        ObservableList itemsForChocieBox = FXCollections.observableArrayList(filterDummyUtil.getCombineFilter());        
         
         firstColumnChoiceBox.setItems(itemsForChocieBox);
         firstColumnChoiceBox.getSelectionModel().selectFirst();
@@ -267,7 +271,7 @@ public class SliceController extends FatherController implements Initializable {
 
         //addItems to listview
         ObservableList<String> items = listviewfilterelements.getItems();
-        items.addAll(FilterDummyUtil.getAllNotCombineFilters());
+        items.addAll(filterDummyUtil.getAllNotCombineFilters());
 
         //Dragevent for Listview
         listviewfilterelements.setOnDragDetected(new EventHandler<MouseEvent>() {
@@ -340,8 +344,8 @@ public class SliceController extends FatherController implements Initializable {
 
                     //Input für Values
                     Optional<String> values = null;
-                    if (FilterDummyUtil.getParametersFromName(name) != null) {
-                        dialog = new TextInputDialog(FilterDummyUtil.getParametersFromName(name));
+                    if (filterDummyUtil.getParametersFromName(name) != null) {
+                        dialog = new TextInputDialog(filterDummyUtil.getParametersFromName(name));
                         dialog.setContentText("Werte:");
                         values = dialog.showAndWait();
                     }

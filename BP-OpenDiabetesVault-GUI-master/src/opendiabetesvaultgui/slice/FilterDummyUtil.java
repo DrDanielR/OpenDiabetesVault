@@ -5,9 +5,28 @@
  */
 package opendiabetesvaultgui.slice;
 
-import de.opendiabetes.vault.processing.filter.options.FilterOption;
+import de.opendiabetes.vault.processing.filter.AndFilter;
+import de.opendiabetes.vault.processing.filter.DateTimePointFilter;
+import de.opendiabetes.vault.processing.filter.DateTimeSpanFilter;
+import de.opendiabetes.vault.processing.filter.OrFilter;
+import de.opendiabetes.vault.processing.filter.ThresholdFilter;
+import de.opendiabetes.vault.processing.filter.TimePointFilter;
+import de.opendiabetes.vault.processing.filter.TimeSpanFilter;
+import de.opendiabetes.vault.processing.filter.TypeGroupFilter;
+import de.opendiabetes.vault.processing.filter.VaultEntryTypeFilter;
+import de.opendiabetes.vault.processing.filter.options.AndFilterOption;
+import de.opendiabetes.vault.processing.filter.options.DateTimePointFilterOption;
+import de.opendiabetes.vault.processing.filter.options.DateTimeSpanFilterOption;
+import de.opendiabetes.vault.processing.filter.options.OrFilterOption;
+import de.opendiabetes.vault.processing.filter.options.ThresholdFilterOption;
+import de.opendiabetes.vault.processing.filter.options.TimePointFilterOption;
+import de.opendiabetes.vault.processing.filter.options.TimeSpanFilterOption;
+import de.opendiabetes.vault.processing.filter.options.TypeGroupFilterOption;
+import de.opendiabetes.vault.processing.filter.options.VaultEntryTypeFilterOption;
 import java.net.URL;
+import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
 
@@ -17,83 +36,60 @@ import java.util.List;
  */
 public class FilterDummyUtil {
 
-    public static final int ANDFILTER = 1;
-    public static final String ANDFILTERPARAMETERS = null;
-    private static final String AND_FILTER = "AndFilter";
+    private List<FilterAndOption> filterAndOptions;
 
-    public static final int ORFILTER = 2;
-    public static final String ORFILTERPARAMETERS = null;
-    private static final String OR_FILTER = "OrFilter";
-
-    public static final int TYPEFILTER = 3;
-    public static final String TYPEFILTERPARAMETERS = "type:";
-    private static final String TYPE_FILTER = "TypeFilter";
-
-    public static final int TIMESTAMPFILTER = 4;
-    public static final String TIMESTAMPFILTERPARAMETERS = "from: ;to:";
-    private static final String TIME_STAMP_FILTER = "TimeStampFilter";
-
-    public static int getIdFromName(String name) {
-        int result = 0;
-
-        if (name.equals(AND_FILTER)) {
-            result = ANDFILTER;
-        } else if (name.equals(OR_FILTER)) {
-            result = ORFILTER;
-        } else if (name.equals(TYPE_FILTER)) {
-            result = TYPEFILTER;
-        } else if (name.equals(TIME_STAMP_FILTER)) {
-            result = TIMESTAMPFILTER;
-        }
-
-        return result;
-    }
-
-    public static String getParametersFromName(String name) {
-        String result = null;
-
-        if (name.equals(AND_FILTER)) {
-            result = ANDFILTERPARAMETERS;
-        } else if (name.equals(OR_FILTER)) {
-            result = ORFILTERPARAMETERS;
-        } else if (name.equals(TYPE_FILTER)) {
-            result = TYPEFILTERPARAMETERS;
-        } else if (name.equals(TIME_STAMP_FILTER)) {
-            result = TIMESTAMPFILTERPARAMETERS;
-        }
-
-        return result;
-    }
-
-    public static String getNameFromId(int id) {
-        String result = "";
-        if (id == ANDFILTER) {
-            result = AND_FILTER;
-        } else if (id == ORFILTER) {
-            result = OR_FILTER;
-        } else if (id == TYPEFILTER) {
-            result = TYPE_FILTER;
-        } else if (id == TIMESTAMPFILTER) {
-            result = TIME_STAMP_FILTER;
-        }
-
-        return result;
-    }
-
-    public static List<String> getAllNotCombineFilters() {
-        List<String> result = new ArrayList<>();
-
-        result.add(TYPE_FILTER);
-        result.add(TIME_STAMP_FILTER);
-
-        return result;
-    }
-
-    public static List getCombineFilter() {
-        List<String> result = new ArrayList();
+    public FilterDummyUtil() {
+        filterAndOptions = new ArrayList<>();
         
-        result.add(AND_FILTER);
-        result.add(OR_FILTER);
+        //Combine Filter contains Filter list as parameter
+        filterAndOptions.add(new FilterAndOption(new AndFilterOption(null), new AndFilter(new AndFilterOption(null))));
+        filterAndOptions.add(new FilterAndOption(new OrFilterOption(null), new OrFilter(new OrFilterOption(null))));
+        
+        //normal Filter
+        filterAndOptions.add(new FilterAndOption(new DateTimePointFilterOption(new Date(), 0), new DateTimePointFilter(new DateTimePointFilterOption(new Date(), 0))));
+        filterAndOptions.add(new FilterAndOption(new DateTimeSpanFilterOption(new Date(),new Date()), new DateTimeSpanFilter(new DateTimeSpanFilterOption(new Date(),new Date()))));
+        filterAndOptions.add(new FilterAndOption(new ThresholdFilterOption(0,0), new ThresholdFilter(new ThresholdFilterOption(0,0))));
+        filterAndOptions.add(new FilterAndOption(new TimePointFilterOption(LocalTime.now(), 0), new TimePointFilter(new TimePointFilterOption(LocalTime.now(), 0))));
+        filterAndOptions.add(new FilterAndOption(new TimeSpanFilterOption(LocalTime.now(), LocalTime.now()), new TimeSpanFilter(new TimeSpanFilterOption(LocalTime.now(), LocalTime.now()))));
+        filterAndOptions.add(new FilterAndOption(new TypeGroupFilterOption(null), new TypeGroupFilter(new TypeGroupFilterOption(null))));
+        filterAndOptions.add(new FilterAndOption(new VaultEntryTypeFilterOption(null), new VaultEntryTypeFilter(new VaultEntryTypeFilterOption(null))));
+    }
+
+    public List<String> getAllNotCombineFilters() {
+        List<String> result = new ArrayList<>();
+        
+        for (FilterAndOption filterAndOption : filterAndOptions) {
+            if(!filterAndOption.isCombine())
+                result.add(filterAndOption.getName());
+        }
+        
+
+        return result;
+    }
+
+    public List getCombineFilter() {
+        List<String> result = new ArrayList<>();
+        
+        for (FilterAndOption filterAndOption : filterAndOptions) {
+            if(filterAndOption.isCombine())
+                result.add(filterAndOption.getName());
+        }
+
+        return result;
+    }
+
+    public String getParametersFromName(String name) {
+        String result = "";
+        
+        for (FilterAndOption filterAndOption : filterAndOptions) {
+            if(filterAndOption.getName().equals(name))
+            {
+                Class[] classes = filterAndOption.getParameterTypes();
+                if(classes.length > 0)
+                result= classes[0].getSimpleName();
+            }
+                
+        }
         
         return result;
     }
