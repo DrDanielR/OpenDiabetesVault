@@ -78,15 +78,14 @@ public class FilterDummyUtil {
         return result;
     }
 
-    public String getParametersFromName(String name) {
-        String result = "";
+    public Class[] getParametersFromName(String name) {
+        Class[] result = new Class[0];
         
         for (FilterAndOption filterAndOption : filterAndOptions) {
             if(filterAndOption.getName().equals(name))
             {
-                Class[] classes = filterAndOption.getParameterTypes();
-                if(classes.length > 0)
-                result= classes[0].getSimpleName();
+                result = filterAndOption.getParameterTypes();
+                
             }
                 
         }
