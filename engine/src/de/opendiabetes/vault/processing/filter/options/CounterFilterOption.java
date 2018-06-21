@@ -17,6 +17,8 @@
 package de.opendiabetes.vault.processing.filter.options;
 
 import de.opendiabetes.vault.processing.filter.Filter;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  *
@@ -37,6 +39,12 @@ public class CounterFilterOption extends FilterOption {
      * appearence)
      */
     public CounterFilterOption(Filter filter, int hitCounter, boolean onlyOneResult) {
+        super(new HashMap<>());
+        super.getParameterNameAndType().put("Filter", Filter.class);
+        super.getParameterNameAndType().put("HitCounter", int.class);
+        super.getParameterNameAndType().put("OnlyResult", boolean.class);
+        
+        
         this.filter = filter;
         this.hitCounter = hitCounter;
         this.onlyOneResult = onlyOneResult;

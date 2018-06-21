@@ -18,6 +18,7 @@ package de.opendiabetes.vault.processing.filter.options;
 
 import de.opendiabetes.vault.processing.filter.Filter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -29,10 +30,16 @@ public class OrFilterOption extends FilterOption {
     private final List<Filter> filters;
 
     public OrFilterOption(List<Filter> filters) {
+        super(new HashMap<>());
+        super.getParameterNameAndType().put("Filters", List.class);
+        
         this.filters = filters;
     }
 
     public OrFilterOption(Filter firstFilter, Filter secondFilter) {
+        super(new HashMap<>());
+        super.getParameterNameAndType().put("Filters", List.class);
+        
         this.filters = new ArrayList<>();
         filters.add(firstFilter);
         filters.add(secondFilter);

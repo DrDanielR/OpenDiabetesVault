@@ -16,7 +16,9 @@ import de.opendiabetes.vault.processing.filter.options.TypeGroupFilterOption;
 import de.opendiabetes.vault.processing.filter.options.VaultEntryTypeFilterOption;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import javafx.collections.FXCollections;
@@ -53,6 +55,7 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.AnchorPane;
@@ -141,22 +144,22 @@ public class SliceController extends FatherController implements Initializable {
         for (FilterNode filterNode : firstColumnFilterNodes) {
 
             nodes += "#" + firstColumnChoiceBox.getSelectionModel().getSelectedItem() + "#" + filterNode.getName();
-            if (filterNode.getParameters() != null) {
-                nodes += filterNode.getParameters();
+            if (filterNode.getParameterAndValues() != null) {
+                nodes += filterNode.getParameterAndValues();
             }
         }
         for (FilterNode filterNode : secondColumnFilterNodes) {
 
             nodes += "#" + secondColumnChoiceBox.getSelectionModel().getSelectedItem() + "#" + filterNode.getName();
-            if (filterNode.getParameters() != null) {
-                nodes += filterNode.getParameters();
+            if (filterNode.getParameterAndValues() != null) {
+                nodes += filterNode.getParameterAndValues();
             }
         }
         for (FilterNode filterNode : thirdColumnFilterNodes) {
 
             nodes += "#" + thirdColumnChoiceBox.getSelectionModel().getSelectedItem() + "#" + filterNode.getName();
-            if (filterNode.getParameters() != null) {
-                nodes += filterNode.getParameters();
+            if (filterNode.getParameterAndValues() != null) {
+                nodes += filterNode.getParameterAndValues();
             }
         }
 
@@ -311,42 +314,55 @@ public class SliceController extends FatherController implements Initializable {
                     String name = db.getString();
                     VBox tempInputPane = new VBox();
 
-                    //Input für Values
-                    Optional<String> values = null;
-                    Class[] parameterClasses = filterDummyUtil.getParametersFromName(name);
+                    //Input für Values                    
+                    Map<String, Class> parameterClasses = filterDummyUtil.getParametersFromName(name);
+                    Iterator iterator = parameterClasses.entrySet().iterator();
 
                     FilterNode tmpNode = new FilterNode(name, mousePositionX, mousePositionY);
-                    if (values != null && values.isPresent()) {
-                        tmpNode.setParameters(values.get());
-                    }
                     Label label = new Label();
-                    if (tmpNode.getParameters() != null) {
-                        label.setText(db.getString() + "\n" + tmpNode.getParameters());
-                    } else {
-                        label.setText(db.getString());
-                    }
-
+                    label.setText(name);
+                    
                     tempInputPane.setStyle("-fx-border-color:black;");
 
                     calculateLabelPosition(tmpNode);
 
                     tempInputPane.getChildren().add(label);
 
-                    for (Class parameterClass : parameterClasses) {
+                    while (iterator.hasNext()) {
+                        Map.Entry pair = (Map.Entry) iterator.next();
+                        
+                        final String simpleName = (String)pair.getKey();
+                        final Class typeClass = (Class)pair.getValue();
+                        
                         HBox tmpHBox = new HBox();
-                        tmpHBox.setMaxWidth(200);
+                        tmpHBox.setMaxWidth(200);                        
 
-                        tmpHBox.getChildren().add(new Label(parameterClass.getSimpleName()));
+                        tmpHBox.getChildren().add(new Label(simpleName));
 
-                        if (parameterClass.getSimpleName().equals("Date")) {
+                        if (typeClass.getSimpleName().equals("Date")) {
                             DatePicker datePicker = new DatePicker();
-                            datePicker .setMaxWidth(100);
+                            datePicker.setMaxWidth(100);
                             tmpHBox.getChildren().add(datePicker);
+                            
+                            //ActionEvent for params
+                            datePicker.setOnAction(new EventHandler<ActionEvent>() {
+                                @Override
+                                public void handle(ActionEvent event) {
+                                    tmpNode.addParam(simpleName, datePicker.getValue().toString());
+                                }
+                            });
                         } else {
                             TextField tmpTextField = new TextField();
                             tmpTextField.setMaxWidth(100);
                             tmpHBox.getChildren().add(tmpTextField);
-
+                            
+                            //ActionEvent for params
+                            tmpTextField.setOnKeyPressed(new EventHandler<KeyEvent>() {
+                                @Override
+                                public void handle(KeyEvent event) {
+                                    tmpNode.addParam(simpleName, tmpTextField.getText());
+                                }
+                            });
                         }
 
                         tempInputPane.getChildren().add(tmpHBox);

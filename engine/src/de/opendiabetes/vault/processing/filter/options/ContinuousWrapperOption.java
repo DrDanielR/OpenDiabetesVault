@@ -17,6 +17,7 @@
 package de.opendiabetes.vault.processing.filter.options;
 
 import de.opendiabetes.vault.container.VaultEntry;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -30,6 +31,11 @@ public class ContinuousWrapperOption extends FilterOption {
     protected int marginAfter;
 
     public ContinuousWrapperOption(List<VaultEntry> baseData, int marginBefore, int marginAfter) {
+        super(new HashMap<>());
+        super.getParameterNameAndType().put("VaultEntries", List.class);
+        super.getParameterNameAndType().put("MarginBefore", int.class);
+        super.getParameterNameAndType().put("MarginAfter", int.class);        
+        
         if (marginBefore < 0 || marginAfter < 0) {
             throw new IllegalArgumentException("Expected a margin >= 0 but was " + marginBefore + " and " + marginAfter);
         }

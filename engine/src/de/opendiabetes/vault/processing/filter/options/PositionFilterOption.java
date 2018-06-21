@@ -19,6 +19,8 @@ package de.opendiabetes.vault.processing.filter.options;
 import de.opendiabetes.vault.container.VaultEntryType;
 import de.opendiabetes.vault.processing.filter.Filter;
 import de.opendiabetes.vault.processing.filter.PositionFilter;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  *
@@ -72,6 +74,12 @@ public class PositionFilterOption extends FilterOption {
      * <code>WEIGHTED_MIDDLE</code>, ignored otherwise
      */
     public PositionFilterOption(Filter filter, int filterMode, VaultEntryType type) {
+        super(new HashMap<>());
+        super.getParameterNameAndType().put("Filter", Filter.class);
+        super.getParameterNameAndType().put("FilterMode", int.class);
+        super.getParameterNameAndType().put("Type", VaultEntryType.class);
+        
+        
         this.filter = filter;
         this.filterMode = filterMode;
         this.weightedType = type;

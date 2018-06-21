@@ -20,6 +20,7 @@ import de.opendiabetes.vault.processing.filter.Filter;
 import de.opendiabetes.vault.processing.filter.TimeClusterFilter;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -55,6 +56,12 @@ public class TimeClusterFilterOption extends FilterOption {
      * @param clusterSpacing length of the gaps between each timespan in minutes
      */
     public TimeClusterFilterOption(List<Filter> filters, LocalTime startTime, long clusterTimeInMinutes, long clusterSpacing) {
+        super(new HashMap<>());
+        super.getParameterNameAndType().put("Filters", List.class);
+        super.getParameterNameAndType().put("StartTime", LocalTime.class);
+        super.getParameterNameAndType().put("ClusterTimeInMillis", long.class);
+        super.getParameterNameAndType().put("ClusterSpacing", long.class);
+        
         this.filters = filters;
         this.clusterTimeInMinutes = clusterTimeInMinutes;
         this.startTime = startTime;
@@ -78,6 +85,12 @@ public class TimeClusterFilterOption extends FilterOption {
      * @param clusterSpacing length of the gaps between each timespan in minutes
      */
     public TimeClusterFilterOption(Filter filter, LocalTime startTime, long clusterTimeInMinutes, long clusterSpacing) {
+        super(new HashMap<>());
+        super.getParameterNameAndType().put("Filters", List.class);
+        super.getParameterNameAndType().put("StartTime", LocalTime.class);
+        super.getParameterNameAndType().put("ClusterTimeInMillis", long.class);
+        super.getParameterNameAndType().put("ClusterSpacing", long.class);
+        
         List<Filter> filters = new ArrayList<>();
         filters.add(filter);
         this.filters = filters;

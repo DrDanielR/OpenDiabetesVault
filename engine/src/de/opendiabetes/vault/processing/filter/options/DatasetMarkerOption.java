@@ -18,6 +18,8 @@ package de.opendiabetes.vault.processing.filter.options;
 
 import de.opendiabetes.vault.processing.filter.DatasetMarker;
 import de.opendiabetes.vault.processing.filter.Filter;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  *
@@ -30,6 +32,11 @@ public class DatasetMarkerOption extends FilterOption {
     private final Filter secondFilter;
 
     public DatasetMarkerOption(DatasetMarker dataPointer, Filter firstFilter, Filter secondFilter) {
+        super(new HashMap<>());
+        super.getParameterNameAndType().put("dataPointer", DatasetMarker.class);
+        super.getParameterNameAndType().put("FirstFilter", Filter.class);
+        super.getParameterNameAndType().put("SecondFilter", Filter.class);
+        
         this.dataPointer = dataPointer;
         this.firstFilter = firstFilter;
         this.secondFilter = secondFilter;

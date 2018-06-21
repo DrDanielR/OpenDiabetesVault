@@ -6,7 +6,9 @@
 package opendiabetesvaultgui.slice;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -16,16 +18,17 @@ public class FilterNode {
     
     private String name;
     
-    private String parameters;
-    
     private double positionX;
        
     private double positionY;
+    
+    private Map<String, String> parameterAndValue;
 
     public FilterNode(String name, double positionX, double positionY) {
         this.name = name;
         this.positionX = positionX;
-        this.positionY = positionY;                
+        this.positionY = positionY;     
+        parameterAndValue = new HashMap<>();
     }
 
     public String getName() {
@@ -35,15 +38,7 @@ public class FilterNode {
     public void setName(String name) {
         this.name = name;
     }
-
-    public String getParameters() {
-        return parameters;
-    }
-
-    public void setParameters(String parameters) {
-        this.parameters = parameters;
-    }
-
+    
     public double getPositionX() {
         return positionX;
     }
@@ -59,5 +54,14 @@ public class FilterNode {
     public void setPositionY(double positionY) {
         this.positionY = positionY;
     }    
+    
+    public void addParam(String type, String value){
+        parameterAndValue.put(type, value);
+    }
+    
+    public Map<String, String> getParameterAndValues()
+    {
+        return parameterAndValue;
+    }
     
 }

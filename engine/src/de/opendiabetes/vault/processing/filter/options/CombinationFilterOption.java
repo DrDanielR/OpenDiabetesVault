@@ -20,6 +20,7 @@ import de.opendiabetes.vault.container.VaultEntry;
 import de.opendiabetes.vault.processing.filter.DatasetMarker;
 import de.opendiabetes.vault.processing.filter.Filter;
 import de.opendiabetes.vault.processing.filter.NoneFilter;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -63,6 +64,11 @@ public class CombinationFilterOption extends FilterOption {
      * @param secondFilter Filter mask for the list of Filters in the filter
      */
     public CombinationFilterOption(DatasetMarker dataPointer, Filter firstFilter, Filter secondFilter) {
+        super(new HashMap<>());
+        super.getParameterNameAndType().put("DataPointer", DatasetMarker.class);
+        super.getParameterNameAndType().put("FirstFilter", Filter.class);
+        super.getParameterNameAndType().put("SecondFilter", Filter.class);
+        
         this.dataPointer = dataPointer;
         this.firstFilter = firstFilter;
         this.secondFilter = secondFilter;
@@ -75,6 +81,11 @@ public class CombinationFilterOption extends FilterOption {
      * @param secondFilter Filter mask for the list of Filters in the filter
      */
     public CombinationFilterOption(Filter firstFilter, Filter secondFilter) {
+        super(new HashMap<>());        
+        super.getParameterNameAndType().put("FirstFilter", Filter.class);
+        super.getParameterNameAndType().put("SecondFilter", Filter.class);
+        
+        
         this.dataPointer = null;
         this.firstFilter = firstFilter;
         this.secondFilter = secondFilter;

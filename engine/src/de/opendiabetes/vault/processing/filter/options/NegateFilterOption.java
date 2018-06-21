@@ -17,6 +17,8 @@
 package de.opendiabetes.vault.processing.filter.options;
 
 import de.opendiabetes.vault.processing.filter.Filter;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  *
@@ -32,6 +34,9 @@ public class NegateFilterOption extends FilterOption {
      * @param filter Filter, which will be negated
      */
     public NegateFilterOption(Filter filter) {
+        super(new HashMap<>());
+        super.getParameterNameAndType().put("Filter", Filter.class);
+        
         this.filter = filter;
     }
 

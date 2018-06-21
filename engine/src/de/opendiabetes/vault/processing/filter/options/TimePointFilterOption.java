@@ -16,7 +16,10 @@
  */
 package de.opendiabetes.vault.processing.filter.options;
 
+import de.opendiabetes.vault.container.VaultEntryType;
+import de.opendiabetes.vault.container.VaultEntryTypeGroup;
 import java.time.LocalTime;
+import java.util.HashMap;
 
 /**
  *
@@ -29,6 +32,10 @@ public class TimePointFilterOption extends FilterOption {
     private final int marginAfterInMinutes;
 
     public TimePointFilterOption(LocalTime timePoint, int marginInMinutes) {
+        super(new HashMap<>());
+        super.getParameterNameAndType().put("LocalTime", LocalTime.class);
+        super.getParameterNameAndType().put("MarginInMinutes", int.class);        
+        
         this.timePoint = timePoint;
         this.marginAfterInMinutes = marginInMinutes;
         this.marginBeforeInMinutes = marginInMinutes;
@@ -45,6 +52,12 @@ public class TimePointFilterOption extends FilterOption {
      * @param marginAfterInMinutes
      */
     public TimePointFilterOption(LocalTime timePoint, int marginBeforeInMinutes, int marginAfterInMinutes) {
+        super(new HashMap<>());
+        super.getParameterNameAndType().put("LocalTime", LocalTime.class);
+        super.getParameterNameAndType().put("MarginBeforeInMinutes", int.class);
+        super.getParameterNameAndType().put("MarginAfterInMinutes", int.class);
+        
+        
         this.timePoint = timePoint;
         this.marginAfterInMinutes = marginAfterInMinutes;
         this.marginBeforeInMinutes = marginBeforeInMinutes;

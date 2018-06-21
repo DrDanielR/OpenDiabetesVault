@@ -17,6 +17,8 @@
 package de.opendiabetes.vault.processing.filter.options;
 
 import de.opendiabetes.vault.container.VaultEntryTypeGroup;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  *
@@ -32,6 +34,9 @@ public class TypeGroupFilterOption extends FilterOption {
      * @param vaultEntryTypeGroup
      */
     public TypeGroupFilterOption(VaultEntryTypeGroup vaultEntryTypeGroup) {
+        super(new HashMap<>());
+        super.getParameterNameAndType().put("VaultEntryTypeGroup", VaultEntryTypeGroup.class);
+        
         this.vaultEntryTypeGroup = vaultEntryTypeGroup;
 
     }

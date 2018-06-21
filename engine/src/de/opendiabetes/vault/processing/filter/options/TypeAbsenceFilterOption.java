@@ -18,6 +18,9 @@ package de.opendiabetes.vault.processing.filter.options;
 
 import de.opendiabetes.vault.container.VaultEntryType;
 import de.opendiabetes.vault.container.VaultEntryTypeGroup;
+import de.opendiabetes.vault.processing.filter.DatasetMarker;
+import de.opendiabetes.vault.processing.filter.Filter;
+import java.util.HashMap;
 
 /**
  *
@@ -40,12 +43,21 @@ public class TypeAbsenceFilterOption extends FilterOption {
      * @param vaultEntryTypeGroup
      */
     public TypeAbsenceFilterOption(VaultEntryTypeGroup vaultEntryTypeGroup, VaultEntryType vaultEntryType, long marginAfterTrigger) {
+        super(new HashMap<>());
+        super.getParameterNameAndType().put("VaultEntryTypeGroup", VaultEntryTypeGroup.class);
+        super.getParameterNameAndType().put("VaultEntryType", VaultEntryType.class);
+        super.getParameterNameAndType().put("MarginAfterTrigger", long.class);
+        
         this.vaultEntryTypeGroup = vaultEntryTypeGroup;
         this.vaultEntryType = vaultEntryType;
         this.marginAfterTrigger = marginAfterTrigger;
     }
 
     public TypeAbsenceFilterOption(VaultEntryTypeGroup vaultEntryTypeGroup, long marginAfterTrigger) {
+        super(new HashMap<>());
+        super.getParameterNameAndType().put("VaultEntryTypeGroup", VaultEntryTypeGroup.class);        
+        super.getParameterNameAndType().put("MarginAfterTrigger", long.class);
+        
         this.vaultEntryTypeGroup = vaultEntryTypeGroup;
         this.vaultEntryType = null;
         this.marginAfterTrigger = marginAfterTrigger;

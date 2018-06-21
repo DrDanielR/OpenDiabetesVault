@@ -17,6 +17,8 @@
 package de.opendiabetes.vault.processing.filter.options;
 
 import de.opendiabetes.vault.processing.filter.ThresholdFilter;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  *
@@ -33,12 +35,22 @@ public class ThresholdFilterOption extends FilterOption {
     public static final int BANDPASS = ThresholdFilter.BANDPASS;
 
     public ThresholdFilterOption(double minThreshold, double maxThreshold, int mode) {
+        super(new HashMap<>());
+        super.getParameterNameAndType().put("MinThreshold", int.class);
+        super.getParameterNameAndType().put("MaxThreshold", int.class);
+        super.getParameterNameAndType().put("Mode", int.class);
+        
         this.minThreshold = minThreshold;
         this.maxThreshold = maxThreshold;
         this.mode = mode;
     }
 
     public ThresholdFilterOption(double thresholdValue, int mode) {
+        super(new HashMap<>());
+        super.getParameterNameAndType().put("MinThreshold", int.class);
+        super.getParameterNameAndType().put("MaxThreshold", int.class);
+        super.getParameterNameAndType().put("Mode", int.class);
+        
         this.mode = mode;
 
         if (this.mode == OVER) {

@@ -28,7 +28,10 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -40,15 +43,15 @@ public class FilterDummyUtil {
 
     public FilterDummyUtil() {
         filterAndOptions = new ArrayList<>();
-        
+
         //Combine Filter contains Filter list as parameter
         filterAndOptions.add(new FilterAndOption(new AndFilterOption(null), new AndFilter(new AndFilterOption(null))));
         filterAndOptions.add(new FilterAndOption(new OrFilterOption(null), new OrFilter(new OrFilterOption(null))));
-        
+
         //normal Filter
         filterAndOptions.add(new FilterAndOption(new DateTimePointFilterOption(new Date(), 0), new DateTimePointFilter(new DateTimePointFilterOption(new Date(), 0))));
-        filterAndOptions.add(new FilterAndOption(new DateTimeSpanFilterOption(new Date(),new Date()), new DateTimeSpanFilter(new DateTimeSpanFilterOption(new Date(),new Date()))));
-        filterAndOptions.add(new FilterAndOption(new ThresholdFilterOption(0,0), new ThresholdFilter(new ThresholdFilterOption(0,0))));
+        filterAndOptions.add(new FilterAndOption(new DateTimeSpanFilterOption(new Date(), new Date()), new DateTimeSpanFilter(new DateTimeSpanFilterOption(new Date(), new Date()))));
+        filterAndOptions.add(new FilterAndOption(new ThresholdFilterOption(0, 0), new ThresholdFilter(new ThresholdFilterOption(0, 0))));
         filterAndOptions.add(new FilterAndOption(new TimePointFilterOption(LocalTime.now(), 0), new TimePointFilter(new TimePointFilterOption(LocalTime.now(), 0))));
         filterAndOptions.add(new FilterAndOption(new TimeSpanFilterOption(LocalTime.now(), LocalTime.now()), new TimeSpanFilter(new TimeSpanFilterOption(LocalTime.now(), LocalTime.now()))));
         filterAndOptions.add(new FilterAndOption(new TypeGroupFilterOption(null), new TypeGroupFilter(new TypeGroupFilterOption(null))));
@@ -57,40 +60,36 @@ public class FilterDummyUtil {
 
     public List<String> getAllNotCombineFilters() {
         List<String> result = new ArrayList<>();
-        
+
         for (FilterAndOption filterAndOption : filterAndOptions) {
-            if(!filterAndOption.isCombine())
+            if (!filterAndOption.isCombine()) {
                 result.add(filterAndOption.getName());
+            }
         }
-        
 
         return result;
     }
 
     public List getCombineFilter() {
         List<String> result = new ArrayList<>();
-        
+
         for (FilterAndOption filterAndOption : filterAndOptions) {
-            if(filterAndOption.isCombine())
+            if (filterAndOption.isCombine()) {
                 result.add(filterAndOption.getName());
+            }
         }
 
         return result;
     }
 
-    public Class[] getParametersFromName(String name) {
-        Class[] result = new Class[0];
-        
+    public Map<String, Class> getParametersFromName(String name) {
+        Map<String, Class> result = new HashMap<>();
+
         for (FilterAndOption filterAndOption : filterAndOptions) {
-            if(filterAndOption.getName().equals(name))
-            {
-                result = filterAndOption.getParameterTypes();
-                
-            }
-                
+            if (filterAndOption.getName().equals(name))
+                result = filterAndOption.getParameterAndType();            
         }
         
         return result;
     }
 }
-

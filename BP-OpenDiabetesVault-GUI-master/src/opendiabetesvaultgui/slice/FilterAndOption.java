@@ -9,6 +9,7 @@ import de.opendiabetes.vault.processing.filter.Filter;
 import de.opendiabetes.vault.processing.filter.options.FilterOption;
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -17,29 +18,28 @@ import java.util.Map;
  * @author Daniel
  */
 public class FilterAndOption {
-    
+
     private String filterClassName;
     private String filterOptionClassName;
     private boolean isCombine;
     private final FilterOption option;
     private final Filter filter;
-    private Class[] parameterTypes;
+    private Map<String, Class> parameterAndType;    
 
-    public FilterAndOption(FilterOption option, Filter filter) {        
+    public FilterAndOption(FilterOption option, Filter filter) {
         this.option = option;
         this.filter = filter;
-        
+
         initializeParameters();
     }
-    
+
     public String getName() {
         return filterClassName;
     }
-    
+
     public boolean isCombine() {
         return isCombine;
     }
-    
 
     public String getFilterOptionClassName() {
         return filterOptionClassName;
@@ -52,29 +52,32 @@ public class FilterAndOption {
     public Filter getFilter() {
         return filter;
     }
+    
+    public Map<String, Class> getParameterAndType() {
+        return parameterAndType;
+    }
 
-    public Class[] getParameterTypes() {
-        return parameterTypes;
+    public void setParameterAndType(Map<String, Class> parameterAndType) {
+        this.parameterAndType = parameterAndType;
     }
 
     private void initializeParameters() {
         filterClassName = filter.getClass().getSimpleName();
         filterOptionClassName = option.getClass().getSimpleName();
-        
+        parameterAndType = option.getParameterNameAndType();
+
         Constructor<?>[] constructors = option.getClass().getConstructors();
-        
-        if(constructors.length > 0)
-        {
-            Constructor constructor= constructors[0];
-            parameterTypes = constructor.getParameterTypes();
+
+        Iterator it = parameterAndType.entrySet().iterator();
+
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry) it.next();
             
-            for (Class clazz : parameterTypes) {
-                if(clazz.getSimpleName().contains("List"))
-                   isCombine = true; 
+            if (((Class) pair.getValue()).getSimpleName().contains("List")) {
+                isCombine = true;
             }
+            //it.remove();
         }
     }
-    
-    
-    
+
 }

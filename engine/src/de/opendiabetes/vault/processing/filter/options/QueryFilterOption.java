@@ -16,9 +16,11 @@
  */
 package de.opendiabetes.vault.processing.filter.options;
 
+import de.opendiabetes.vault.container.VaultEntryTypeGroup;
 import de.opendiabetes.vault.processing.filter.Filter;
 import de.opendiabetes.vault.processing.filter.NoneFilter;
 import de.opendiabetes.vault.processing.filter.QueryFilter;
+import java.util.HashMap;
 
 /**
  *
@@ -44,6 +46,12 @@ public class QueryFilterOption extends FilterOption {
      * @param maxSize maximum size of the result. use "DONT_CARE" for don't care
      */
     public QueryFilterOption(Filter mainFilter, Filter innerFilter, int minSize, int maxSize) {
+        super(new HashMap<>());
+        super.getParameterNameAndType().put("MainFilter", Filter.class);
+        super.getParameterNameAndType().put("InnerFilter", Filter.class);
+        super.getParameterNameAndType().put("minSize", int.class);
+        super.getParameterNameAndType().put("maxSize", int.class);        
+        
         this.mainFilter = mainFilter;
         this.innerFilter = innerFilter;
         this.minSize = minSize;

@@ -16,10 +16,27 @@
  */
 package de.opendiabetes.vault.processing.filter.options;
 
+import java.util.Map;
+
 /**
  *
  * @author tiweGH
  */
 public abstract class FilterOption {
+    
+private Map<String, Class> parameterNameAndType;
+
+    public FilterOption(Map<String, Class> parameterNameAndClass) {
+        this.parameterNameAndType = parameterNameAndClass;
+    }    
+    
+    public Map<String, Class> getParameterNameAndType() {
+        return parameterNameAndType;
+    }
+
+    public void setParameterNameAndType(Map<String, Class> parameterNameAndClass) {
+        this.parameterNameAndType = parameterNameAndClass;
+    }
+    
     
 }

@@ -17,6 +17,8 @@
 package de.opendiabetes.vault.processing.filter.options;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  *
@@ -29,6 +31,10 @@ public class DateTimePointFilterOption extends FilterOption {
     private long marginAfterInMinutes;
 
     public DateTimePointFilterOption(Date dateTimePoint, int marginInMinutes) {
+        super(new HashMap<>());
+        super.getParameterNameAndType().put("DateTimePoint", Date.class);
+        super.getParameterNameAndType().put("MarginInMinutes", int.class);
+        
         this.dateTimePoint = dateTimePoint;
         this.marginBeforeInMinutes = marginInMinutes;
         this.marginAfterInMinutes = marginInMinutes;
@@ -45,6 +51,11 @@ public class DateTimePointFilterOption extends FilterOption {
      * @param marginAfterInMinutes
      */
     public DateTimePointFilterOption(Date dateTimePoint, int marginBeforeInMinutes, int marginAfterInMinutes) {
+        super(new HashMap<>());
+        super.getParameterNameAndType().put("DateTimePoint", Date.class);
+        super.getParameterNameAndType().put("MarginBeforeInMinutes", int.class);
+        super.getParameterNameAndType().put("MarginAfterInMinutes", int.class);
+        
         this.dateTimePoint = dateTimePoint;
         this.marginBeforeInMinutes = marginBeforeInMinutes;
         this.marginAfterInMinutes = marginAfterInMinutes;
