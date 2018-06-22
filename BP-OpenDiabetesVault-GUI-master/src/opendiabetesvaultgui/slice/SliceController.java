@@ -5,10 +5,13 @@
  */
 package opendiabetesvaultgui.slice;
 
+import de.opendiabetes.vault.processing.filter.options.guibackend.FilterManagementUtil;
+import de.opendiabetes.vault.processing.filter.options.guibackend.FilterNode;
 import de.opendiabetes.vault.container.VaultEntry;
 import de.opendiabetes.vault.container.VaultEntryType;
 import de.opendiabetes.vault.container.VaultEntryTypeGroup;
 import de.opendiabetes.vault.data.VaultDao;
+import de.opendiabetes.vault.processing.filter.Filter;
 import de.opendiabetes.vault.processing.filter.FilterResult;
 import de.opendiabetes.vault.processing.filter.TypeGroupFilter;
 import de.opendiabetes.vault.processing.filter.VaultEntryTypeFilter;
@@ -133,40 +136,34 @@ public class SliceController extends FatherController implements Initializable {
     private List<VaultEntry> importedData;
 
     private VaultDao vaultDao;
-    private FilterDummyUtil filterDummyUtil;
+    private FilterManagementUtil filterManagementUtil;
 
     @FXML
     private void doFilter(ActionEvent event) {
-        Alert alert = new Alert(AlertType.INFORMATION);
-
-        String nodes = "";
+        
+        List<String> combineFilters = new ArrayList<>();
+        List <List<FilterNode>> allColumnsFilterNodes = new ArrayList();
         //Iterate Over all Columns
         for (FilterNode filterNode : firstColumnFilterNodes) {
-
-            nodes += "#" + firstColumnChoiceBox.getSelectionModel().getSelectedItem() + "#" + filterNode.getName();
-            if (filterNode.getParameterAndValues() != null) {
-                nodes += filterNode.getParameterAndValues();
-            }
+            allColumnsFilterNodes.add(firstColumnFilterNodes);            
+            combineFilters.add(firstColumnChoiceBox.getSelectionModel().getSelectedItem().toString());
         }
         for (FilterNode filterNode : secondColumnFilterNodes) {
-
-            nodes += "#" + secondColumnChoiceBox.getSelectionModel().getSelectedItem() + "#" + filterNode.getName();
-            if (filterNode.getParameterAndValues() != null) {
-                nodes += filterNode.getParameterAndValues();
-            }
+            allColumnsFilterNodes.add(secondColumnFilterNodes);                        
+            combineFilters.add(secondColumnChoiceBox.getSelectionModel().getSelectedItem().toString());
         }
         for (FilterNode filterNode : thirdColumnFilterNodes) {
-
-            nodes += "#" + thirdColumnChoiceBox.getSelectionModel().getSelectedItem() + "#" + filterNode.getName();
-            if (filterNode.getParameterAndValues() != null) {
-                nodes += filterNode.getParameterAndValues();
-            }
+            allColumnsFilterNodes.add(thirdColumnFilterNodes);            
+            combineFilters.add(thirdColumnChoiceBox.getSelectionModel().getSelectedItem().toString());
         }
-
-        alert.setContentText(nodes);
-        alert.show();
-
-        VaultEntry vaultEntry = new VaultEntry();
+        
+        List<Filter> filters = filterManagementUtil.combineFilters(combineFilters, allColumnsFilterNodes);
+        FilterResult filterResult = filterManagementUtil.sliceVaultEntries(filters, importedData);
+        
+        System.out.println(filterResult);
+        
+        
+        
     }
 
     @FXML
@@ -221,13 +218,13 @@ public class SliceController extends FatherController implements Initializable {
         vaultDao = VaultDao.getInstance();
         importedData = vaultDao.queryAllVaultEntries();
 
-        filterDummyUtil = new FilterDummyUtil();
+        filterManagementUtil = new FilterManagementUtil();
 
         //Grafik laden ggf. erstmal heutigen Tag
         populateChart();
 
         //ToDo ChocieBox füllen Mit registrierten Combine Filter
-        ObservableList itemsForChocieBox = FXCollections.observableArrayList(filterDummyUtil.getCombineFilter());
+        ObservableList itemsForChocieBox = FXCollections.observableArrayList(filterManagementUtil.getCombineFilter());
 
         firstColumnChoiceBox.setItems(itemsForChocieBox);
         firstColumnChoiceBox.getSelectionModel().selectFirst();
@@ -243,7 +240,7 @@ public class SliceController extends FatherController implements Initializable {
 
         //addItems to listview
         ObservableList<String> items = listviewfilterelements.getItems();
-        items.addAll(filterDummyUtil.getAllNotCombineFilters());
+        items.addAll(filterManagementUtil.getAllNotCombineFilters());
 
         //Dragevent for Listview
         listviewfilterelements.setOnDragDetected(new EventHandler<MouseEvent>() {
@@ -315,7 +312,7 @@ public class SliceController extends FatherController implements Initializable {
                     VBox tempInputPane = new VBox();
 
                     //Input für Values                    
-                    Map<String, Class> parameterClasses = filterDummyUtil.getParametersFromName(name);
+                    Map<String, Class> parameterClasses = filterManagementUtil.getParametersFromName(name);
                     Iterator iterator = parameterClasses.entrySet().iterator();
 
                     FilterNode tmpNode = new FilterNode(name, mousePositionX, mousePositionY);

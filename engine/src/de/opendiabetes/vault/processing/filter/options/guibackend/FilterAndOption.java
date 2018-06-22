@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package opendiabetesvaultgui.slice;
+package de.opendiabetes.vault.processing.filter.options.guibackend;
 
 import de.opendiabetes.vault.processing.filter.Filter;
 import de.opendiabetes.vault.processing.filter.options.FilterOption;
@@ -20,7 +20,7 @@ import java.util.Map;
 public class FilterAndOption {
 
     private String filterClassName;
-    private String filterOptionClassName;
+    private String filterOptionName;
     private boolean isCombine;
     private final FilterOption option;
     private final Filter filter;
@@ -41,8 +41,8 @@ public class FilterAndOption {
         return isCombine;
     }
 
-    public String getFilterOptionClassName() {
-        return filterOptionClassName;
+    public String getFilterOptionName() {
+        return filterOptionName;
     }
 
     public FilterOption getOption() {
@@ -63,7 +63,7 @@ public class FilterAndOption {
 
     private void initializeParameters() {
         filterClassName = filter.getClass().getSimpleName();
-        filterOptionClassName = option.getClass().getSimpleName();
+        filterOptionName = option.getClass().getSimpleName();
         parameterAndType = option.getParameterNameAndType();
 
         Constructor<?>[] constructors = option.getClass().getConstructors();
