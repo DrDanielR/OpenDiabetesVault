@@ -31,7 +31,7 @@ public class DateTimePointFilterOption extends FilterOption {
     private long marginAfterInMinutes;
 
     public DateTimePointFilterOption(Date dateTimePoint, int marginInMinutes) {
-        super(new HashMap<>());
+        super(new HashMap<>(), null);
         super.getParameterNameAndType().put("DateTimePoint", Date.class);
         super.getParameterNameAndType().put("MarginInMinutes", int.class);
         
@@ -51,7 +51,7 @@ public class DateTimePointFilterOption extends FilterOption {
      * @param marginAfterInMinutes
      */
     public DateTimePointFilterOption(Date dateTimePoint, int marginBeforeInMinutes, int marginAfterInMinutes) {
-        super(new HashMap<>());
+        super(new HashMap<>(), null);
         super.getParameterNameAndType().put("DateTimePoint", Date.class);
         super.getParameterNameAndType().put("MarginBeforeInMinutes", int.class);
         super.getParameterNameAndType().put("MarginAfterInMinutes", int.class);

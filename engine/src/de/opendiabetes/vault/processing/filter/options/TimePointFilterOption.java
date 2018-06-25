@@ -32,7 +32,7 @@ public class TimePointFilterOption extends FilterOption {
     private final int marginAfterInMinutes;
 
     public TimePointFilterOption(LocalTime timePoint, int marginInMinutes) {
-        super(new HashMap<>());
+        super(new HashMap<>(), null);
         super.getParameterNameAndType().put("LocalTime", LocalTime.class);
         super.getParameterNameAndType().put("MarginInMinutes", int.class);        
         
@@ -52,7 +52,7 @@ public class TimePointFilterOption extends FilterOption {
      * @param marginAfterInMinutes
      */
     public TimePointFilterOption(LocalTime timePoint, int marginBeforeInMinutes, int marginAfterInMinutes) {
-        super(new HashMap<>());
+        super(new HashMap<>(), null);
         super.getParameterNameAndType().put("LocalTime", LocalTime.class);
         super.getParameterNameAndType().put("MarginBeforeInMinutes", int.class);
         super.getParameterNameAndType().put("MarginAfterInMinutes", int.class);

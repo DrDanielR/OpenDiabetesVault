@@ -46,7 +46,7 @@ public class QueryFilterOption extends FilterOption {
      * @param maxSize maximum size of the result. use "DONT_CARE" for don't care
      */
     public QueryFilterOption(Filter mainFilter, Filter innerFilter, int minSize, int maxSize) {
-        super(new HashMap<>());
+        super(new HashMap<>(), null);
         super.getParameterNameAndType().put("MainFilter", Filter.class);
         super.getParameterNameAndType().put("InnerFilter", Filter.class);
         super.getParameterNameAndType().put("minSize", int.class);

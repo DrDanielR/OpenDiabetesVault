@@ -64,7 +64,7 @@ public class CombinationFilterOption extends FilterOption {
      * @param secondFilter Filter mask for the list of Filters in the filter
      */
     public CombinationFilterOption(DatasetMarker dataPointer, Filter firstFilter, Filter secondFilter) {
-        super(new HashMap<>());
+        super(new HashMap<>(), null);
         super.getParameterNameAndType().put("DataPointer", DatasetMarker.class);
         super.getParameterNameAndType().put("FirstFilter", Filter.class);
         super.getParameterNameAndType().put("SecondFilter", Filter.class);
@@ -81,7 +81,7 @@ public class CombinationFilterOption extends FilterOption {
      * @param secondFilter Filter mask for the list of Filters in the filter
      */
     public CombinationFilterOption(Filter firstFilter, Filter secondFilter) {
-        super(new HashMap<>());        
+        super(new HashMap<>(), null);        
         super.getParameterNameAndType().put("FirstFilter", Filter.class);
         super.getParameterNameAndType().put("SecondFilter", Filter.class);
         

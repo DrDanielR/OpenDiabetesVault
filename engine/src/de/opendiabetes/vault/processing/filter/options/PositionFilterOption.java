@@ -74,7 +74,7 @@ public class PositionFilterOption extends FilterOption {
      * <code>WEIGHTED_MIDDLE</code>, ignored otherwise
      */
     public PositionFilterOption(Filter filter, int filterMode, VaultEntryType type) {
-        super(new HashMap<>());
+        super(new HashMap<>(), null);
         super.getParameterNameAndType().put("Filter", Filter.class);
         super.getParameterNameAndType().put("FilterMode", int.class);
         super.getParameterNameAndType().put("Type", VaultEntryType.class);

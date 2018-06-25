@@ -56,7 +56,7 @@ public class TimeClusterFilterOption extends FilterOption {
      * @param clusterSpacing length of the gaps between each timespan in minutes
      */
     public TimeClusterFilterOption(List<Filter> filters, LocalTime startTime, long clusterTimeInMinutes, long clusterSpacing) {
-        super(new HashMap<>());
+        super(new HashMap<>(), null);
         super.getParameterNameAndType().put("Filters", List.class);
         super.getParameterNameAndType().put("StartTime", LocalTime.class);
         super.getParameterNameAndType().put("ClusterTimeInMillis", long.class);
@@ -85,7 +85,7 @@ public class TimeClusterFilterOption extends FilterOption {
      * @param clusterSpacing length of the gaps between each timespan in minutes
      */
     public TimeClusterFilterOption(Filter filter, LocalTime startTime, long clusterTimeInMinutes, long clusterSpacing) {
-        super(new HashMap<>());
+        super(new HashMap<>(), null);
         super.getParameterNameAndType().put("Filters", List.class);
         super.getParameterNameAndType().put("StartTime", LocalTime.class);
         super.getParameterNameAndType().put("ClusterTimeInMillis", long.class);

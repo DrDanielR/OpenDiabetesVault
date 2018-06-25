@@ -17,8 +17,12 @@
 package de.opendiabetes.vault.processing.filter.options;
 
 import de.opendiabetes.vault.container.VaultEntryTypeGroup;
+import static de.opendiabetes.vault.processing.filter.options.ThresholdFilterOption.BANDPASS;
+import static de.opendiabetes.vault.processing.filter.options.ThresholdFilterOption.OVER;
+import static de.opendiabetes.vault.processing.filter.options.ThresholdFilterOption.UNDER;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -34,15 +38,28 @@ public class TypeGroupFilterOption extends FilterOption {
      * @param vaultEntryTypeGroup
      */
     public TypeGroupFilterOption(VaultEntryTypeGroup vaultEntryTypeGroup) {
-        super(new HashMap<>());
-        super.getParameterNameAndType().put("VaultEntryTypeGroup", VaultEntryTypeGroup.class);
-        
+        super(new HashMap<>(), null);
+        super.setDropDownEntries(this.getDropDownEntries());
+
+        super.getParameterNameAndType().put("VaultEntryTypeGroup", Map.class);
+
         this.vaultEntryTypeGroup = vaultEntryTypeGroup;
 
     }
 
     public VaultEntryTypeGroup getVaultEntryTypeGroup() {
         return vaultEntryTypeGroup;
+    }
+
+    @Override
+    public Map<String, String> getDropDownEntries() {
+        Map<String, String> result = new HashMap<>();
+
+        for (VaultEntryTypeGroup value : VaultEntryTypeGroup.values()) {
+            result.put(value.name(), value.name());
+        }
+
+        return result;
     }
 
 }

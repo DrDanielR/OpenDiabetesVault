@@ -23,12 +23,23 @@ import java.util.Map;
  * @author tiweGH
  */
 public abstract class FilterOption {
-    
-private Map<String, Class> parameterNameAndType;
 
-    public FilterOption(Map<String, Class> parameterNameAndClass) {
+    private Map<String, Class> parameterNameAndType;
+    
+    private Map<String, String> dropDownEntriesAndValue;
+
+    public FilterOption(Map<String, Class> parameterNameAndClass, Map<String, String> dropDownEntriesAndValue) {
         this.parameterNameAndType = parameterNameAndClass;
-    }    
+        this.dropDownEntriesAndValue = dropDownEntriesAndValue;
+    }
+
+    public Map<String, String> getDropDownEntries() {
+        return dropDownEntriesAndValue;
+    }
+
+    public void setDropDownEntries(Map<String, String> dropDownEntriesAndValue) {
+        this.dropDownEntriesAndValue = dropDownEntriesAndValue;
+    }
     
     public Map<String, Class> getParameterNameAndType() {
         return parameterNameAndType;
@@ -37,6 +48,5 @@ private Map<String, Class> parameterNameAndType;
     public void setParameterNameAndType(Map<String, Class> parameterNameAndClass) {
         this.parameterNameAndType = parameterNameAndClass;
     }
-    
-    
+
 }

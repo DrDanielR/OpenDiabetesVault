@@ -19,6 +19,7 @@ package de.opendiabetes.vault.processing.filter.options;
 import de.opendiabetes.vault.processing.filter.ThresholdFilter;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -35,21 +36,27 @@ public class ThresholdFilterOption extends FilterOption {
     public static final int BANDPASS = ThresholdFilter.BANDPASS;
 
     public ThresholdFilterOption(double minThreshold, double maxThreshold, int mode) {
-        super(new HashMap<>());
+        super(new HashMap<>(), null);
+        super.setDropDownEntries(this.getDropDownEntries());
+                
         super.getParameterNameAndType().put("MinThreshold", int.class);
         super.getParameterNameAndType().put("MaxThreshold", int.class);
-        super.getParameterNameAndType().put("Mode", int.class);
+        super.getParameterNameAndType().put("Mode", Map.class);
         
         this.minThreshold = minThreshold;
         this.maxThreshold = maxThreshold;
         this.mode = mode;
+        
+        
     }
 
     public ThresholdFilterOption(double thresholdValue, int mode) {
-        super(new HashMap<>());
+        super(new HashMap<>(), null);
+        super.setDropDownEntries(this.getDropDownEntries());
+        
         super.getParameterNameAndType().put("MinThreshold", int.class);
         super.getParameterNameAndType().put("MaxThreshold", int.class);
-        super.getParameterNameAndType().put("Mode", int.class);
+        super.getParameterNameAndType().put("Mode", Map.class);
         
         this.mode = mode;
 
@@ -72,4 +79,15 @@ public class ThresholdFilterOption extends FilterOption {
         return mode;
     }
 
+    @Override
+    public Map<String, String> getDropDownEntries() {
+        Map<String, String> result = new HashMap<>();
+        
+        result.put("OVER", "" + OVER);
+        result.put("UNDER", "" + UNDER);
+        result.put("BANDPASS", "" + BANDPASS);
+        
+        
+        return result;
+    }
 }

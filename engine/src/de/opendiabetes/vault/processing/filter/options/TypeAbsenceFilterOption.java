@@ -43,7 +43,7 @@ public class TypeAbsenceFilterOption extends FilterOption {
      * @param vaultEntryTypeGroup
      */
     public TypeAbsenceFilterOption(VaultEntryTypeGroup vaultEntryTypeGroup, VaultEntryType vaultEntryType, long marginAfterTrigger) {
-        super(new HashMap<>());
+        super(new HashMap<>(), null);
         super.getParameterNameAndType().put("VaultEntryTypeGroup", VaultEntryTypeGroup.class);
         super.getParameterNameAndType().put("VaultEntryType", VaultEntryType.class);
         super.getParameterNameAndType().put("MarginAfterTrigger", long.class);
@@ -54,7 +54,7 @@ public class TypeAbsenceFilterOption extends FilterOption {
     }
 
     public TypeAbsenceFilterOption(VaultEntryTypeGroup vaultEntryTypeGroup, long marginAfterTrigger) {
-        super(new HashMap<>());
+        super(new HashMap<>(), null);
         super.getParameterNameAndType().put("VaultEntryTypeGroup", VaultEntryTypeGroup.class);        
         super.getParameterNameAndType().put("MarginAfterTrigger", long.class);
         

@@ -30,7 +30,7 @@ public class DateTimeSpanFilterOption extends FilterOption {
     private final Date endTime;
 
     public DateTimeSpanFilterOption(Date startTime, Date endTime) {
-        super(new HashMap<>());
+        super(new HashMap<>(), null);
         super.getParameterNameAndType().put("StartTime", Date.class);
         super.getParameterNameAndType().put("EndTime", Date.class);        
         

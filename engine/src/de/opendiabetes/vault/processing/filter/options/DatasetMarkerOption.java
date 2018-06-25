@@ -32,7 +32,7 @@ public class DatasetMarkerOption extends FilterOption {
     private final Filter secondFilter;
 
     public DatasetMarkerOption(DatasetMarker dataPointer, Filter firstFilter, Filter secondFilter) {
-        super(new HashMap<>());
+        super(new HashMap<>(), null);
         super.getParameterNameAndType().put("dataPointer", DatasetMarker.class);
         super.getParameterNameAndType().put("FirstFilter", Filter.class);
         super.getParameterNameAndType().put("SecondFilter", Filter.class);

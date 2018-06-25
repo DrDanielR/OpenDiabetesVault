@@ -17,8 +17,10 @@
 package de.opendiabetes.vault.processing.filter.options;
 
 import de.opendiabetes.vault.container.VaultEntryType;
+import de.opendiabetes.vault.container.VaultEntryTypeGroup;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -34,14 +36,27 @@ public class VaultEntryTypeFilterOption extends FilterOption {
      * @param vaultEntryType
      */
     public VaultEntryTypeFilterOption(VaultEntryType vaultEntryType) {
-        super(new HashMap<>());
-        super.getParameterNameAndType().put("VaultEntryType", VaultEntryType.class);
-        
+        super(new HashMap<>(), null);
+        super.setDropDownEntries(this.getDropDownEntries());
+
+        super.getParameterNameAndType().put("VaultEntryType", Map.class);
+
         this.vaultEntryType = vaultEntryType;
     }
 
     public VaultEntryType getVaultEntryType() {
         return vaultEntryType;
+    }
+
+    @Override
+    public Map<String, String> getDropDownEntries() {
+        Map<String, String> result = new HashMap<>();
+
+        for (VaultEntryType value : VaultEntryType.values()) {
+            result.put(value.name(), value.name());
+        }
+
+        return result;
     }
 
 }

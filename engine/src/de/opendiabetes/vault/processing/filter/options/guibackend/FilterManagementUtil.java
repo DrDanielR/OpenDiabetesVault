@@ -167,13 +167,13 @@ public class FilterManagementUtil {
         } else if (filterAndOption.getFilterOptionName().equals(ThresholdFilterOption.class.getSimpleName())) {
             result = new ThresholdFilter(new ThresholdFilterOption(Integer.parseInt(filterNode.getParameterAndValues().get("MinThreshold")), Integer.parseInt(filterNode.getParameterAndValues().get("MaxThreshold")), Integer.parseInt(filterNode.getParameterAndValues().get("Mode"))));
         } else if (filterAndOption.getFilterOptionName().equals(TimePointFilterOption.class.getSimpleName())) {
-            //result = new TimePointFilter(new TimePointFilterOption(new LocalTime(filterNode.getParameterAndValues().get("LocalTime")), Integer.parseInt(filterNode.getParameterAndValues().get("MarginInMinutes"))));
+            result = new TimePointFilter(new TimePointFilterOption(LocalTime.parse(filterNode.getParameterAndValues().get("LocalTime")), Integer.parseInt(filterNode.getParameterAndValues().get("MarginInMinutes"))));
         } else if (filterAndOption.getFilterOptionName().equals(TimeSpanFilterOption.class.getSimpleName())) {
-            //result = new TimeSpanFilter(new TimeSpanFilterOption(new LocalTime(filterNode.getParameterAndValues().get("StartTime")), new LocalTime(filterNode.getParameterAndValues().get("EndTime"))));
+            result = new TimeSpanFilter(new TimeSpanFilterOption(LocalTime.parse(filterNode.getParameterAndValues().get("StartTime")), LocalTime.parse(filterNode.getParameterAndValues().get("EndTime"))));
         } else if (filterAndOption.getFilterOptionName().equals(TypeGroupFilterOption.class.getSimpleName())) {
-            //result = new TypeGroupFilter(new TypeGroupFilterOption(new VaultEntryTypeGroup(filterNode.getParameterAndValues().get("VaultEntryTypeGroup"))));
+            result = new TypeGroupFilter(new TypeGroupFilterOption(VaultEntryTypeGroup.valueOf(filterNode.getParameterAndValues().get("VaultEntryTypeGroup"))));
         } else if (filterAndOption.getFilterOptionName().equals(VaultEntryTypeFilterOption.class.getSimpleName())) {
-            //result = new VaultEntryTypeFilter(new VaultEntryTypeFilterOption(filterNode.getParameterAndValues().get("VaultEntryType")));
+            result = new VaultEntryTypeFilter(new VaultEntryTypeFilterOption(VaultEntryType.valueOf(filterNode.getParameterAndValues().get("VaultEntryType"))));
             result = new VaultEntryTypeFilter(new VaultEntryTypeFilterOption(VaultEntryType.BASAL_MANUAL));
         }
 

@@ -39,7 +39,7 @@ public class CounterFilterOption extends FilterOption {
      * appearence)
      */
     public CounterFilterOption(Filter filter, int hitCounter, boolean onlyOneResult) {
-        super(new HashMap<>());
+        super(new HashMap<>(), null);
         super.getParameterNameAndType().put("Filter", Filter.class);
         super.getParameterNameAndType().put("HitCounter", int.class);
         super.getParameterNameAndType().put("OnlyResult", boolean.class);

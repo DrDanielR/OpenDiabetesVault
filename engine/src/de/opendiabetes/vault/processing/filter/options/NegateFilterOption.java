@@ -34,7 +34,7 @@ public class NegateFilterOption extends FilterOption {
      * @param filter Filter, which will be negated
      */
     public NegateFilterOption(Filter filter) {
-        super(new HashMap<>());
+        super(new HashMap<>(), null);
         super.getParameterNameAndType().put("Filter", Filter.class);
         
         this.filter = filter;

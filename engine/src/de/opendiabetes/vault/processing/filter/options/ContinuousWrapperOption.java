@@ -31,7 +31,7 @@ public class ContinuousWrapperOption extends FilterOption {
     protected int marginAfter;
 
     public ContinuousWrapperOption(List<VaultEntry> baseData, int marginBefore, int marginAfter) {
-        super(new HashMap<>());
+        super(new HashMap<>(), null);
         super.getParameterNameAndType().put("VaultEntries", List.class);
         super.getParameterNameAndType().put("MarginBefore", int.class);
         super.getParameterNameAndType().put("MarginAfter", int.class);        

@@ -37,7 +37,7 @@
                </children></Pane>
             <LineChart fx:id="filterchart" GridPane.columnSpan="2" GridPane.rowSpan="2">
               <xAxis>
-                <NumberAxis fx:id="filterChartXaxis" side="BOTTOM" />
+                <CategoryAxis fx:id="filterChartXaxis" side="BOTTOM" />
               </xAxis>
               <yAxis>
                 <NumberAxis fx:id="filterChartYaxis" side="LEFT" />

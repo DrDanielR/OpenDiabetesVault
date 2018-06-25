@@ -30,14 +30,14 @@ public class AndFilterOption extends FilterOption {
     private final List<Filter> filters;
 
     public AndFilterOption(List<Filter> filters) {
-        super(new HashMap<>());
+        super(new HashMap<>(), null);
         super.getParameterNameAndType().put("Filters", List.class);
         
         this.filters = filters;
     }
 
     public AndFilterOption(Filter firstFilter, Filter secondFilter) {
-        super(new HashMap<>());
+        super(new HashMap<>(), null);
         super.getParameterNameAndType().put("Filters", List.class);
         
         this.filters = new ArrayList<>();

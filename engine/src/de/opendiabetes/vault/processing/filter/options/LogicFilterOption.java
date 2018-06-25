@@ -36,7 +36,7 @@ public class LogicFilterOption extends FilterOption {
      * @param onlyOneResult; If there should be the first or all results.
      */
     public LogicFilterOption(List<Filter> filters, boolean onlyOneResult) {
-        super(new HashMap<>());
+        super(new HashMap<>(), null);
         super.getParameterNameAndType().put("Filters", List.class);
         super.getParameterNameAndType().put("OnlyResult", boolean.class);
         
