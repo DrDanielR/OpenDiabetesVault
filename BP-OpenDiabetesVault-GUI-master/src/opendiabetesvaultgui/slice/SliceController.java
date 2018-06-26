@@ -33,6 +33,7 @@ import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Orientation;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.chart.Axis;
@@ -98,9 +99,6 @@ public class SliceController extends FatherController implements Initializable {
     private ListView<String> listviewfilterelements;
 
     @FXML
-    private Pane filtercombinationfield;
-
-    @FXML
     private Button filterbutton;
 
     @FXML
@@ -113,31 +111,26 @@ public class SliceController extends FatherController implements Initializable {
     private NumberAxis filterChartYaxis;
 
     @FXML
-    private ChoiceBox firstColumnChoiceBox;
+    private ScrollPane filtercombinationfield;
 
     @FXML
-    private ChoiceBox secondColumnChoiceBox;
+    private HBox filterCombinationHbox;
 
-    @FXML
-    private ChoiceBox thirdColumnChoiceBox;
+    private List<VBox> filterColumnVBoxes = new ArrayList<>();
 
-    @FXML
-    private Separator firstColumnSeparator;
+    private List<ChoiceBox> filterColumnChoiceBoxes = new ArrayList<>();
 
-    @FXML
-    private Separator secondColumnSeparator;
+    private List<Separator> filterColumnSeparator = new ArrayList<>();
+
+    private ObservableList itemsForChocieBox;
 
     private double mousePositionX;
 
     private double mousePositionY;
 
-    private int filtercombinationfieldComponents;
-    
     private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("hh:mm dd.MM.yy");
 
-    private List<FilterNode> firstColumnFilterNodes = new ArrayList<>();
-    private List<FilterNode> secondColumnFilterNodes = new ArrayList<>();
-    private List<FilterNode> thirdColumnFilterNodes = new ArrayList<>();
+    private List<List<FilterNode>> columnFilterNodes = new ArrayList<>();
 
     private boolean combineMode = false;
 
@@ -151,51 +144,40 @@ public class SliceController extends FatherController implements Initializable {
 
         List<String> combineFilters = new ArrayList<>();
         List<List<FilterNode>> allColumnsFilterNodes = new ArrayList();
-        //Iterate Over all Columns
-        for (FilterNode filterNode : firstColumnFilterNodes) {
-            allColumnsFilterNodes.add(firstColumnFilterNodes);
-            combineFilters.add(firstColumnChoiceBox.getSelectionModel().getSelectedItem().toString());
-        }
-        for (FilterNode filterNode : secondColumnFilterNodes) {
-            allColumnsFilterNodes.add(secondColumnFilterNodes);
-            combineFilters.add(secondColumnChoiceBox.getSelectionModel().getSelectedItem().toString());
-        }
-        for (FilterNode filterNode : thirdColumnFilterNodes) {
-            allColumnsFilterNodes.add(thirdColumnFilterNodes);
-            combineFilters.add(thirdColumnChoiceBox.getSelectionModel().getSelectedItem().toString());
+
+        for (ChoiceBox choiceBox : filterColumnChoiceBoxes) {
+            combineFilters.add(choiceBox.getSelectionModel().getSelectedItem().toString());
         }
 
-        List<Filter> filters = filterManagementUtil.combineFilters(combineFilters, allColumnsFilterNodes);
+        List<Filter> filters = filterManagementUtil.combineFilters(combineFilters, columnFilterNodes);
         FilterResult filterResult = filterManagementUtil.sliceVaultEntries(filters, importedData);
 
-        
         //Gefilterte Daten anzeigen
-        System.out.println(filterResult); 
-        
-        XYChart.Series series = new XYChart.Series();        
+        System.out.println(filterResult);
+
+        XYChart.Series series = new XYChart.Series();
         XYChart.Data data;
-        
+
         filterchart.getData().removeAll(filterchart.getData());
-        
+
         for (VaultEntry vaultEntry : filterResult.filteredData) {
             data = new Data(simpleDateFormat.format(vaultEntry.getTimestamp()), vaultEntry.getValue());
             series.getData().add(data);
         }
 
         filterchart.getData().add(series);
-        
 
-    }   
+    }
 
     private void populateChart() {
         //Teststuff
         VaultEntryTypeFilter vaultEntryTypeFilter = new VaultEntryTypeFilter(new VaultEntryTypeFilterOption(VaultEntryType.EXERCISE_LOW));
 
-        XYChart.Series series = new XYChart.Series();        
+        XYChart.Series series = new XYChart.Series();
         XYChart.Data data;
 
         FilterResult filterResult = vaultEntryTypeFilter.filter(importedData);
-        
+
         for (VaultEntry vaultEntry : filterResult.filteredData) {
             data = new Data(simpleDateFormat.format(vaultEntry.getTimestamp()), vaultEntry.getValue());
             series.getData().add(data);
@@ -217,19 +199,9 @@ public class SliceController extends FatherController implements Initializable {
         populateChart();
 
         //ToDo ChocieBox füllen Mit registrierten Combine Filter
-        ObservableList itemsForChocieBox = FXCollections.observableArrayList(filterManagementUtil.getCombineFilter());
+        itemsForChocieBox = FXCollections.observableArrayList(filterManagementUtil.getCombineFilter());
 
-        firstColumnChoiceBox.setItems(itemsForChocieBox);
-        firstColumnChoiceBox.getSelectionModel().selectFirst();
-
-        secondColumnChoiceBox.setItems(itemsForChocieBox);
-        secondColumnChoiceBox.getSelectionModel().selectFirst();
-
-        thirdColumnChoiceBox.setItems(itemsForChocieBox);
-        thirdColumnChoiceBox.getSelectionModel().selectFirst();
-
-        //Backup für undo
-        filtercombinationfieldComponents = filtercombinationfield.getChildren().size();
+        addNewChoiceBoxAndSeperator();
 
         //addItems to listview
         ObservableList<String> items = listviewfilterelements.getItems();
@@ -308,7 +280,7 @@ public class SliceController extends FatherController implements Initializable {
                     Map<String, Class> parameterClasses = filterManagementUtil.getParametersFromName(name);
                     Iterator iterator = parameterClasses.entrySet().iterator();
 
-                    FilterNode tmpNode = new FilterNode(name, mousePositionX, mousePositionY);
+                    FilterNode tmpNode = new FilterNode(name, 0);
                     Label label = new Label();
                     label.setText(name);
 
@@ -353,15 +325,14 @@ public class SliceController extends FatherController implements Initializable {
                                     tmpNode.addParam(simpleName, "" + checkBox.isSelected());
                                 }
                             });
-                        }                        
-                        else if (typeClass.getSimpleName().equals("Map")) {
+                        } else if (typeClass.getSimpleName().equals("Map")) {
                             ChoiceBox choiceBox = new ChoiceBox();
                             choiceBox.getSelectionModel().selectFirst();
                             final FilterOption filterOption = filterManagementUtil.getFilterAndOptionFromName(name).getOption();
-                            
+
                             ObservableList itemsForTmpChocieBox = FXCollections.observableArrayList(filterOption.getDropDownEntries().keySet());
                             choiceBox.setItems(itemsForTmpChocieBox);
-                            
+
                             tmpHBox.getChildren().add(choiceBox);
 
                             //ActionEvent for params
@@ -371,8 +342,7 @@ public class SliceController extends FatherController implements Initializable {
                                     tmpNode.addParam(simpleName, filterOption.getDropDownEntries().get(choiceBox.getSelectionModel().getSelectedItem()));
                                 }
                             });
-                        } 
-                        else {
+                        } else {
                             TextField tmpTextField = new TextField();
                             tmpTextField.setMaxWidth(100);
                             tmpTextField.setPromptText("Value");
@@ -381,8 +351,7 @@ public class SliceController extends FatherController implements Initializable {
                                 tmpTextField.setPromptText("00:00");
                                 TextFormatter textFormatter = new TextFormatter(new LocalTimeStringConverter());
                                 tmpTextField.setTextFormatter(textFormatter);
-                            }
-                            else if (typeClass.getSimpleName().equals("int") || typeClass.getSimpleName().equals("long")) {
+                            } else if (typeClass.getSimpleName().equals("int") || typeClass.getSimpleName().equals("long")) {
                                 tmpTextField.setPromptText("0000");
                                 TextFormatter textFormatter = new TextFormatter(new NumberStringConverter());
                                 tmpTextField.setTextFormatter(textFormatter);
@@ -393,20 +362,19 @@ public class SliceController extends FatherController implements Initializable {
                             //ActionEvent for params
                             tmpTextField.setOnKeyPressed(new EventHandler<KeyEvent>() {
                                 @Override
-                                public void handle(KeyEvent event) {                                                                        
-                                    tmpNode.addParam(simpleName, tmpTextField.getText()+ event.getText());                                    
+                                public void handle(KeyEvent event) {
+                                    tmpNode.addParam(simpleName, tmpTextField.getText() + event.getText());
                                 }
                             });
                         }
 
                         tempInputPane.getChildren().add(tmpHBox);
                     }
-
-                    tempInputPane.setLayoutX(tmpNode.getPositionX());
-                    tempInputPane.setLayoutY(tmpNode.getPositionY());
-
-                    filtercombinationfield.getChildren().add(tempInputPane);
-
+                            
+                    if(tmpNode.getColumnNumber()+1 == columnFilterNodes.size())
+                        addNewChoiceBoxAndSeperator();
+                    
+                    filterColumnVBoxes.get(tmpNode.getColumnNumber()).getChildren().add(tempInputPane);
                     success = true;
                 }
                 event.setDropCompleted(success);
@@ -414,25 +382,47 @@ public class SliceController extends FatherController implements Initializable {
                 event.consume();
             }
 
-            private void calculateLabelPosition(FilterNode tmpNode) {
+            private void calculateLabelPosition(FilterNode tmpNode) {                
 
-                int paddingleft = 250;
-                int paddingright = 10;
-
-                tmpNode.setPositionY(mousePositionY);
-
-                if (mousePositionX < firstColumnSeparator.getLayoutX()) {
-                    tmpNode.setPositionX(firstColumnSeparator.getLayoutX() - paddingleft);
-                    firstColumnFilterNodes.add(tmpNode);
-                } else if (mousePositionX < secondColumnSeparator.getLayoutX()) {
-                    tmpNode.setPositionX(secondColumnSeparator.getLayoutX() - paddingleft);
-                    secondColumnFilterNodes.add(tmpNode);
-                } else {
-                    tmpNode.setPositionX(secondColumnSeparator.getLayoutX() + paddingright);
-                    thirdColumnFilterNodes.add(tmpNode);
+                for (Separator separator : filterColumnSeparator) {
+                    if (mousePositionX > separator.getLayoutX()) {
+                        int index = filterColumnSeparator.indexOf(separator);
+                        tmpNode.setColumnNumber(index);
+                        
+                        if(columnFilterNodes.get(index) == null)
+                            columnFilterNodes.add(new ArrayList<>());
+                        
+                        columnFilterNodes.get(index).add(tmpNode);
+                        
+                    }
                 }
 
             }
         });
+    }
+
+    private void addNewChoiceBoxAndSeperator() {
+        
+        //Separator hinzufügen
+        Separator separator = new Separator(Orientation.HORIZONTAL);
+        filterColumnSeparator.add(separator);
+        filterCombinationHbox.getChildren().add(separator);
+
+        //Vbox für Filter und ChoiceBox
+        VBox vBox = new VBox();
+
+        ChoiceBox choiceBox = new ChoiceBox(itemsForChocieBox);
+        choiceBox.getSelectionModel().selectFirst();
+        filterColumnChoiceBoxes.add(choiceBox);
+
+        vBox.getChildren().add(choiceBox);
+        filterColumnVBoxes.add(vBox);
+
+        filterCombinationHbox.getChildren().add(vBox);
+        
+        
+        //Für FilterNode vorbereitung
+        columnFilterNodes.add(new ArrayList<>());
+
     }
 }

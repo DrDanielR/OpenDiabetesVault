@@ -15,19 +15,15 @@ import java.util.Map;
  * @author Daniel
  */
 public class FilterNode {
-    
-    private String name;
-    
-    private double positionX;
-       
-    private double positionY;
-    
-    private Map<String, String> parameterAndValue;
 
-    public FilterNode(String name, double positionX, double positionY) {
+    private String name;
+
+    private Map<String, String> parameterAndValue;
+    private int columnNumber;
+
+    public FilterNode(String name, int columnNumber) {
         this.name = name;
-        this.positionX = positionX;
-        this.positionY = positionY;     
+        this.columnNumber = columnNumber;
         parameterAndValue = new HashMap<>();
     }
 
@@ -38,30 +34,29 @@ public class FilterNode {
     public void setName(String name) {
         this.name = name;
     }
-    
-    public double getPositionX() {
-        return positionX;
-    }
 
-    public void setPositionX(double positionX) {
-        this.positionX = positionX;
-    }
-
-    public double getPositionY() {
-        return positionY;
-    }
-
-    public void setPositionY(double positionY) {
-        this.positionY = positionY;
-    }    
-    
-    public void addParam(String type, String value){
+    public void addParam(String type, String value) {
         parameterAndValue.put(type, value);
     }
-    
-    public Map<String, String> getParameterAndValues()
-    {
+
+    public Map<String, String> getParameterAndValues() {
         return parameterAndValue;
     }
-    
+
+    public Map<String, String> getParameterAndValue() {
+        return parameterAndValue;
+    }
+
+    public void setParameterAndValue(Map<String, String> parameterAndValue) {
+        this.parameterAndValue = parameterAndValue;
+    }
+
+    public int getColumnNumber() {
+        return columnNumber;
+    }
+
+    public void setColumnNumber(int columnNumber) {
+        this.columnNumber = columnNumber;
+    }
+
 }

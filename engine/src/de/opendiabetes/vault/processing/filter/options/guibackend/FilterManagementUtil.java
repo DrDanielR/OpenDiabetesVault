@@ -130,7 +130,7 @@ public class FilterManagementUtil {
                 filtersForCombine.add(tempFilter);
             }
 
-            Filter tempFilter = getFilterFromFilterNode(new FilterNode(combineFilter, 0, 0), filtersForCombine);
+            Filter tempFilter = getFilterFromFilterNode(new FilterNode(combineFilter, 0), filtersForCombine);
             result.add(tempFilter);
 
             i++;
