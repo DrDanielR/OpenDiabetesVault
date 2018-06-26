@@ -125,13 +125,15 @@ public class FilterManagementUtil {
             List<FilterNode> filterNodes = allColumnsFilterNodes.get(i);
             List<Filter> filtersForCombine = new ArrayList<>();
 
-            for (FilterNode filterNode : filterNodes) {
-                Filter tempFilter = getFilterFromFilterNode(filterNode, null);
-                filtersForCombine.add(tempFilter);
-            }
+            if (filterNodes.size() > 0) {
+                for (FilterNode filterNode : filterNodes) {
+                    Filter tempFilter = getFilterFromFilterNode(filterNode, null);
+                    filtersForCombine.add(tempFilter);
+                }
 
-            Filter tempFilter = getFilterFromFilterNode(new FilterNode(combineFilter, 0), filtersForCombine);
-            result.add(tempFilter);
+                Filter tempFilter = getFilterFromFilterNode(new FilterNode(combineFilter, 0), filtersForCombine);
+                result.add(tempFilter);
+            }
 
             i++;
         }
@@ -156,9 +158,9 @@ public class FilterManagementUtil {
 
         //CombineFilter
         if (filterAndOption.getFilterOptionName().equals(AndFilterOption.class.getSimpleName())) {
-            result = new OrFilter(new OrFilterOption(filtersForCombine));
-        } else if (filterAndOption.getFilterOptionName().equals(OrFilterOption.class.getSimpleName())) {
             result = new AndFilter(new AndFilterOption(filtersForCombine));
+        } else if (filterAndOption.getFilterOptionName().equals(OrFilterOption.class.getSimpleName())) {
+            result = new OrFilter(new OrFilterOption(filtersForCombine));
         }//NonCombineFilter
         else if (filterAndOption.getFilterOptionName().equals(DateTimePointFilterOption.class.getSimpleName())) {
             result = new DateTimePointFilter(new DateTimePointFilterOption(new Date(filterNode.getParameterAndValues().get("DateTimePoint")), Integer.parseInt(filterNode.getParameterAndValues().get("MarginInMinutes").trim())));
@@ -173,8 +175,7 @@ public class FilterManagementUtil {
         } else if (filterAndOption.getFilterOptionName().equals(TypeGroupFilterOption.class.getSimpleName())) {
             result = new TypeGroupFilter(new TypeGroupFilterOption(VaultEntryTypeGroup.valueOf(filterNode.getParameterAndValues().get("VaultEntryTypeGroup"))));
         } else if (filterAndOption.getFilterOptionName().equals(VaultEntryTypeFilterOption.class.getSimpleName())) {
-            result = new VaultEntryTypeFilter(new VaultEntryTypeFilterOption(VaultEntryType.valueOf(filterNode.getParameterAndValues().get("VaultEntryType"))));
-            result = new VaultEntryTypeFilter(new VaultEntryTypeFilterOption(VaultEntryType.BASAL_MANUAL));
+            result = new VaultEntryTypeFilter(new VaultEntryTypeFilterOption(VaultEntryType.valueOf(filterNode.getParameterAndValues().get("VaultEntryType"))));            
         }
 
         return result;

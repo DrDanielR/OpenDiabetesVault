@@ -143,7 +143,6 @@ public class SliceController extends FatherController implements Initializable {
     private void doFilter(ActionEvent event) {
 
         List<String> combineFilters = new ArrayList<>();
-        List<List<FilterNode>> allColumnsFilterNodes = new ArrayList();
 
         for (ChoiceBox choiceBox : filterColumnChoiceBoxes) {
             combineFilters.add(choiceBox.getSelectionModel().getSelectedItem().toString());
