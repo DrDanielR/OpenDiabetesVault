@@ -18,6 +18,13 @@ import de.opendiabetes.vault.processing.filter.VaultEntryTypeFilter;
 import de.opendiabetes.vault.processing.filter.options.FilterOption;
 import de.opendiabetes.vault.processing.filter.options.TypeGroupFilterOption;
 import de.opendiabetes.vault.processing.filter.options.VaultEntryTypeFilterOption;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -26,6 +33,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -80,6 +89,7 @@ import javafx.scene.shape.Line;
 import javafx.scene.shape.LineTo;
 import javafx.scene.shape.MoveTo;
 import javafx.scene.shape.Path;
+import javafx.stage.FileChooser;
 import javafx.util.converter.LocalTimeStringConverter;
 import javafx.util.converter.NumberStringConverter;
 import jdk.nashorn.internal.objects.NativeArray;
@@ -140,15 +150,41 @@ public class SliceController extends FatherController implements Initializable {
     private FilterManagementUtil filterManagementUtil;
 
     @FXML
+    private void doSaveFilterCombination(ActionEvent event)
+    {
+        FileChooser fileChooser = new FileChooser();
+        
+        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt");
+        fileChooser.getExtensionFilters().add(extFilter);
+        
+        fileChooser.setTitle("Open Resource File");
+        File file = fileChooser.showSaveDialog(MAIN_STAGE);
+        
+        //ToDo: Filter speichern
+        
+        
+    }
+    
+    @FXML
+    private void doLoadFilterCombination(ActionEvent event)
+    {
+        FileChooser fileChooser = new FileChooser();
+        
+        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt");
+        fileChooser.getExtensionFilters().add(extFilter);
+        
+        fileChooser.setTitle("Open Resource File");
+        File file = fileChooser.showOpenDialog(MAIN_STAGE);
+        
+        //ToDo: Filter laden
+    }
+    
+    
+    
+    @FXML
     private void doFilter(ActionEvent event) {
 
-        List<String> combineFilters = new ArrayList<>();
-
-        for (ChoiceBox choiceBox : filterColumnChoiceBoxes) {
-            combineFilters.add(choiceBox.getSelectionModel().getSelectedItem().toString());
-        }
-
-        List<Filter> filters = filterManagementUtil.combineFilters(combineFilters, columnFilterNodes);
+        List<Filter> filters = getFiltersFromCurrentState();
         FilterResult filterResult = filterManagementUtil.sliceVaultEntries(filters, importedData);
 
         //Gefilterte Daten anzeigen
@@ -166,6 +202,15 @@ public class SliceController extends FatherController implements Initializable {
 
         filterchart.getData().add(series);
 
+    }
+
+    private List<Filter> getFiltersFromCurrentState() {
+        List<String> combineFilters = new ArrayList<>();
+        for (ChoiceBox choiceBox : filterColumnChoiceBoxes) {
+            combineFilters.add(choiceBox.getSelectionModel().getSelectedItem().toString());
+        }
+        List<Filter> filters = filterManagementUtil.combineFilters(combineFilters, columnFilterNodes);
+        return filters;
     }
 
     private void populateChart() {
