@@ -161,13 +161,13 @@ public class FilterManagementUtil {
             result = new AndFilter(new AndFilterOption(filtersForCombine));
         }//NonCombineFilter
         else if (filterAndOption.getFilterOptionName().equals(DateTimePointFilterOption.class.getSimpleName())) {
-            result = new DateTimePointFilter(new DateTimePointFilterOption(new Date(filterNode.getParameterAndValues().get("DateTimePoint")), Integer.parseInt(filterNode.getParameterAndValues().get("MarginInMinutes"))));
+            result = new DateTimePointFilter(new DateTimePointFilterOption(new Date(filterNode.getParameterAndValues().get("DateTimePoint")), Integer.parseInt(filterNode.getParameterAndValues().get("MarginInMinutes").trim())));
         } else if (filterAndOption.getFilterOptionName().equals(DateTimeSpanFilterOption.class.getSimpleName())) {
             result = new DateTimeSpanFilter(new DateTimeSpanFilterOption(new Date(filterNode.getParameterAndValues().get("StartTime")), new Date(filterNode.getParameterAndValues().get("EndTime"))));
         } else if (filterAndOption.getFilterOptionName().equals(ThresholdFilterOption.class.getSimpleName())) {
-            result = new ThresholdFilter(new ThresholdFilterOption(Integer.parseInt(filterNode.getParameterAndValues().get("MinThreshold")), Integer.parseInt(filterNode.getParameterAndValues().get("MaxThreshold")), Integer.parseInt(filterNode.getParameterAndValues().get("Mode"))));
+            result = new ThresholdFilter(new ThresholdFilterOption(Integer.parseInt(filterNode.getParameterAndValues().get("MinThreshold").trim()), Integer.parseInt(filterNode.getParameterAndValues().get("MaxThreshold").trim()), Integer.parseInt(filterNode.getParameterAndValues().get("Mode").trim())));
         } else if (filterAndOption.getFilterOptionName().equals(TimePointFilterOption.class.getSimpleName())) {
-            result = new TimePointFilter(new TimePointFilterOption(LocalTime.parse(filterNode.getParameterAndValues().get("LocalTime")), Integer.parseInt(filterNode.getParameterAndValues().get("MarginInMinutes"))));
+            result = new TimePointFilter(new TimePointFilterOption(LocalTime.parse(filterNode.getParameterAndValues().get("LocalTime")), Integer.parseInt(filterNode.getParameterAndValues().get("MarginInMinutes").trim())));
         } else if (filterAndOption.getFilterOptionName().equals(TimeSpanFilterOption.class.getSimpleName())) {
             result = new TimeSpanFilter(new TimeSpanFilterOption(LocalTime.parse(filterNode.getParameterAndValues().get("StartTime")), LocalTime.parse(filterNode.getParameterAndValues().get("EndTime"))));
         } else if (filterAndOption.getFilterOptionName().equals(TypeGroupFilterOption.class.getSimpleName())) {

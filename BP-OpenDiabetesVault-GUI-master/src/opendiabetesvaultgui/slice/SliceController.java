@@ -185,32 +185,7 @@ public class SliceController extends FatherController implements Initializable {
         filterchart.getData().add(series);
         
 
-    }
-
-    @FXML
-    private void undoFiltercombinationfield(ActionEvent event) {
-
-        if (filtercombinationfield.getChildren().size() > filtercombinationfieldComponents) {
-            if (filtercombinationfield.getChildren().size() == filtercombinationfieldComponents + 1) {
-                filtercombinationfield.getChildren().remove(filtercombinationfield.getChildren().size() - 1);
-            } else {
-                //remove line and Node
-                filtercombinationfield.getChildren().remove(filtercombinationfield.getChildren().size() - 1);
-                filtercombinationfield.getChildren().remove(filtercombinationfield.getChildren().size() - 1);
-            }
-
-            /**
-             * if (filterNodes.get(filterNodes.size() -
-             * 1).getFilterNodes().size() == 0) {
-             * filterNodes.remove(filterNodes.size() - 1); } else {
-             * filterNodes.get(filterNodes.size() -
-             * 1).getFilterNodes().remove(filterNodes.get(filterNodes.size() -
-             * 1).getFilterNodes().size() - 1); }
-             *
-             */
-        }
-
-    }
+    }   
 
     private void populateChart() {
         //Teststuff
@@ -418,8 +393,8 @@ public class SliceController extends FatherController implements Initializable {
                             //ActionEvent for params
                             tmpTextField.setOnKeyPressed(new EventHandler<KeyEvent>() {
                                 @Override
-                                public void handle(KeyEvent event) {
-                                    tmpNode.addParam(simpleName, tmpTextField.getText());
+                                public void handle(KeyEvent event) {                                                                        
+                                    tmpNode.addParam(simpleName, tmpTextField.getText()+ event.getText());                                    
                                 }
                             });
                         }
