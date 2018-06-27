@@ -18,13 +18,13 @@ public class FilterNode {
 
     private String name;
 
-    private Map<String, String> parameterAndValue;
+    private Map<String, String> parameterAndValues;
     private int columnNumber;
 
     public FilterNode(String name, int columnNumber) {
         this.name = name;
         this.columnNumber = columnNumber;
-        parameterAndValue = new HashMap<>();
+        parameterAndValues = new HashMap<>();
     }
 
     public String getName() {
@@ -36,19 +36,15 @@ public class FilterNode {
     }
 
     public void addParam(String type, String value) {
-        parameterAndValue.put(type, value);
+        parameterAndValues.put(type, value);
     }
 
     public Map<String, String> getParameterAndValues() {
-        return parameterAndValue;
-    }
-
-    public Map<String, String> getParameterAndValue() {
-        return parameterAndValue;
+        return parameterAndValues;
     }
 
     public void setParameterAndValue(Map<String, String> parameterAndValue) {
-        this.parameterAndValue = parameterAndValue;
+        this.parameterAndValues = parameterAndValue;
     }
 
     public int getColumnNumber() {

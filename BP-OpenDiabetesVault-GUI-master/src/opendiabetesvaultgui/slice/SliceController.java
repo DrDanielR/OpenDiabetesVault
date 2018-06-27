@@ -9,53 +9,37 @@ import de.opendiabetes.vault.processing.filter.options.guibackend.FilterManageme
 import de.opendiabetes.vault.processing.filter.options.guibackend.FilterNode;
 import de.opendiabetes.vault.container.VaultEntry;
 import de.opendiabetes.vault.container.VaultEntryType;
-import de.opendiabetes.vault.container.VaultEntryTypeGroup;
 import de.opendiabetes.vault.data.VaultDao;
 import de.opendiabetes.vault.processing.filter.Filter;
 import de.opendiabetes.vault.processing.filter.FilterResult;
-import de.opendiabetes.vault.processing.filter.TypeGroupFilter;
 import de.opendiabetes.vault.processing.filter.VaultEntryTypeFilter;
 import de.opendiabetes.vault.processing.filter.options.FilterOption;
-import de.opendiabetes.vault.processing.filter.options.TypeGroupFilterOption;
 import de.opendiabetes.vault.processing.filter.options.VaultEntryTypeFilterOption;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.ObjectInput;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.FileReader;
+import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Orientation;
-import javafx.geometry.Point2D;
-import javafx.scene.Node;
-import javafx.scene.chart.Axis;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
-import javafx.scene.chart.ScatterChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.chart.XYChart.Data;
-import javafx.scene.chart.XYChart.Series;
-import javafx.scene.control.Accordion;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
@@ -64,37 +48,21 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Separator;
-import javafx.scene.control.TabPane;
-import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
-import javafx.scene.control.TextInputDialog;
-import javafx.scene.control.ToggleButton;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
-import javafx.scene.shape.ClosePath;
-import javafx.scene.shape.Line;
-import javafx.scene.shape.LineTo;
-import javafx.scene.shape.MoveTo;
-import javafx.scene.shape.Path;
 import javafx.stage.FileChooser;
 import javafx.util.converter.LocalTimeStringConverter;
 import javafx.util.converter.NumberStringConverter;
-import jdk.nashorn.internal.objects.NativeArray;
 import opendiabetesvaultgui.launcher.FatherController;
-import opendiabetesvaultgui.launcher.MainWindowController;
 
 /**
  *
@@ -126,6 +94,10 @@ public class SliceController extends FatherController implements Initializable {
     @FXML
     private HBox filterCombinationHbox;
 
+    private static final String FILTER_NAME = "FilterName";
+    private static final String SEPARATOR = ":";
+    private static final String COMBINE_FILTER = "CombineFilter";
+
     private List<VBox> filterColumnVBoxes = new ArrayList<>();
 
     private List<ChoiceBox> filterColumnChoiceBoxes = new ArrayList<>();
@@ -150,37 +122,94 @@ public class SliceController extends FatherController implements Initializable {
     private FilterManagementUtil filterManagementUtil;
 
     @FXML
-    private void doSaveFilterCombination(ActionEvent event)
-    {
+    private void doSaveFilterCombination(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
-        
+
         FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt");
         fileChooser.getExtensionFilters().add(extFilter);
-        
+
         fileChooser.setTitle("Open Resource File");
         File file = fileChooser.showSaveDialog(MAIN_STAGE);
-        
-        //ToDo: Filter speichern
-        
-        
+
+        try {
+            FileOutputStream fileOutputStream = new FileOutputStream(file);
+            BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(fileOutputStream));
+
+            int counter = 0;
+            for (String currentCombineFilter : getCurrentCombineFilters()) {
+                bufferedWriter.write(COMBINE_FILTER + SEPARATOR + currentCombineFilter);
+                bufferedWriter.newLine();
+
+                for (FilterNode filterNode : columnFilterNodes.get(counter)) {
+                    bufferedWriter.write(FILTER_NAME + SEPARATOR + filterNode.getName());
+                    bufferedWriter.newLine();
+
+                    Iterator iterator = filterNode.getParameterAndValues().entrySet().iterator();
+                    while (iterator.hasNext()) {
+                        Map.Entry pair = (Map.Entry) iterator.next();
+                        bufferedWriter.write(pair.getKey() + SEPARATOR + pair.getValue());
+                        bufferedWriter.newLine();
+                    }
+
+                }
+
+                counter++;
+            }
+
+            bufferedWriter.close();
+            fileOutputStream.close();
+
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
+
     }
-    
+
     @FXML
-    private void doLoadFilterCombination(ActionEvent event)
-    {
+    private void doLoadFilterCombination(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
-        
+
         FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt");
         fileChooser.getExtensionFilters().add(extFilter);
-        
+
         fileChooser.setTitle("Open Resource File");
         File file = fileChooser.showOpenDialog(MAIN_STAGE);
-        
-        //ToDo: Filter laden
+
+        //ToDo: Filter laden        
+        try {
+            BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
+            
+            List<String> combineFilters = new ArrayList<>();
+            List<List<FilterNode>> filterNodes = new ArrayList<>();
+            
+            int counter = -1;
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                String[] lineSplit = line.split(SEPARATOR);
+                
+                if(lineSplit[0].equals(COMBINE_FILTER))
+                {
+                    combineFilters.add(lineSplit[1]);                    
+                    filterNodes.add(new ArrayList<>());
+                    counter++;
+                }else if(lineSplit[0].equals(FILTER_NAME))
+                {
+                    filterNodes.get(counter).add(new FilterNode(lineSplit[1], 0));
+                }
+                else{
+                    filterNodes.get(counter).get(filterNodes.get(counter).size() -1).addParam(lineSplit[0], lineSplit[1]);
+                }
+                    
+            }
+            bufferedReader.close();
+            
+            List<Filter> filters = getFiltersFromLists(combineFilters, filterNodes);            
+
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
     }
-    
-    
-    
+
     @FXML
     private void doFilter(ActionEvent event) {
 
@@ -205,12 +234,20 @@ public class SliceController extends FatherController implements Initializable {
     }
 
     private List<Filter> getFiltersFromCurrentState() {
+        List<Filter> filters = filterManagementUtil.combineFilters(getCurrentCombineFilters(), columnFilterNodes);
+        return filters;
+    }
+
+    private List<String> getCurrentCombineFilters() {
         List<String> combineFilters = new ArrayList<>();
         for (ChoiceBox choiceBox : filterColumnChoiceBoxes) {
             combineFilters.add(choiceBox.getSelectionModel().getSelectedItem().toString());
         }
-        List<Filter> filters = filterManagementUtil.combineFilters(combineFilters, columnFilterNodes);
-        return filters;
+        return combineFilters;
+    }
+
+    private List<Filter> getFiltersFromLists(List<String> combineFilters, List<List<FilterNode>> filterNodes) {
+        return filterManagementUtil.combineFilters(combineFilters, filterNodes);
     }
 
     private void populateChart() {
@@ -328,7 +365,7 @@ public class SliceController extends FatherController implements Initializable {
                     Label label = new Label();
                     label.setText(name);
 
-                    tempInputPane.setStyle("-fx-border-color:black;");
+                    tempInputPane.setStyle("-fx-border-color:grey;");
 
                     calculateLabelPosition(tmpNode);
 
@@ -414,10 +451,11 @@ public class SliceController extends FatherController implements Initializable {
 
                         tempInputPane.getChildren().add(tmpHBox);
                     }
-                            
-                    if(tmpNode.getColumnNumber()+1 == columnFilterNodes.size())
+
+                    if (tmpNode.getColumnNumber() + 1 == columnFilterNodes.size()) {
                         addNewChoiceBoxAndSeperator();
-                    
+                    }
+
                     filterColumnVBoxes.get(tmpNode.getColumnNumber()).getChildren().add(tempInputPane);
                     success = true;
                 }
@@ -426,18 +464,19 @@ public class SliceController extends FatherController implements Initializable {
                 event.consume();
             }
 
-            private void calculateLabelPosition(FilterNode tmpNode) {                
+            private void calculateLabelPosition(FilterNode tmpNode) {
 
                 for (Separator separator : filterColumnSeparator) {
                     if (mousePositionX > separator.getLayoutX()) {
                         int index = filterColumnSeparator.indexOf(separator);
                         tmpNode.setColumnNumber(index);
-                        
-                        if(columnFilterNodes.get(index) == null)
+
+                        if (columnFilterNodes.get(index) == null) {
                             columnFilterNodes.add(new ArrayList<>());
-                        
+                        }
+
                         columnFilterNodes.get(index).add(tmpNode);
-                        
+
                     }
                 }
 
@@ -446,7 +485,7 @@ public class SliceController extends FatherController implements Initializable {
     }
 
     private void addNewChoiceBoxAndSeperator() {
-        
+
         //Separator hinzufügen
         Separator separator = new Separator(Orientation.HORIZONTAL);
         filterColumnSeparator.add(separator);
@@ -463,8 +502,7 @@ public class SliceController extends FatherController implements Initializable {
         filterColumnVBoxes.add(vBox);
 
         filterCombinationHbox.getChildren().add(vBox);
-        
-        
+
         //Für FilterNode vorbereitung
         columnFilterNodes.add(new ArrayList<>());
 
