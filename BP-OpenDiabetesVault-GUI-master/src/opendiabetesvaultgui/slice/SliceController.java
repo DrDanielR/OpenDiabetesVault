@@ -221,17 +221,7 @@ public class SliceController extends FatherController implements Initializable {
         //Gefilterte Daten anzeigen
         System.out.println(filterResult);
 
-        XYChart.Series series = new XYChart.Series();
-        XYChart.Data data;
-
-        filterchart.getData().removeAll(filterchart.getData());
-
-        for (VaultEntry vaultEntry : filterResult.filteredData) {
-            data = new Data(simpleDateFormat.format(vaultEntry.getTimestamp()), vaultEntry.getValue());
-            series.getData().add(data);
-        }
-
-        filterchart.getData().add(series);
+        populateChart(filterResult);
 
     }
 
@@ -252,21 +242,40 @@ public class SliceController extends FatherController implements Initializable {
         return filterManagementUtil.combineFilters(combineFilters, filterNodes);
     }
 
-    private void populateChart() {
-        //Teststuff
-        VaultEntryTypeFilter vaultEntryTypeFilter = new VaultEntryTypeFilter(new VaultEntryTypeFilterOption(VaultEntryType.EXERCISE_LOW));
+    private void populateChart(FilterResult filterResult) {
 
-        XYChart.Series series = new XYChart.Series();
-        XYChart.Data data;
+        filterchart.getData().removeAll(filterchart.getData());
 
-        FilterResult filterResult = vaultEntryTypeFilter.filter(importedData);
-
-        for (VaultEntry vaultEntry : filterResult.filteredData) {
-            data = new Data(simpleDateFormat.format(vaultEntry.getTimestamp()), vaultEntry.getValue());
-            series.getData().add(data);
+        if (filterResult == null) {
+            VaultEntryTypeFilter vaultEntryTypeFilter = new VaultEntryTypeFilter(new VaultEntryTypeFilterOption(VaultEntryType.EXERCISE_LOW));
+            filterResult = vaultEntryTypeFilter.filter(importedData);
         }
 
-        filterchart.getData().add(series);
+        Map<String, List<VaultEntry>> clusteredVaultEnries = new HashMap<>();
+
+        for (VaultEntry vaultEntry : filterResult.filteredData) {
+            if (!clusteredVaultEnries.containsKey(vaultEntry.getType().toString())) {
+                List<VaultEntry> vaultEntrys = new ArrayList<>();
+                vaultEntrys.add(vaultEntry);
+                clusteredVaultEnries.put(vaultEntry.getType().toString(), vaultEntrys);
+            } else {
+                clusteredVaultEnries.get(vaultEntry.getType().toString()).add(vaultEntry);
+            }
+
+        }
+
+        for (String key : clusteredVaultEnries.keySet()) {
+            XYChart.Series series = new XYChart.Series();
+            series.setName(key);
+            XYChart.Data data;
+
+            for (VaultEntry vaultEntry : clusteredVaultEnries.get(key)) {
+                data = new Data(simpleDateFormat.format(vaultEntry.getTimestamp()), vaultEntry.getValue());
+                series.getData().add(data);
+            }
+
+            filterchart.getData().add(series);
+        }
     }
 
     @Override
@@ -279,7 +288,7 @@ public class SliceController extends FatherController implements Initializable {
         filterManagementUtil = new FilterManagementUtil();
 
         //Grafik laden ggf. erstmal heutigen Tag
-        populateChart();
+        populateChart(null);
 
         //ToDo ChocieBox füllen Mit registrierten Combine Filter
         itemsForChocieBox = FXCollections.observableArrayList(filterManagementUtil.getCombineFilter());

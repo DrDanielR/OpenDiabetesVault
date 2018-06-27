@@ -51,9 +51,9 @@
                   <Button fx:id="loadFilterCombination" mnemonicParsing="false" onAction="#doLoadFilterCombination" prefHeight="25.0" prefWidth="147.0" text="Laden" GridPane.columnIndex="1" />
                </children>
             </GridPane>
-            <ScrollPane fx:id="filtercombinationfield" prefHeight="265.0" prefWidth="337.0" GridPane.columnSpan="2" GridPane.rowIndex="2">
+            <ScrollPane fx:id="filtercombinationfield" GridPane.columnSpan="2" GridPane.rowIndex="2">
                <content>
-                  <HBox fx:id="filterCombinationHbox" prefHeight="257.0" prefWidth="880.0" />
+                  <HBox fx:id="filterCombinationHbox" maxWidth="1.7976931348623157E308" />
                </content>
             </ScrollPane>
          </children>
