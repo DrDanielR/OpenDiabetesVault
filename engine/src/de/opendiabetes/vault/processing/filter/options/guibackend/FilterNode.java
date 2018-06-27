@@ -5,6 +5,7 @@
  */
 package de.opendiabetes.vault.processing.filter.options.guibackend;
 
+import de.opendiabetes.vault.processing.filter.Filter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,10 +21,18 @@ public class FilterNode {
 
     private Map<String, String> parameterAndValues;
     private int columnNumber;
+    private List<Filter> filters;    
 
     public FilterNode(String name, int columnNumber) {
         this.name = name;
         this.columnNumber = columnNumber;
+        parameterAndValues = new HashMap<>();
+    }
+
+    public FilterNode(String name, List<Filter> filters) {
+        this.name = name;
+        this.filters = filters;
+        columnNumber = 0;
         parameterAndValues = new HashMap<>();
     }
 
@@ -53,6 +62,14 @@ public class FilterNode {
 
     public void setColumnNumber(int columnNumber) {
         this.columnNumber = columnNumber;
+    }
+    
+    public List<Filter> getFilters() {
+        return filters;
+    }
+
+    public void setFilters(List<Filter> filters) {
+        this.filters = filters;
     }
 
 }

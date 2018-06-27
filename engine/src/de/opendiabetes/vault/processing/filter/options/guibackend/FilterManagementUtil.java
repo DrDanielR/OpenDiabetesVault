@@ -127,8 +127,16 @@ public class FilterManagementUtil {
 
             if (filterNodes.size() > 0) {
                 for (FilterNode filterNode : filterNodes) {
-                    Filter tempFilter = getFilterFromFilterNode(filterNode, null);
-                    filtersForCombine.add(tempFilter);
+                    if (filterNode.getFilters() != null && filterNode.getFilters().size() > 0) {
+
+                        for (Filter filter : filterNode.getFilters()) {
+                            filtersForCombine.add(filter);
+                        }
+
+                    } else {
+                        Filter tempFilter = getFilterFromFilterNode(filterNode, null);
+                        filtersForCombine.add(tempFilter);
+                    }
                 }
 
                 Filter tempFilter = getFilterFromFilterNode(new FilterNode(combineFilter, 0), filtersForCombine);
@@ -175,7 +183,7 @@ public class FilterManagementUtil {
         } else if (filterAndOption.getFilterOptionName().equals(TypeGroupFilterOption.class.getSimpleName())) {
             result = new TypeGroupFilter(new TypeGroupFilterOption(VaultEntryTypeGroup.valueOf(filterNode.getParameterAndValues().get("VaultEntryTypeGroup"))));
         } else if (filterAndOption.getFilterOptionName().equals(VaultEntryTypeFilterOption.class.getSimpleName())) {
-            result = new VaultEntryTypeFilter(new VaultEntryTypeFilterOption(VaultEntryType.valueOf(filterNode.getParameterAndValues().get("VaultEntryType"))));            
+            result = new VaultEntryTypeFilter(new VaultEntryTypeFilterOption(VaultEntryType.valueOf(filterNode.getParameterAndValues().get("VaultEntryType"))));
         }
 
         return result;

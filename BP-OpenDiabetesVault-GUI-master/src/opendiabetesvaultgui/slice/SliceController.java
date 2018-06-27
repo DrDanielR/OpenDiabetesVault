@@ -24,6 +24,7 @@ import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -114,6 +115,8 @@ public class SliceController extends FatherController implements Initializable {
 
     private List<List<FilterNode>> columnFilterNodes = new ArrayList<>();
 
+    private Map<String, FilterNode> importedFilterNodes = new HashMap<>();
+
     private boolean combineMode = false;
 
     private List<VaultEntry> importedData;
@@ -178,32 +181,31 @@ public class SliceController extends FatherController implements Initializable {
         //ToDo: Filter laden        
         try {
             BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
-            
+
             List<String> combineFilters = new ArrayList<>();
             List<List<FilterNode>> filterNodes = new ArrayList<>();
-            
+
             int counter = -1;
             String line;
             while ((line = bufferedReader.readLine()) != null) {
                 String[] lineSplit = line.split(SEPARATOR);
-                
-                if(lineSplit[0].equals(COMBINE_FILTER))
-                {
-                    combineFilters.add(lineSplit[1]);                    
+
+                if (lineSplit[0].equals(COMBINE_FILTER)) {
+                    combineFilters.add(lineSplit[1]);
                     filterNodes.add(new ArrayList<>());
                     counter++;
-                }else if(lineSplit[0].equals(FILTER_NAME))
-                {
+                } else if (lineSplit[0].equals(FILTER_NAME)) {
                     filterNodes.get(counter).add(new FilterNode(lineSplit[1], 0));
+                } else {
+                    filterNodes.get(counter).get(filterNodes.get(counter).size() - 1).addParam(lineSplit[0], lineSplit[1]);
                 }
-                else{
-                    filterNodes.get(counter).get(filterNodes.get(counter).size() -1).addParam(lineSplit[0], lineSplit[1]);
-                }
-                    
+
             }
             bufferedReader.close();
-            
-            List<Filter> filters = getFiltersFromLists(combineFilters, filterNodes);            
+
+            List<Filter> filters = getFiltersFromLists(combineFilters, filterNodes);
+            importedFilterNodes.put(file.getName(), new FilterNode(file.getName(), filters));
+            listviewfilterelements.getItems().add(file.getName());
 
         } catch (Throwable t) {
             t.printStackTrace();
@@ -357,11 +359,17 @@ public class SliceController extends FatherController implements Initializable {
                     String name = db.getString();
                     VBox tempInputPane = new VBox();
 
-                    //Input für Values                    
+                    FilterNode tmpNode;
                     Map<String, Class> parameterClasses = filterManagementUtil.getParametersFromName(name);
-                    Iterator iterator = parameterClasses.entrySet().iterator();
+                    Iterator iterator = iterator = parameterClasses.entrySet().iterator();
 
-                    FilterNode tmpNode = new FilterNode(name, 0);
+                    if (importedFilterNodes.get(name) != null) {
+                        tmpNode = importedFilterNodes.get(name);
+                    } else {
+                        tmpNode = new FilterNode(name, 0);
+                    }
+
+                    //Input für Values                    
                     Label label = new Label();
                     label.setText(name);
 
