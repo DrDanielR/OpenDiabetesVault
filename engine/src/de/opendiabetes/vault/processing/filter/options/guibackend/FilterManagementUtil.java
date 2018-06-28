@@ -35,6 +35,7 @@ import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -186,6 +187,18 @@ public class FilterManagementUtil {
             result = new VaultEntryTypeFilter(new VaultEntryTypeFilterOption(VaultEntryType.valueOf(filterNode.getParameterAndValues().get("VaultEntryType"))));
         }
 
+        return result;
+    }
+
+    public FilterResult getLastDay(List<VaultEntry> importedData) {
+        FilterResult result = null;
+        Date date = importedData.get(importedData.size() -1).getTimestamp();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.add(Calendar.DATE, -1);
+        DateTimeSpanFilter dateTimeSpanFilter = new DateTimeSpanFilter(new DateTimeSpanFilterOption(calendar.getTime(), date));
+        result = dateTimeSpanFilter.filter(importedData);
+        
         return result;
     }
 }

@@ -247,8 +247,7 @@ public class SliceController extends FatherController implements Initializable {
         filterchart.getData().removeAll(filterchart.getData());
 
         if (filterResult == null) {
-            VaultEntryTypeFilter vaultEntryTypeFilter = new VaultEntryTypeFilter(new VaultEntryTypeFilterOption(VaultEntryType.EXERCISE_LOW));
-            filterResult = vaultEntryTypeFilter.filter(importedData);
+            filterResult = filterManagementUtil.getLastDay(importedData);
         }
 
         Map<String, List<VaultEntry>> clusteredVaultEnries = new HashMap<>();
