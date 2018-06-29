@@ -1273,5 +1273,19 @@ public class VaultCSVEntry extends CSVEntry {
                 + bloodPressureAnnotation + ", mealInfoAnnotation=" + mealInfoAnnotation + ", weight=" + weight + ", bloodPressure="
                 + bloodPressure + ", ketones=" + ketones + '}';
     }
+    
+    public String toCsvString(){
+        return toString();
+    }
+    
+    @Override
+    public String[] getCsvHeaderRecord(){
+        return getCSVHeaderRecord();
+    }
+    
+    @Override
+    public String[] toCsvRecord() {
+        return toCSVRecord();
+    }
 
 }

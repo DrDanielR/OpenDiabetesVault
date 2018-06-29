@@ -98,4 +98,14 @@ public class SliceCSVEntry extends CSVEntry {
         };
     }
 
+    @Override
+    public String[] getCsvHeaderRecord() {
+        return getCSVHeaderRecord();
+    }
+
+    @Override
+    public String[] toCsvRecord() {
+        return toCSVRecord();
+    }
+
 }

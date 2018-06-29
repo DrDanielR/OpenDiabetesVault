@@ -45,12 +45,16 @@ public abstract class CSVEntry implements ExportEntry {
      * @return The CSV records.
      */
     public abstract String[] toCSVRecord();
+    
+    public abstract String[] toCsvRecord();
 
     /**
      * Method to get the CSV header.
      * @return The CSV header.
      */
     public abstract String[] getCSVHeaderRecord();
+    
+    public abstract String[] getCsvHeaderRecord();
 
     /**
      * {@inheritDoc}

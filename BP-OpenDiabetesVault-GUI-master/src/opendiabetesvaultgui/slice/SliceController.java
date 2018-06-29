@@ -9,7 +9,11 @@ import de.opendiabetes.vault.processing.filter.options.guibackend.FilterManageme
 import de.opendiabetes.vault.processing.filter.options.guibackend.FilterNode;
 import de.opendiabetes.vault.container.VaultEntry;
 import de.opendiabetes.vault.container.VaultEntryType;
+import de.opendiabetes.vault.container.csv.VaultCSVEntry;
 import de.opendiabetes.vault.data.VaultDao;
+import de.opendiabetes.vault.plugin.exporter.Exporter;
+import de.opendiabetes.vault.plugin.exporter.VaultExporter;
+import de.opendiabetes.vault.plugin.management.OpenDiabetesPluginManager;
 import de.opendiabetes.vault.processing.filter.Filter;
 import de.opendiabetes.vault.processing.filter.FilterResult;
 import de.opendiabetes.vault.processing.filter.VaultEntryTypeFilter;
@@ -18,8 +22,11 @@ import de.opendiabetes.vault.processing.filter.options.VaultEntryTypeFilterOptio
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -51,6 +58,8 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Separator;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
@@ -60,10 +69,13 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.web.WebView;
 import javafx.stage.FileChooser;
 import javafx.util.converter.LocalTimeStringConverter;
 import javafx.util.converter.NumberStringConverter;
 import opendiabetesvaultgui.launcher.FatherController;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 
 /**
  *
@@ -94,6 +106,9 @@ public class SliceController extends FatherController implements Initializable {
 
     @FXML
     private HBox filterCombinationHbox;
+
+    @FXML
+    private ImageView imageViewForFilter;
 
     private static final String FILTER_NAME = "FilterName";
     private static final String SEPARATOR = ":";
@@ -221,7 +236,11 @@ public class SliceController extends FatherController implements Initializable {
         //Gefilterte Daten anzeigen
         System.out.println(filterResult);
 
+        //For JavaFx
         populateChart(filterResult);
+
+        //Plotteria
+        generateGraphs(filterResult);
 
     }
 
@@ -522,5 +541,56 @@ public class SliceController extends FatherController implements Initializable {
         //Für FilterNode vorbereitung
         columnFilterNodes.add(new ArrayList<>());
 
+    }
+
+    private void generateGraphs(FilterResult filterResult) {
+        String userDir = System.getProperty("user.dir");
+        String plotteriaPath = userDir + File.separator + "plotteria";
+        String plotPyPath = plotteriaPath + File.separator + "plot.py";
+        String configIniPath = plotteriaPath + File.separator + "config.ini";
+        String exportFileDir = plotteriaPath + File.separator + "temp";
+        String exportFilePath = plotteriaPath + File.separator + "export.csv";
+        try {
+            //Exportieren            
+            Exporter exporter = getVaultCSVExporter();
+            File file = new File(exportFilePath);
+            file.createNewFile();
+            exporter.exportDataToFile(exportFilePath, filterResult.filteredData);
+
+            //python command
+            Runtime runtime = Runtime.getRuntime();
+            Process process = runtime.exec("python " + plotPyPath + " -c " + configIniPath + " -d -f " + exportFilePath + " -o " + exportFileDir);
+
+            //laden und anzeigen
+            File dir = new File(exportFileDir);
+            File[] directoryListing = dir.listFiles();
+
+            if (directoryListing != null) {
+                for (File child : directoryListing) {
+                    imageViewForFilter.setImage(new Image(new FileInputStream(child)));
+                    break;
+                }
+            }
+
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
+
+    }
+
+    private Exporter getVaultCSVExporter() {
+        Exporter result = null;
+        OpenDiabetesPluginManager pluginManager;
+        pluginManager = OpenDiabetesPluginManager.getInstance();
+        List<String> exportPlugins = pluginManager.getPluginIDsOfType(Exporter.class);
+
+        for (int i = 0; i < exportPlugins.size(); i++) {
+            Exporter plugin = pluginManager.getPluginFromString(Exporter.class, exportPlugins.get(i));
+            if (exportPlugins.get(i).equals("VaultCSVExporter")) {
+                result = plugin;
+            }
+        }
+
+        return result;
     }
 }
