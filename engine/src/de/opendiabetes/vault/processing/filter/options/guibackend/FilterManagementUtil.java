@@ -33,6 +33,7 @@ import de.opendiabetes.vault.processing.filter.options.TypeGroupFilterOption;
 import de.opendiabetes.vault.processing.filter.options.VaultEntryTypeFilterOption;
 import java.lang.reflect.Constructor;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -164,27 +165,32 @@ public class FilterManagementUtil {
     private Filter getFilterFromFilterNode(FilterNode filterNode, List<Filter> filtersForCombine) {
         Filter result = null;
         FilterAndOption filterAndOption = getFilterAndOptionFromName(filterNode.getName());
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 
-        //CombineFilter
-        if (filterAndOption.getFilterOptionName().equals(AndFilterOption.class.getSimpleName())) {
-            result = new AndFilter(new AndFilterOption(filtersForCombine));
-        } else if (filterAndOption.getFilterOptionName().equals(OrFilterOption.class.getSimpleName())) {
-            result = new OrFilter(new OrFilterOption(filtersForCombine));
-        }//NonCombineFilter
-        else if (filterAndOption.getFilterOptionName().equals(DateTimePointFilterOption.class.getSimpleName())) {
-            result = new DateTimePointFilter(new DateTimePointFilterOption(new Date(filterNode.getParameterAndValues().get("DateTimePoint")), Integer.parseInt(filterNode.getParameterAndValues().get("MarginInMinutes").trim())));
-        } else if (filterAndOption.getFilterOptionName().equals(DateTimeSpanFilterOption.class.getSimpleName())) {
-            result = new DateTimeSpanFilter(new DateTimeSpanFilterOption(new Date(filterNode.getParameterAndValues().get("StartTime")), new Date(filterNode.getParameterAndValues().get("EndTime"))));
-        } else if (filterAndOption.getFilterOptionName().equals(ThresholdFilterOption.class.getSimpleName())) {
-            result = new ThresholdFilter(new ThresholdFilterOption(Integer.parseInt(filterNode.getParameterAndValues().get("MinThreshold").trim()), Integer.parseInt(filterNode.getParameterAndValues().get("MaxThreshold").trim()), Integer.parseInt(filterNode.getParameterAndValues().get("Mode").trim())));
-        } else if (filterAndOption.getFilterOptionName().equals(TimePointFilterOption.class.getSimpleName())) {
-            result = new TimePointFilter(new TimePointFilterOption(LocalTime.parse(filterNode.getParameterAndValues().get("LocalTime")), Integer.parseInt(filterNode.getParameterAndValues().get("MarginInMinutes").trim())));
-        } else if (filterAndOption.getFilterOptionName().equals(TimeSpanFilterOption.class.getSimpleName())) {
-            result = new TimeSpanFilter(new TimeSpanFilterOption(LocalTime.parse(filterNode.getParameterAndValues().get("StartTime")), LocalTime.parse(filterNode.getParameterAndValues().get("EndTime"))));
-        } else if (filterAndOption.getFilterOptionName().equals(TypeGroupFilterOption.class.getSimpleName())) {
-            result = new TypeGroupFilter(new TypeGroupFilterOption(VaultEntryTypeGroup.valueOf(filterNode.getParameterAndValues().get("VaultEntryTypeGroup"))));
-        } else if (filterAndOption.getFilterOptionName().equals(VaultEntryTypeFilterOption.class.getSimpleName())) {
-            result = new VaultEntryTypeFilter(new VaultEntryTypeFilterOption(VaultEntryType.valueOf(filterNode.getParameterAndValues().get("VaultEntryType"))));
+        try {
+            //CombineFilter
+            if (filterAndOption.getFilterOptionName().equals(AndFilterOption.class.getSimpleName())) {
+                result = new AndFilter(new AndFilterOption(filtersForCombine));
+            } else if (filterAndOption.getFilterOptionName().equals(OrFilterOption.class.getSimpleName())) {
+                result = new OrFilter(new OrFilterOption(filtersForCombine));
+            }//NonCombineFilter
+            else if (filterAndOption.getFilterOptionName().equals(DateTimePointFilterOption.class.getSimpleName())) {
+                result = new DateTimePointFilter(new DateTimePointFilterOption(formatter.parse(filterNode.getParameterAndValues().get("DateTimePoint")), Integer.parseInt(filterNode.getParameterAndValues().get("MarginInMinutes").trim())));
+            } else if (filterAndOption.getFilterOptionName().equals(DateTimeSpanFilterOption.class.getSimpleName())) {
+                result = new DateTimeSpanFilter(new DateTimeSpanFilterOption(formatter.parse(filterNode.getParameterAndValues().get("StartTime")), formatter.parse(filterNode.getParameterAndValues().get("EndTime"))));
+            } else if (filterAndOption.getFilterOptionName().equals(ThresholdFilterOption.class.getSimpleName())) {
+                result = new ThresholdFilter(new ThresholdFilterOption(Integer.parseInt(filterNode.getParameterAndValues().get("MinThreshold").trim()), Integer.parseInt(filterNode.getParameterAndValues().get("MaxThreshold").trim()), Integer.parseInt(filterNode.getParameterAndValues().get("Mode").trim())));
+            } else if (filterAndOption.getFilterOptionName().equals(TimePointFilterOption.class.getSimpleName())) {
+                result = new TimePointFilter(new TimePointFilterOption(LocalTime.parse(filterNode.getParameterAndValues().get("LocalTime")), Integer.parseInt(filterNode.getParameterAndValues().get("MarginInMinutes").trim())));
+            } else if (filterAndOption.getFilterOptionName().equals(TimeSpanFilterOption.class.getSimpleName())) {
+                result = new TimeSpanFilter(new TimeSpanFilterOption(LocalTime.parse(filterNode.getParameterAndValues().get("StartTime")), LocalTime.parse(filterNode.getParameterAndValues().get("EndTime"))));
+            } else if (filterAndOption.getFilterOptionName().equals(TypeGroupFilterOption.class.getSimpleName())) {
+                result = new TypeGroupFilter(new TypeGroupFilterOption(VaultEntryTypeGroup.valueOf(filterNode.getParameterAndValues().get("VaultEntryTypeGroup"))));
+            } else if (filterAndOption.getFilterOptionName().equals(VaultEntryTypeFilterOption.class.getSimpleName())) {
+                result = new VaultEntryTypeFilter(new VaultEntryTypeFilterOption(VaultEntryType.valueOf(filterNode.getParameterAndValues().get("VaultEntryType"))));
+            }
+        } catch (Throwable t) {
+            t.printStackTrace();
         }
 
         return result;
@@ -192,13 +198,13 @@ public class FilterManagementUtil {
 
     public FilterResult getLastDay(List<VaultEntry> importedData) {
         FilterResult result = null;
-        Date date = importedData.get(importedData.size() -1).getTimestamp();
+        Date date = importedData.get(importedData.size() - 1).getTimestamp();
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
         calendar.add(Calendar.DATE, -1);
         DateTimeSpanFilter dateTimeSpanFilter = new DateTimeSpanFilter(new DateTimeSpanFilterOption(calendar.getTime(), date));
         result = dateTimeSpanFilter.filter(importedData);
-        
+
         return result;
     }
 }

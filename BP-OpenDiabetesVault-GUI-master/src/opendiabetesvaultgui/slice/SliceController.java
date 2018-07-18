@@ -244,6 +244,42 @@ public class SliceController extends FatherController implements Initializable {
 
     }
 
+    @FXML
+    private void getPreviousImage(ActionEvent event) {
+
+        try {
+            if (exportDirectory != null && directoryPosition > 0) {
+                directoryPosition--;
+
+                File[] directoryListing = exportDirectory.listFiles();
+
+                if (directoryListing != null) {
+                    imageViewForFilter.setImage(new Image(new FileInputStream(directoryListing[directoryPosition])));
+                }
+            }
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
+
+    }
+
+    @FXML
+    private void getNextImage(ActionEvent event) {
+        try {
+            if (exportDirectory != null) {
+                directoryPosition++;
+
+                File[] directoryListing = exportDirectory.listFiles();
+
+                if (directoryListing != null) {
+                    imageViewForFilter.setImage(new Image(new FileInputStream(directoryListing[directoryPosition])));
+                }
+            }
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
+    }
+
     private List<Filter> getFiltersFromCurrentState() {
         List<Filter> filters = filterManagementUtil.combineFilters(getCurrentCombineFilters(), columnFilterNodes);
         return filters;
@@ -543,13 +579,17 @@ public class SliceController extends FatherController implements Initializable {
 
     }
 
+    private String userDir = System.getProperty("user.dir");
+    private String plotteriaPath = userDir + File.separator + "plotteria";
+    private String plotPyPath = plotteriaPath + File.separator + "plot.py";
+    private String configIniPath = plotteriaPath + File.separator + "config.ini";
+    private String exportFileDir = plotteriaPath + File.separator + "temp";
+    private String exportFilePath = plotteriaPath + File.separator + "export.csv";
+    private File exportDirectory;
+    private int directoryPosition = 0;
+
     private void generateGraphs(FilterResult filterResult) {
-        String userDir = System.getProperty("user.dir");
-        String plotteriaPath = userDir + File.separator + "plotteria";
-        String plotPyPath = plotteriaPath + File.separator + "plot.py";
-        String configIniPath = plotteriaPath + File.separator + "config.ini";
-        String exportFileDir = plotteriaPath + File.separator + "temp";
-        String exportFilePath = plotteriaPath + File.separator + "export.csv";
+
         try {
             //Exportieren            
             Exporter exporter = getVaultCSVExporter();
@@ -562,14 +602,11 @@ public class SliceController extends FatherController implements Initializable {
             Process process = runtime.exec("python " + plotPyPath + " -c " + configIniPath + " -d -f " + exportFilePath + " -o " + exportFileDir);
 
             //laden und anzeigen
-            File dir = new File(exportFileDir);
-            File[] directoryListing = dir.listFiles();
+            exportDirectory = new File(exportFileDir);
+            File[] directoryListing = exportDirectory.listFiles();
 
             if (directoryListing != null) {
-                for (File child : directoryListing) {
-                    imageViewForFilter.setImage(new Image(new FileInputStream(child)));
-                    break;
-                }
+                imageViewForFilter.setImage(new Image(new FileInputStream(directoryListing[directoryPosition])));
             }
 
         } catch (Throwable t) {
@@ -582,10 +619,12 @@ public class SliceController extends FatherController implements Initializable {
         Exporter result = null;
         OpenDiabetesPluginManager pluginManager;
         pluginManager = OpenDiabetesPluginManager.getInstance();
-        List<String> exportPlugins = pluginManager.getPluginIDsOfType(Exporter.class);
+        List<String> exportPlugins = pluginManager.getPluginIDsOfType(Exporter.class
+        );
 
         for (int i = 0; i < exportPlugins.size(); i++) {
-            Exporter plugin = pluginManager.getPluginFromString(Exporter.class, exportPlugins.get(i));
+            Exporter plugin = pluginManager.getPluginFromString(Exporter.class,
+                    exportPlugins.get(i));
             if (exportPlugins.get(i).equals("VaultCSVExporter")) {
                 result = plugin;
             }
