@@ -600,7 +600,7 @@ public class SliceController extends FatherController implements Initializable {
             //python command
             Runtime runtime = Runtime.getRuntime();
             Process process = runtime.exec("python " + plotPyPath + " -c " + configIniPath + " -d -f " + exportFilePath + " -o " + exportFileDir);
-
+            
             //laden und anzeigen
             exportDirectory = new File(exportFileDir);
             File[] directoryListing = exportDirectory.listFiles();
