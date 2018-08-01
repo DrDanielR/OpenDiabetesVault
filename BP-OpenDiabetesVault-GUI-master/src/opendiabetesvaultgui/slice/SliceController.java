@@ -78,6 +78,7 @@ import javafx.stage.FileChooser;
 import javafx.util.Callback;
 import javafx.util.converter.LocalTimeStringConverter;
 import javafx.util.converter.NumberStringConverter;
+import javax.activation.MimetypesFileTypeMap;
 import opendiabetesvaultgui.launcher.FatherController;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -87,129 +88,129 @@ import org.apache.commons.io.FilenameUtils;
  * @author Daniel Schäfer, Martin Steil, Julian Schwind, Kai Worsch
  */
 public class SliceController extends FatherController implements Initializable {
-    
+
     @FXML
     private GridPane gridPane;
-    
+
     @FXML
     private ListView<String> listviewfilterelements;
-    
+
     @FXML
     private Button filterbutton;
-    
+
     @FXML
     private LineChart<Number, Number> filterchart;
-    
+
     @FXML
     private CategoryAxis filterChartXaxis;
-    
+
     @FXML
     private NumberAxis filterChartYaxis;
-    
+
     @FXML
     private ScrollPane filtercombinationfield;
-    
+
     @FXML
     private HBox filterCombinationHbox;
-    
+
     @FXML
     private ImageView imageViewForFilter;
-    
+
     private static final String FILTER_NAME = "FilterName";
     private static final String SEPARATOR = ":";
     private static final String COMBINE_FILTER = "CombineFilter";
-    
+
     private List<VBox> filterColumnVBoxes = new ArrayList<>();
-    
+
     private List<ChoiceBox> filterColumnChoiceBoxes = new ArrayList<>();
-    
+
     private List<Separator> filterColumnSeparator = new ArrayList<>();
-    
+
     private ObservableList itemsForChocieBox;
-    
+
     private double mousePositionX;
-    
+
     private double mousePositionY;
-    
+
     private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("hh:mm dd.MM.yy");
-    
+
     private List<List<FilterNode>> columnFilterNodes = new ArrayList<>();
-    
+
     private Map<String, FilterNode> importedFilterNodes = new HashMap<>();
-    
+
     private boolean combineMode = false;
-    
+
     private List<VaultEntry> importedData;
-    
+
     private VaultDao vaultDao;
     private FilterManagementUtil filterManagementUtil;
-    
+
     @FXML
     private void doSaveFilterCombination(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
-        
+
         FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt");
         fileChooser.getExtensionFilters().add(extFilter);
-        
+
         fileChooser.setTitle("Open Resource File");
         File file = fileChooser.showSaveDialog(MAIN_STAGE);
-        
+
         try {
             FileOutputStream fileOutputStream = new FileOutputStream(file);
             BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(fileOutputStream));
-            
+
             int counter = 0;
             for (String currentCombineFilter : getCurrentCombineFilters()) {
                 bufferedWriter.write(COMBINE_FILTER + SEPARATOR + currentCombineFilter);
                 bufferedWriter.newLine();
-                
+
                 for (FilterNode filterNode : columnFilterNodes.get(counter)) {
                     bufferedWriter.write(FILTER_NAME + SEPARATOR + filterNode.getName());
                     bufferedWriter.newLine();
-                    
+
                     Iterator iterator = filterNode.getParameterAndValues().entrySet().iterator();
                     while (iterator.hasNext()) {
                         Map.Entry pair = (Map.Entry) iterator.next();
                         bufferedWriter.write(pair.getKey() + SEPARATOR + pair.getValue());
                         bufferedWriter.newLine();
                     }
-                    
+
                 }
-                
+
                 counter++;
             }
-            
+
             bufferedWriter.close();
             fileOutputStream.close();
-            
+
         } catch (Throwable t) {
             t.printStackTrace();
         }
-        
+
     }
-    
+
     @FXML
     private void doLoadFilterCombination(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
-        
+
         FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt");
         fileChooser.getExtensionFilters().add(extFilter);
-        
+
         fileChooser.setTitle("Open Resource File");
         File file = fileChooser.showOpenDialog(MAIN_STAGE);
 
         //ToDo: Filter laden        
         try {
             BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
-            
+
             List<String> combineFilters = new ArrayList<>();
             List<List<FilterNode>> filterNodes = new ArrayList<>();
-            
+
             int counter = -1;
             String line;
             while ((line = bufferedReader.readLine()) != null) {
                 String[] lineSplit = line.split(SEPARATOR);
-                
+
                 if (lineSplit[0].equals(COMBINE_FILTER)) {
                     combineFilters.add(lineSplit[1]);
                     filterNodes.add(new ArrayList<>());
@@ -219,26 +220,26 @@ public class SliceController extends FatherController implements Initializable {
                 } else {
                     filterNodes.get(counter).get(filterNodes.get(counter).size() - 1).addParam(lineSplit[0], lineSplit[1]);
                 }
-                
+
             }
             bufferedReader.close();
-            
+
             List<Filter> filters = getFiltersFromLists(combineFilters, filterNodes);
             importedFilterNodes.put(file.getName(), new FilterNode(file.getName(), filters));
             listviewfilterelements.getItems().add(file.getName());
-            
+
         } catch (Throwable t) {
             t.printStackTrace();
         }
     }
-    
+
     @FXML
     private void doFilter(ActionEvent event) {
-        
+
         List<Filter> filters = getFiltersFromCurrentState();
         if (filters != null) {
             FilterResult filterResult = filterManagementUtil.sliceVaultEntries(filters, importedData);
-            
+
             if (filterResult != null) {
                 //For JavaFx
                 populateChart(filterResult);
@@ -248,52 +249,59 @@ public class SliceController extends FatherController implements Initializable {
             }
         }
     }
-    
+
     @FXML
     private void getPreviousImage(ActionEvent event) {
-        
+
         try {
             if (exportDirectory != null && directoryPosition > 0) {
                 directoryPosition--;
-                
+
                 File[] directoryListing = exportDirectory.listFiles();
-                
+
                 if (directoryListing != null) {
-                    imageViewForFilter.setImage(new Image(new FileInputStream(directoryListing[directoryPosition])));
+                    
+                    if (directoryListing[directoryPosition].getAbsolutePath().endsWith("png")) {
+                        imageViewForFilter.setImage(new Image(new FileInputStream(directoryListing[directoryPosition])));
+                    }
                 }
             }
         } catch (Throwable t) {
             t.printStackTrace();
         }
-        
+
     }
-    
+
     @FXML
     private void getNextImage(ActionEvent event) {
         try {
             if (exportDirectory != null) {
                 directoryPosition++;
-                
+
                 File[] directoryListing = exportDirectory.listFiles();
-                
+
                 if (directoryListing != null) {
                     if (directoryPosition >= directoryListing.length) {
                         directoryPosition = directoryListing.length - 1;
                     }
+
                     
-                    imageViewForFilter.setImage(new Image(new FileInputStream(directoryListing[directoryPosition])));
+                    if (directoryListing[directoryPosition].getAbsolutePath().endsWith("png")) {
+                        imageViewForFilter.setImage(new Image(new FileInputStream(directoryListing[directoryPosition])));
+                    }
+
                 }
             }
         } catch (Throwable t) {
             t.printStackTrace();
         }
     }
-    
+
     private List<Filter> getFiltersFromCurrentState() {
         List<Filter> filters = filterManagementUtil.combineFilters(getCurrentCombineFilters(), columnFilterNodes);
         return filters;
     }
-    
+
     private List<String> getCurrentCombineFilters() {
         List<String> combineFilters = new ArrayList<>();
         for (ChoiceBox choiceBox : filterColumnChoiceBoxes) {
@@ -301,21 +309,21 @@ public class SliceController extends FatherController implements Initializable {
         }
         return combineFilters;
     }
-    
+
     private List<Filter> getFiltersFromLists(List<String> combineFilters, List<List<FilterNode>> filterNodes) {
         return filterManagementUtil.combineFilters(combineFilters, filterNodes);
     }
-    
+
     private void populateChart(FilterResult filterResult) {
-        
+
         filterchart.getData().removeAll(filterchart.getData());
-        
+
         if (filterResult == null) {
             filterResult = filterManagementUtil.getLastDay(importedData);
         }
-        
+
         Map<String, List<VaultEntry>> clusteredVaultEnries = new HashMap<>();
-        
+
         for (VaultEntry vaultEntry : filterResult.filteredData) {
             if (!clusteredVaultEnries.containsKey(vaultEntry.getType().toString())) {
                 List<VaultEntry> vaultEntrys = new ArrayList<>();
@@ -324,30 +332,30 @@ public class SliceController extends FatherController implements Initializable {
             } else {
                 clusteredVaultEnries.get(vaultEntry.getType().toString()).add(vaultEntry);
             }
-            
+
         }
-        
+
         for (String key : clusteredVaultEnries.keySet()) {
             XYChart.Series series = new XYChart.Series();
             series.setName(key);
             XYChart.Data data;
-            
+
             for (VaultEntry vaultEntry : clusteredVaultEnries.get(key)) {
                 data = new Data(simpleDateFormat.format(vaultEntry.getTimestamp()), vaultEntry.getValue());
                 series.getData().add(data);
             }
-            
+
             filterchart.getData().add(series);
         }
     }
-    
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 
         //Daten importieren
         vaultDao = VaultDao.getInstance();
         importedData = vaultDao.queryAllVaultEntries();
-        
+
         filterManagementUtil = new FilterManagementUtil();
 
         //Grafik laden ggf. erstmal heutigen Tag
@@ -355,7 +363,7 @@ public class SliceController extends FatherController implements Initializable {
 
         //ToDo ChocieBox füllen Mit registrierten Combine Filter
         itemsForChocieBox = FXCollections.observableArrayList(filterManagementUtil.getCombineFilter());
-        
+
         addNewChoiceBoxAndSeperator();
 
         //addItems to listview
@@ -364,14 +372,14 @@ public class SliceController extends FatherController implements Initializable {
 
         //Dragevent for Listview
         listviewfilterelements.setOnDragDetected(new EventHandler<MouseEvent>() {
-            
+
             public void handle(MouseEvent event) {
                 Dragboard dragBoard = listviewfilterelements.startDragAndDrop(TransferMode.ANY);
-                
+
                 ClipboardContent content = new ClipboardContent();
                 content.putString(listviewfilterelements.getSelectionModel().getSelectedItem());
                 dragBoard.setContent(content);
-                
+
                 event.consume();
             }
         });
@@ -379,7 +387,7 @@ public class SliceController extends FatherController implements Initializable {
         //Nach dem Drag and drop
         listviewfilterelements.setOnDragDone(new EventHandler<DragEvent>() {
             public void handle(DragEvent event) {
-                
+
             }
         });
 
@@ -394,7 +402,7 @@ public class SliceController extends FatherController implements Initializable {
 
                     //filterbutton.setText("X: " + mousePositionX + " Y: " + mousePositionY);
                 }
-                
+
                 event.consume();
             }
         });
@@ -404,9 +412,9 @@ public class SliceController extends FatherController implements Initializable {
             public void handle(DragEvent event) {
                 if (event.getGestureSource() != filtercombinationfield
                         && event.getDragboard().hasString()) {
-                    
+
                 }
-                
+
                 event.consume();
             }
         });
@@ -415,7 +423,7 @@ public class SliceController extends FatherController implements Initializable {
         filtercombinationfield.setOnDragExited(new EventHandler<DragEvent>() {
             public void handle(DragEvent event) {
                 /* mouse moved away, remove the graphical cues */
-                
+
                 event.consume();
             }
         });
@@ -423,18 +431,18 @@ public class SliceController extends FatherController implements Initializable {
         //Drag loslassen
         filtercombinationfield.setOnDragDropped(new EventHandler<DragEvent>() {
             public void handle(DragEvent event) {
-                
+
                 Dragboard db = event.getDragboard();
                 boolean success = false;
                 if (db.hasString()) {
-                    
+
                     String name = db.getString();
-                    VBox tempInputPane = new VBox();
-                    
+                    VBox tmpInputPane = new VBox();
+
                     FilterNode tmpNode;
                     Map<String, Class> parameterClasses = filterManagementUtil.getParametersFromName(name);
                     Iterator iterator = iterator = parameterClasses.entrySet().iterator();
-                    
+
                     if (importedFilterNodes.get(name) != null) {
                         tmpNode = importedFilterNodes.get(name);
                     } else {
@@ -444,35 +452,35 @@ public class SliceController extends FatherController implements Initializable {
                     //Input für Values                    
                     Label label = new Label();
                     label.setText(name);
-                    
-                    tempInputPane.setStyle("-fx-border-color:grey;");
-                    
+
+                    tmpInputPane.setStyle("-fx-border-color:grey;");
+
                     calculateLabelPosition(tmpNode);
-                    
-                    tempInputPane.getChildren().add(label);
-                    
+
+                    tmpInputPane.getChildren().add(label);
+
                     while (iterator.hasNext()) {
                         Map.Entry pair = (Map.Entry) iterator.next();
-                        
+
                         final String simpleName = (String) pair.getKey();
                         final Class typeClass = (Class) pair.getValue();
-                        
+
                         HBox tmpHBox = new HBox();
                         tmpHBox.setMaxWidth(200);
-                        
+
                         tmpHBox.getChildren().add(new Label(simpleName));
-                        
+
                         if (typeClass.getSimpleName().equals("Date")) {
-                            
+
                             final Date dummyDate = importedData.get(0).getTimestamp();
-                            
+
                             DatePicker datePicker = new DatePicker();
                             datePicker.setMaxWidth(100);
                             datePicker.setPromptText("Date");
                             datePicker.setValue(dummyDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
-                            Callback<DatePicker, DateCell> dayCellFactory= getDayCellFactory();
-                            datePicker.setDayCellFactory(dayCellFactory);                            
-                            
+                            Callback<DatePicker, DateCell> dayCellFactory = getDayCellFactory();
+                            datePicker.setDayCellFactory(dayCellFactory);
+
                             tmpHBox.getChildren().add(datePicker);
 
                             //ActionEvent for params
@@ -497,10 +505,10 @@ public class SliceController extends FatherController implements Initializable {
                             ChoiceBox choiceBox = new ChoiceBox();
                             choiceBox.getSelectionModel().selectFirst();
                             final FilterOption filterOption = filterManagementUtil.getFilterAndOptionFromName(name).getOption();
-                            
+
                             ObservableList itemsForTmpChocieBox = FXCollections.observableArrayList(filterOption.getDropDownEntries().keySet());
                             choiceBox.setItems(itemsForTmpChocieBox);
-                            
+
                             tmpHBox.getChildren().add(choiceBox);
 
                             //ActionEvent for params
@@ -514,7 +522,7 @@ public class SliceController extends FatherController implements Initializable {
                             TextField tmpTextField = new TextField();
                             tmpTextField.setMaxWidth(100);
                             tmpTextField.setPromptText("Value");
-                            
+
                             if (typeClass.getSimpleName().equals("LocalTime")) {
                                 tmpTextField.setPromptText("00:00");
                                 TextFormatter textFormatter = new TextFormatter(new LocalTimeStringConverter());
@@ -524,7 +532,7 @@ public class SliceController extends FatherController implements Initializable {
                                 TextFormatter textFormatter = new TextFormatter(new NumberStringConverter());
                                 tmpTextField.setTextFormatter(textFormatter);
                             }
-                            
+
                             tmpHBox.getChildren().add(tmpTextField);
 
                             //ActionEvent for params
@@ -535,42 +543,58 @@ public class SliceController extends FatherController implements Initializable {
                                 }
                             });
                         }
-                        
-                        tempInputPane.getChildren().add(tmpHBox);
+
+                        tmpInputPane.getChildren().add(tmpHBox);
+
+                        Button deleteButton = new Button();
+                        deleteButton.setText("Entfernen");
+                        deleteButton.setOnAction(new EventHandler<ActionEvent>() {
+                            @Override
+                            public void handle(ActionEvent event) {
+                                filterColumnVBoxes.get(tmpNode.getColumnNumber()).getChildren().remove(tmpInputPane);
+
+                                for (List<FilterNode> columnFilterNode : columnFilterNodes) {
+                                    columnFilterNode.remove(tmpNode);
+                                }
+                            }
+                        });
+
+                        tmpInputPane.getChildren().add(deleteButton);
+
                     }
-                    
+
                     if (tmpNode.getColumnNumber() + 1 == columnFilterNodes.size()) {
                         addNewChoiceBoxAndSeperator();
                     }
-                    
-                    filterColumnVBoxes.get(tmpNode.getColumnNumber()).getChildren().add(tempInputPane);
+
+                    filterColumnVBoxes.get(tmpNode.getColumnNumber()).getChildren().add(tmpInputPane);
                     success = true;
                 }
                 event.setDropCompleted(success);
-                
+
                 event.consume();
             }
-            
+
             private void calculateLabelPosition(FilterNode tmpNode) {
-                
+
                 for (Separator separator : filterColumnSeparator) {
                     if (mousePositionX > separator.getLayoutX()) {
                         int index = filterColumnSeparator.indexOf(separator);
                         tmpNode.setColumnNumber(index);
-                        
+
                         if (columnFilterNodes.get(index) == null) {
                             columnFilterNodes.add(new ArrayList<>());
                         }
-                        
+
                         columnFilterNodes.get(index).add(tmpNode);
-                        
+
                     }
                 }
-                
+
             }
         });
     }
-    
+
     private void addNewChoiceBoxAndSeperator() {
 
         //Separator hinzufügen
@@ -580,21 +604,21 @@ public class SliceController extends FatherController implements Initializable {
 
         //Vbox für Filter und ChoiceBox
         VBox vBox = new VBox();
-        
+
         ChoiceBox choiceBox = new ChoiceBox(itemsForChocieBox);
         choiceBox.getSelectionModel().selectFirst();
         filterColumnChoiceBoxes.add(choiceBox);
-        
+
         vBox.getChildren().add(choiceBox);
         filterColumnVBoxes.add(vBox);
-        
+
         filterCombinationHbox.getChildren().add(vBox);
 
         //Für FilterNode vorbereitung
         columnFilterNodes.add(new ArrayList<>());
-        
+
     }
-    
+
     private String userDir = System.getProperty("user.dir");
     private String plotteriaPath = userDir + File.separator + "plotteria";
     private String plotPyPath = plotteriaPath + File.separator + "plot.py";
@@ -603,9 +627,9 @@ public class SliceController extends FatherController implements Initializable {
     private String exportFilePath = plotteriaPath + File.separator + "export.csv";
     private File exportDirectory;
     private int directoryPosition = 0;
-    
+
     private void generateGraphs(FilterResult filterResult) {
-        
+
         try {
             //Exportieren            
             Exporter exporter = getVaultCSVExporter();
@@ -613,31 +637,33 @@ public class SliceController extends FatherController implements Initializable {
             file.createNewFile();
             exporter.exportDataToFile(exportFilePath, filterResult.filteredData);
 
+            exportDirectory = new File(exportFileDir);
+            FileUtils.cleanDirectory(exportDirectory);
+
             //python command
             Runtime runtime = Runtime.getRuntime();
             Process process = runtime.exec("python " + plotPyPath + " -c " + configIniPath + " -d -f " + exportFilePath + " -o " + exportFileDir);
 
             //laden und anzeigen
-            exportDirectory = new File(exportFileDir);
             File[] directoryListing = exportDirectory.listFiles();
-            
+
             if (directoryListing != null) {
                 imageViewForFilter.setImage(new Image(new FileInputStream(directoryListing[directoryPosition])));
             }
-            
+
         } catch (Throwable t) {
             t.printStackTrace();
         }
-        
+
     }
-    
+
     private Exporter getVaultCSVExporter() {
         Exporter result = null;
         OpenDiabetesPluginManager pluginManager;
         pluginManager = OpenDiabetesPluginManager.getInstance();
         List<String> exportPlugins = pluginManager.getPluginIDsOfType(Exporter.class
         );
-        
+
         for (int i = 0; i < exportPlugins.size(); i++) {
             Exporter plugin = pluginManager.getPluginFromString(Exporter.class,
                     exportPlugins.get(i));
@@ -645,26 +671,26 @@ public class SliceController extends FatherController implements Initializable {
                 result = plugin;
             }
         }
-        
+
         return result;
     }
 
     //DateTimePicker avaible Dates
     private Callback<DatePicker, DateCell> getDayCellFactory() {
-        
+
         final Callback<DatePicker, DateCell> dayCellFactory = new Callback<DatePicker, DateCell>() {
-            
+
             @Override
             public DateCell call(final DatePicker datePicker) {
                 return new DateCell() {
                     @Override
                     public void updateItem(LocalDate item, boolean empty) {
                         super.updateItem(item, empty);
-                        
+
                         LocalDate firstDate = importedData.get(0).getTimestamp().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-                        
+
                         LocalDate lastDate = importedData.get(importedData.size() - 1).getTimestamp().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-                        
+
                         if (item.isBefore(firstDate) || item.isAfter(lastDate)) {
                             setDisable(true);
                             setStyle("-fx-background-color: #ffc0cb;");
@@ -675,5 +701,5 @@ public class SliceController extends FatherController implements Initializable {
         };
         return dayCellFactory;
     }
-    
+
 }
