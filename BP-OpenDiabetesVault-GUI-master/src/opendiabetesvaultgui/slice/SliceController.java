@@ -22,12 +22,15 @@ import de.opendiabetes.vault.processing.filter.options.VaultEntryTypeFilterOptio
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import static java.lang.Thread.sleep;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -41,6 +44,7 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -58,6 +62,7 @@ import javafx.scene.control.DateCell;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Separator;
 import javafx.scene.control.TextField;
@@ -115,6 +120,21 @@ public class SliceController extends FatherController implements Initializable {
 
     @FXML
     private ImageView imageViewForFilter;
+
+    @FXML
+    private ProgressBar importprogressbar;
+
+    @FXML
+    private Label maximportnumber;
+
+    @FXML
+    private TextField currentimport;
+
+    @FXML
+    private Button nextbutton;
+
+    @FXML
+    private Button previousbutton;
 
     private static final String FILTER_NAME = "FilterName";
     private static final String SEPARATOR = ":";
@@ -257,13 +277,26 @@ public class SliceController extends FatherController implements Initializable {
             if (exportDirectory != null && directoryPosition > 0) {
                 directoryPosition--;
 
-                File[] directoryListing = exportDirectory.listFiles();
+                File[] directoryListing = exportDirectory.listFiles(new FileFilter() {
+                    public boolean accept(File file) {
+                        return file.isFile() && file.getName().toLowerCase().endsWith(".png");
+                    }
+                });
+
+                if (directoryListing != null && directoryListing.length > 0) {
+                    imageViewForFilter.setImage(new Image(new FileInputStream(directoryListing[directoryPosition])));
+                }
+
+                maximportnumber.setText("/ " + directoryListing.length);
+                currentimport.setText("" + (directoryPosition + 1));
 
                 if (directoryListing != null) {
-                    
-                    if (directoryListing[directoryPosition].getAbsolutePath().endsWith("png")) {
-                        imageViewForFilter.setImage(new Image(new FileInputStream(directoryListing[directoryPosition])));
-                    }
+                    imageViewForFilter.setImage(new Image(new FileInputStream(directoryListing[directoryPosition])));
+                }
+
+                nextbutton.setDisable(false);
+                if (0 >= directoryPosition) {
+                    previousbutton.setDisable(true);
                 }
             }
         } catch (Throwable t) {
@@ -275,22 +308,28 @@ public class SliceController extends FatherController implements Initializable {
     @FXML
     private void getNextImage(ActionEvent event) {
         try {
+
             if (exportDirectory != null) {
-                directoryPosition++;
 
-                File[] directoryListing = exportDirectory.listFiles();
-
-                if (directoryListing != null) {
-                    if (directoryPosition >= directoryListing.length) {
-                        directoryPosition = directoryListing.length - 1;
+                File[] directoryListing = exportDirectory.listFiles(new FileFilter() {
+                    public boolean accept(File file) {
+                        return file.isFile() && file.getName().toLowerCase().endsWith(".png");
                     }
+                });
 
-                    
-                    if (directoryListing[directoryPosition].getAbsolutePath().endsWith("png")) {
-                        imageViewForFilter.setImage(new Image(new FileInputStream(directoryListing[directoryPosition])));
+                if (directoryListing != null && directoryListing.length > 0 && directoryListing.length - 1 > directoryPosition) {
+                    directoryPosition++;
+                    imageViewForFilter.setImage(new Image(new FileInputStream(directoryListing[directoryPosition])));
+                    maximportnumber.setText("/ " + directoryListing.length);
+                    currentimport.setText("" + (directoryPosition + 1));
+
+                    previousbutton.setDisable(false);
+                    if (directoryListing.length - 1 == directoryPosition) {
+                        nextbutton.setDisable(true);
                     }
 
                 }
+
             }
         } catch (Throwable t) {
             t.printStackTrace();
@@ -546,22 +585,21 @@ public class SliceController extends FatherController implements Initializable {
 
                         tmpInputPane.getChildren().add(tmpHBox);
 
-                        Button deleteButton = new Button();
-                        deleteButton.setText("Entfernen");
-                        deleteButton.setOnAction(new EventHandler<ActionEvent>() {
-                            @Override
-                            public void handle(ActionEvent event) {
-                                filterColumnVBoxes.get(tmpNode.getColumnNumber()).getChildren().remove(tmpInputPane);
-
-                                for (List<FilterNode> columnFilterNode : columnFilterNodes) {
-                                    columnFilterNode.remove(tmpNode);
-                                }
-                            }
-                        });
-
-                        tmpInputPane.getChildren().add(deleteButton);
-
                     }
+                    Button deleteButton = new Button();
+                    deleteButton.setText("Entfernen");
+                    deleteButton.setOnAction(new EventHandler<ActionEvent>() {
+                        @Override
+                        public void handle(ActionEvent event) {
+                            filterColumnVBoxes.get(tmpNode.getColumnNumber()).getChildren().remove(tmpInputPane);
+
+                            for (List<FilterNode> columnFilterNode : columnFilterNodes) {
+                                columnFilterNode.remove(tmpNode);
+                            }
+                        }
+                    });
+
+                    tmpInputPane.getChildren().add(deleteButton);
 
                     if (tmpNode.getColumnNumber() + 1 == columnFilterNodes.size()) {
                         addNewChoiceBoxAndSeperator();
@@ -627,6 +665,8 @@ public class SliceController extends FatherController implements Initializable {
     private String exportFilePath = plotteriaPath + File.separator + "export.csv";
     private File exportDirectory;
     private int directoryPosition = 0;
+    private Thread exportThread;
+    private float currentProgress = -1;
 
     private void generateGraphs(FilterResult filterResult) {
 
@@ -640,16 +680,54 @@ public class SliceController extends FatherController implements Initializable {
             exportDirectory = new File(exportFileDir);
             FileUtils.cleanDirectory(exportDirectory);
 
+            String command = "python " + plotPyPath + " -c " + configIniPath + " -d -f " + exportFilePath + " -o " + exportFileDir;
+
+            importprogressbar.setProgress(currentProgress);
             //python command
-            Runtime runtime = Runtime.getRuntime();
-            Process process = runtime.exec("python " + plotPyPath + " -c " + configIniPath + " -d -f " + exportFilePath + " -o " + exportFileDir);
+            Task<Void> exportTask = new Task<Void>() {
+                @Override
+                protected Void call() throws Exception {
+                    try {
+                        Runtime runtime = Runtime.getRuntime();
+                        Process exportProcess = runtime.exec(command);
 
-            //laden und anzeigen
-            File[] directoryListing = exportDirectory.listFiles();
+                        while (currentProgress < 1) {
+                            BufferedReader in = new BufferedReader(new InputStreamReader(exportProcess.getInputStream()));
+                            String line;
+                            while ((line = in.readLine()) != null) {
+                                if (line.endsWith("%")) {
+                                    line = line.replace("%", "");
+                                    line = line.trim();
+                                    currentProgress = Float.parseFloat(line) / 100;
+                                    this.updateProgress(currentProgress, 1);
 
-            if (directoryListing != null) {
-                imageViewForFilter.setImage(new Image(new FileInputStream(directoryListing[directoryPosition])));
-            }
+                                    //laden und nur pngs anzeigen
+                                    File[] directoryListing = exportDirectory.listFiles(new FileFilter() {
+                                        public boolean accept(File file) {
+                                            return file.isFile() && file.getName().toLowerCase().endsWith(".png");
+                                        }
+                                    });
+
+                                    if (directoryListing != null && directoryListing.length > 0) {
+                                        imageViewForFilter.setImage(new Image(new FileInputStream(directoryListing[directoryPosition])));
+                                    }
+                                }
+                            }
+                            sleep(500);
+                        }
+                        currentProgress = 1;
+                    } catch (Throwable t) {
+                        t.printStackTrace();
+                    }
+                    return null;
+                }
+            };
+
+            importprogressbar.progressProperty().bind(exportTask.progressProperty());
+
+            exportThread = new Thread(exportTask);
+            exportThread.setDaemon(true);
+            exportThread.start();
 
         } catch (Throwable t) {
             t.printStackTrace();
