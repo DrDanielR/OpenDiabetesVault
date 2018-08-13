@@ -74,10 +74,20 @@ and open the template in the editor.
     -fx-border-radius:2em;
 }
 
-.choiceBox {
-    -fx-background-color:  #007399;
-    -fx-text-fill: #FFFFFF;
+.choice-box {
+    -fx-background-color:  #007399;    
+
+}
+.choice-box > .label {
+    -fx-text-fill: #FFFFFF; 
     -fx-stroke: #FFFFFF;
+}
+
+.choice-box .menu-item:focused > .label { 
+    -fx-text-fill: white; 
+}
+.choice-box .menu-item:focused { 
+    -fx-background-color: #007399; 
 }
 
 #seperatorBar{

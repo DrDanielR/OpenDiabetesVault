@@ -68,11 +68,20 @@
                                 <ImageView fx:id="imageViewForFilter" fitHeight="325.0" fitWidth="700.0" pickOnBounds="true" preserveRatio="true" />
                                 <HBox prefHeight="100.0" prefWidth="200.0" GridPane.rowIndex="1">
                                     <children>
-                                        <Button fx:id="previousbutton" mnemonicParsing="false" onAction="#getPreviousImage" text="previous" />
+                                        <Button fx:id="previousbutton" mnemonicParsing="false" onAction="#getPreviousImage" text="previous">
+                                 <HBox.margin>
+                                    <Insets right="10.0" />
+                                 </HBox.margin></Button>
                                         <ProgressBar fx:id="importprogressbar" prefHeight="18.0" prefWidth="581.0" progress="0.0" />
-                                        <TextField fx:id="currentimport" onAction="#changeCurrentImage" prefHeight="25.0" prefWidth="52.0" />
+                                        <TextField fx:id="currentimport" onAction="#changeCurrentImage" prefHeight="25.0" prefWidth="52.0">
+                                 <HBox.margin>
+                                    <Insets left="10.0" />
+                                 </HBox.margin></TextField>
                                         <Label fx:id="maximportnumber" text="/ 0" />
-                                        <Button fx:id="nextbutton" mnemonicParsing="false" onAction="#getNextImage" text="next" />
+                                        <Button fx:id="nextbutton" mnemonicParsing="false" onAction="#getNextImage" text="next">
+                                 <HBox.margin>
+                                    <Insets left="10.0" />
+                                 </HBox.margin></Button>
                                     </children>
                                 </HBox>
                             </children>
