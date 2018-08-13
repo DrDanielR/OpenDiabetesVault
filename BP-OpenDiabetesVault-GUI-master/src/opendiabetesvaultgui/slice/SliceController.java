@@ -263,6 +263,9 @@ public class SliceController extends FatherController implements Initializable {
 
         List<Filter> filters = getFiltersFromCurrentState();
         if (filters != null) {
+            //null entfernen normalerweise keine drinnen
+            while (filters.remove(null));
+
             FilterResult filterResult = filterManagementUtil.sliceVaultEntries(filters, importedData);
 
             if (filterResult != null) {
@@ -277,7 +280,7 @@ public class SliceController extends FatherController implements Initializable {
 
     @FXML
     private void changeCurrentImage(ActionEvent event) {
-        int tmp = Integer.parseInt(currentimport.getText()) -1;
+        int tmp = Integer.parseInt(currentimport.getText()) - 1;
 
         if (tmp <= currentMaxImportNumber && tmp > 0) {
             try {
@@ -566,6 +569,8 @@ public class SliceController extends FatherController implements Initializable {
                             Callback<DatePicker, DateCell> dayCellFactory = getDayCellFactory();
                             datePicker.setDayCellFactory(dayCellFactory);
 
+                            tmpNode.addParam(simpleName, datePicker.getValue().toString());
+
                             tmpHBox.getChildren().add(datePicker);
 
                             //ActionEvent for params
@@ -578,6 +583,7 @@ public class SliceController extends FatherController implements Initializable {
                         } else if (typeClass.getSimpleName().equals("boolean")) {
                             CheckBox checkBox = new CheckBox();
                             tmpHBox.getChildren().add(checkBox);
+                            tmpNode.addParam(simpleName, "" + checkBox.isSelected());
 
                             //ActionEvent for params
                             checkBox.setOnAction(new EventHandler<ActionEvent>() {
@@ -588,13 +594,15 @@ public class SliceController extends FatherController implements Initializable {
                             });
                         } else if (typeClass.getSimpleName().equals("Map")) {
                             ChoiceBox choiceBox = new ChoiceBox();
-                            choiceBox.getSelectionModel().selectFirst();
+
                             final FilterOption filterOption = filterManagementUtil.getFilterAndOptionFromName(name).getOption();
 
                             ObservableList itemsForTmpChocieBox = FXCollections.observableArrayList(filterOption.getDropDownEntries().keySet());
                             choiceBox.setItems(itemsForTmpChocieBox);
+                            choiceBox.getSelectionModel().selectFirst();
 
                             tmpHBox.getChildren().add(choiceBox);
+                            tmpNode.addParam(simpleName, filterOption.getDropDownEntries().get(choiceBox.getSelectionModel().getSelectedItem()));
 
                             //ActionEvent for params
                             choiceBox.setOnAction(new EventHandler<ActionEvent>() {
@@ -612,10 +620,12 @@ public class SliceController extends FatherController implements Initializable {
                                 tmpTextField.setPromptText("00:00");
                                 TextFormatter textFormatter = new TextFormatter(new LocalTimeStringConverter());
                                 tmpTextField.setTextFormatter(textFormatter);
+                                tmpNode.addParam(simpleName, "00:00");
                             } else if (typeClass.getSimpleName().equals("int") || typeClass.getSimpleName().equals("long")) {
-                                tmpTextField.setPromptText("0000");
+                                tmpTextField.setPromptText("0");
                                 TextFormatter textFormatter = new TextFormatter(new NumberStringConverter());
                                 tmpTextField.setTextFormatter(textFormatter);
+                                tmpNode.addParam(simpleName, "0");
                             }
 
                             tmpHBox.getChildren().add(tmpTextField);
