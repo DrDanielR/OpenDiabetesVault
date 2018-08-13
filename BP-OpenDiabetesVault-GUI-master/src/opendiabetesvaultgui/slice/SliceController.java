@@ -42,9 +42,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -55,6 +58,8 @@ import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.chart.XYChart.Data;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
@@ -271,13 +276,41 @@ public class SliceController extends FatherController implements Initializable {
     }
 
     @FXML
+    private void changeCurrentImage(ActionEvent event) {
+        int tmp = Integer.parseInt(currentimport.getText()) -1;
+
+        if (tmp <= currentMaxImportNumber && tmp > 0) {
+            try {
+                directoryPosition = tmp;
+                if (directoryListing != null) {
+                    imageViewForFilter.setImage(new Image(new FileInputStream(directoryListing[directoryPosition])));
+                }
+
+                if (directoryPosition == 0) {
+                    previousbutton.setDisable(true);
+                    nextbutton.setDisable(false);
+                } else if (directoryPosition == currentMaxImportNumber) {
+                    nextbutton.setDisable(true);
+                    previousbutton.setDisable(false);
+                } else {
+                    nextbutton.setDisable(false);
+                    previousbutton.setDisable(false);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        }
+    }
+
+    @FXML
     private void getPreviousImage(ActionEvent event) {
 
         try {
             if (exportDirectory != null && directoryPosition > 0) {
                 directoryPosition--;
 
-                File[] directoryListing = exportDirectory.listFiles(new FileFilter() {
+                directoryListing = exportDirectory.listFiles(new FileFilter() {
                     public boolean accept(File file) {
                         return file.isFile() && file.getName().toLowerCase().endsWith(".png");
                     }
@@ -287,7 +320,8 @@ public class SliceController extends FatherController implements Initializable {
                     imageViewForFilter.setImage(new Image(new FileInputStream(directoryListing[directoryPosition])));
                 }
 
-                maximportnumber.setText("/ " + directoryListing.length);
+                currentMaxImportNumber = directoryListing.length;
+                maximportnumber.setText("/ " + currentMaxImportNumber);
                 currentimport.setText("" + (directoryPosition + 1));
 
                 if (directoryListing != null) {
@@ -311,7 +345,7 @@ public class SliceController extends FatherController implements Initializable {
 
             if (exportDirectory != null) {
 
-                File[] directoryListing = exportDirectory.listFiles(new FileFilter() {
+                directoryListing = exportDirectory.listFiles(new FileFilter() {
                     public boolean accept(File file) {
                         return file.isFile() && file.getName().toLowerCase().endsWith(".png");
                     }
@@ -320,7 +354,8 @@ public class SliceController extends FatherController implements Initializable {
                 if (directoryListing != null && directoryListing.length > 0 && directoryListing.length - 1 > directoryPosition) {
                     directoryPosition++;
                     imageViewForFilter.setImage(new Image(new FileInputStream(directoryListing[directoryPosition])));
-                    maximportnumber.setText("/ " + directoryListing.length);
+                    currentMaxImportNumber = directoryListing.length;
+                    maximportnumber.setText("/ " + currentMaxImportNumber);
                     currentimport.setText("" + (directoryPosition + 1));
 
                     previousbutton.setDisable(false);
@@ -408,6 +443,17 @@ public class SliceController extends FatherController implements Initializable {
         //addItems to listview
         ObservableList<String> items = listviewfilterelements.getItems();
         items.addAll(filterManagementUtil.getAllNotCombineFilters());
+
+        //Textfield only numbers
+        currentimport.textProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue,
+                    String newValue) {
+                if (!newValue.matches("\\d*")) {
+                    currentimport.setText(newValue.replaceAll("[^\\d]", ""));
+                }
+            }
+        });
 
         //Dragevent for Listview
         listviewfilterelements.setOnDragDetected(new EventHandler<MouseEvent>() {
@@ -657,6 +703,7 @@ public class SliceController extends FatherController implements Initializable {
 
     }
 
+    //import stuff
     private String userDir = System.getProperty("user.dir");
     private String plotteriaPath = userDir + File.separator + "plotteria";
     private String plotPyPath = plotteriaPath + File.separator + "plot.py";
@@ -667,6 +714,8 @@ public class SliceController extends FatherController implements Initializable {
     private int directoryPosition = 0;
     private Thread exportThread;
     private float currentProgress = -1;
+    File[] directoryListing;
+    int currentMaxImportNumber = 0;
 
     private void generateGraphs(FilterResult filterResult) {
 
@@ -702,7 +751,7 @@ public class SliceController extends FatherController implements Initializable {
                                     this.updateProgress(currentProgress, 1);
 
                                     //laden und nur pngs anzeigen
-                                    File[] directoryListing = exportDirectory.listFiles(new FileFilter() {
+                                    directoryListing = exportDirectory.listFiles(new FileFilter() {
                                         public boolean accept(File file) {
                                             return file.isFile() && file.getName().toLowerCase().endsWith(".png");
                                         }
@@ -716,12 +765,43 @@ public class SliceController extends FatherController implements Initializable {
                             sleep(500);
                         }
                         currentProgress = 1;
+                        succeeded();
                     } catch (Throwable t) {
                         t.printStackTrace();
+                        updateMessage(t.getMessage());
+                        failed();
                     }
                     return null;
                 }
             };
+
+            exportTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+                @Override
+                public void handle(WorkerStateEvent event) {
+                    directoryListing = exportDirectory.listFiles(new FileFilter() {
+                        public boolean accept(File file) {
+                            return file.isFile() && file.getName().toLowerCase().endsWith(".png");
+                        }
+                    });
+
+                    currentMaxImportNumber = directoryListing.length;
+                    maximportnumber.setText("/ " + currentMaxImportNumber);
+                }
+            });
+
+            exportTask.setOnFailed(new EventHandler<WorkerStateEvent>() {
+                @Override
+                public void handle(WorkerStateEvent event) {
+                    String message = exportTask.getMessage();
+
+                    Alert alert = new Alert(AlertType.ERROR);
+                    alert.setTitle("Import Fehlgeschlagen");
+                    alert.setHeaderText("Import Fehlgeschlagen:");
+                    alert.setContentText(message);
+
+                    alert.showAndWait();
+                }
+            });
 
             importprogressbar.progressProperty().bind(exportTask.progressProperty());
 
