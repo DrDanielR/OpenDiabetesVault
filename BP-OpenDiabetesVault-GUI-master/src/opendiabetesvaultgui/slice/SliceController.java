@@ -42,6 +42,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -53,6 +55,8 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Orientation;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
@@ -70,6 +74,8 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Separator;
+import javafx.scene.control.Spinner;
+import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.image.Image;
@@ -133,13 +139,13 @@ public class SliceController extends FatherController implements Initializable {
     private Label maximportnumber;
 
     @FXML
-    private TextField currentimport;
-
-    @FXML
     private Button nextbutton;
 
     @FXML
     private Button previousbutton;
+
+    @FXML
+    private Spinner currentimport;
 
     private static final String FILTER_NAME = "FilterName";
     private static final String SEPARATOR = ":";
@@ -279,8 +285,23 @@ public class SliceController extends FatherController implements Initializable {
     }
 
     @FXML
+    private void doReset(ActionEvent event) {
+
+        //Alle Filter löschen      
+        for (VBox filterColumnVBoxe : filterColumnVBoxes) {
+            filterColumnVBoxe.getChildren().removeAll(filterColumnVBoxe.getChildren());
+        }
+        filterColumnVBoxes.clear();
+        filterColumnSeparator.clear();
+        filterColumnChoiceBoxes.clear();
+        columnFilterNodes.clear();
+
+        addNewChoiceBoxAndSeperator();
+    }
+
+    @FXML
     private void changeCurrentImage(ActionEvent event) {
-        int tmp = Integer.parseInt(currentimport.getText()) - 1;
+        int tmp = Integer.parseInt(currentimport.getValue().toString()) - 1;
 
         if (tmp <= currentMaxImportNumber && tmp > 0) {
             try {
@@ -308,70 +329,12 @@ public class SliceController extends FatherController implements Initializable {
 
     @FXML
     private void getPreviousImage(ActionEvent event) {
-
-        try {
-            if (exportDirectory != null && directoryPosition > 0) {
-                directoryPosition--;
-
-                directoryListing = exportDirectory.listFiles(new FileFilter() {
-                    public boolean accept(File file) {
-                        return file.isFile() && file.getName().toLowerCase().endsWith(".png");
-                    }
-                });
-
-                if (directoryListing != null && directoryListing.length > 0) {
-                    imageViewForFilter.setImage(new Image(new FileInputStream(directoryListing[directoryPosition])));
-                }
-
-                currentMaxImportNumber = directoryListing.length;
-                maximportnumber.setText("/ " + currentMaxImportNumber);
-                currentimport.setText("" + (directoryPosition + 1));
-
-                if (directoryListing != null) {
-                    imageViewForFilter.setImage(new Image(new FileInputStream(directoryListing[directoryPosition])));
-                }
-
-                nextbutton.setDisable(false);
-                if (0 >= directoryPosition) {
-                    previousbutton.setDisable(true);
-                }
-            }
-        } catch (Throwable t) {
-            t.printStackTrace();
-        }
-
+        currentimport.decrement();
     }
 
     @FXML
     private void getNextImage(ActionEvent event) {
-        try {
-
-            if (exportDirectory != null) {
-
-                directoryListing = exportDirectory.listFiles(new FileFilter() {
-                    public boolean accept(File file) {
-                        return file.isFile() && file.getName().toLowerCase().endsWith(".png");
-                    }
-                });
-
-                if (directoryListing != null && directoryListing.length > 0 && directoryListing.length - 1 > directoryPosition) {
-                    directoryPosition++;
-                    imageViewForFilter.setImage(new Image(new FileInputStream(directoryListing[directoryPosition])));
-                    currentMaxImportNumber = directoryListing.length;
-                    maximportnumber.setText("/ " + currentMaxImportNumber);
-                    currentimport.setText("" + (directoryPosition + 1));
-
-                    previousbutton.setDisable(false);
-                    if (directoryListing.length - 1 == directoryPosition) {
-                        nextbutton.setDisable(true);
-                    }
-
-                }
-
-            }
-        } catch (Throwable t) {
-            t.printStackTrace();
-        }
+        currentimport.increment();
     }
 
     private List<Filter> getFiltersFromCurrentState() {
@@ -394,10 +357,6 @@ public class SliceController extends FatherController implements Initializable {
     private void populateChart(FilterResult filterResult) {
 
         filterchart.getData().removeAll(filterchart.getData());
-
-        if (filterResult == null) {
-            filterResult = filterManagementUtil.getLastDay(importedData);
-        }
 
         Map<String, List<VaultEntry>> clusteredVaultEnries = new HashMap<>();
 
@@ -436,27 +395,43 @@ public class SliceController extends FatherController implements Initializable {
         filterManagementUtil = new FilterManagementUtil();
 
         //Grafik laden ggf. erstmal heutigen Tag
-        populateChart(null);
+        exportDirectory = new File(exportFileDir);
+        emptyDirectoryForGraphs(exportDirectory);
+        FilterResult filterResult = filterManagementUtil.getLastDay(importedData);
+        populateChart(filterResult);
+        generateGraphs(filterResult);
 
         //ToDo ChocieBox füllen Mit registrierten Combine Filter
         itemsForChocieBox = FXCollections.observableArrayList(filterManagementUtil.getCombineFilter());
 
         addNewChoiceBoxAndSeperator();
 
+        //ValueFactory for Spinner
+        SpinnerValueFactory<Integer> valueFactory = new SpinnerValueFactory<Integer>() {
+            @Override
+            public void decrement(int steps) {
+                for (int i = 0; i < steps; i++) {
+                    decrementImageView();
+                    this.setValue(this.getValue() - 1);
+                }
+            }
+
+            @Override
+            public void increment(int steps) {
+
+                for (int i = 0; i < steps; i++) {
+                    incrementImageView();
+                    this.setValue(this.getValue() + 1);
+                }
+
+            }
+        };
+        valueFactory.setValue(1);
+        currentimport.setValueFactory(valueFactory);
+
         //addItems to listview
         ObservableList<String> items = listviewfilterelements.getItems();
         items.addAll(filterManagementUtil.getAllNotCombineFilters());
-
-        //Textfield only numbers
-        currentimport.textProperty().addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observable, String oldValue,
-                    String newValue) {
-                if (!newValue.matches("\\d*")) {
-                    currentimport.setText(newValue.replaceAll("[^\\d]", ""));
-                }
-            }
-        });
 
         //Dragevent for Listview
         listviewfilterelements.setOnDragDetected(new EventHandler<MouseEvent>() {
@@ -526,6 +501,7 @@ public class SliceController extends FatherController implements Initializable {
 
                     String name = db.getString();
                     VBox tmpInputPane = new VBox();
+                    tmpInputPane.setSpacing(10);
 
                     FilterNode tmpNode;
                     Map<String, Class> parameterClasses = filterManagementUtil.getParametersFromName(name);
@@ -554,6 +530,7 @@ public class SliceController extends FatherController implements Initializable {
                         final Class typeClass = (Class) pair.getValue();
 
                         HBox tmpHBox = new HBox();
+                        tmpHBox.setAlignment(Pos.CENTER);
                         tmpHBox.setMaxWidth(200);
 
                         tmpHBox.getChildren().add(new Label(simpleName));
@@ -728,16 +705,16 @@ public class SliceController extends FatherController implements Initializable {
     int currentMaxImportNumber = 0;
 
     private void generateGraphs(FilterResult filterResult) {
-
         try {
-            //Exportieren            
+            //Exportieren            Ändern
             Exporter exporter = getVaultCSVExporter();
             File file = new File(exportFilePath);
             file.createNewFile();
             exporter.exportDataToFile(exportFilePath, filterResult.filteredData);
 
             exportDirectory = new File(exportFileDir);
-            FileUtils.cleanDirectory(exportDirectory);
+
+            emptyDirectoryForGraphs(exportDirectory);
 
             String command = "python " + plotPyPath + " -c " + configIniPath + " -d -f " + exportFilePath + " -o " + exportFileDir;
 
@@ -772,7 +749,6 @@ public class SliceController extends FatherController implements Initializable {
                                     }
                                 }
                             }
-                            sleep(500);
                         }
                         currentProgress = 1;
                         succeeded();
@@ -868,6 +844,77 @@ public class SliceController extends FatherController implements Initializable {
             }
         };
         return dayCellFactory;
+    }
+
+    private void emptyDirectoryForGraphs(File exportDirectory) {
+        try {
+            imageViewForFilter.setImage(null);
+            FileUtils.cleanDirectory(exportDirectory);
+        } catch (IOException ex) {
+            Logger.getLogger(SliceController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private void incrementImageView() {
+        try {
+
+            if (exportDirectory != null) {
+
+                directoryListing = exportDirectory.listFiles(new FileFilter() {
+                    public boolean accept(File file) {
+                        return file.isFile() && file.getName().toLowerCase().endsWith(".png");
+                    }
+                });
+
+                if (directoryListing != null && directoryListing.length > 0 && directoryListing.length - 1 > directoryPosition) {
+                    directoryPosition++;
+                    imageViewForFilter.setImage(new Image(new FileInputStream(directoryListing[directoryPosition])));
+                    currentMaxImportNumber = directoryListing.length;
+                    maximportnumber.setText("/ " + currentMaxImportNumber);
+
+                    previousbutton.setDisable(false);
+                    if (directoryListing.length - 1 == directoryPosition) {
+                        nextbutton.setDisable(true);
+                    }
+
+                }
+
+            }
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
+    }
+
+    private void decrementImageView() {
+        try {
+            if (exportDirectory != null && directoryPosition > 0) {
+                directoryPosition--;
+
+                directoryListing = exportDirectory.listFiles(new FileFilter() {
+                    public boolean accept(File file) {
+                        return file.isFile() && file.getName().toLowerCase().endsWith(".png");
+                    }
+                });
+
+                if (directoryListing != null && directoryListing.length > 0) {
+                    imageViewForFilter.setImage(new Image(new FileInputStream(directoryListing[directoryPosition])));
+                }
+
+                currentMaxImportNumber = directoryListing.length;
+                maximportnumber.setText("/ " + currentMaxImportNumber);
+
+                if (directoryListing != null) {
+                    imageViewForFilter.setImage(new Image(new FileInputStream(directoryListing[directoryPosition])));
+                }
+
+                nextbutton.setDisable(false);
+                if (0 >= directoryPosition) {
+                    previousbutton.setDisable(true);
+                }
+            }
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
     }
 
 }
