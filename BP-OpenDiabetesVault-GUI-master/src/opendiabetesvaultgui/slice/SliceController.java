@@ -109,7 +109,7 @@ public class SliceController extends FatherController implements Initializable {
     private GridPane gridPane;
 
     @FXML
-    private ListView<String> listviewfilterelements;
+    private ListView<Node> listviewfilterelements;
 
     @FXML
     private Button filterbutton;
@@ -257,7 +257,24 @@ public class SliceController extends FatherController implements Initializable {
 
             List<Filter> filters = getFiltersFromLists(combineFilters, filterNodes);
             importedFilterNodes.put(file.getName(), new FilterNode(file.getName(), filters));
-            listviewfilterelements.getItems().add(file.getName());
+
+            //Element für listview erstellen
+            HBox hBox = new HBox();
+            ImageView imageView = new ImageView();
+            imageView.setFitHeight(25);
+            imageView.setFitWidth(25);
+
+            File imageFile = new File("src/opendiabetesvaultgui/shapes/gear.png");
+            Image image = new Image(imageFile.toURI().toString());
+            imageView.setImage(image);
+
+            hBox.getChildren().add(imageView);
+
+            Label label = new Label();
+            label.setText(file.getName());
+            hBox.getChildren().add(label);;
+
+            listviewfilterelements.getItems().add(hBox);
 
         } catch (Throwable t) {
             t.printStackTrace();
@@ -291,6 +308,7 @@ public class SliceController extends FatherController implements Initializable {
         for (VBox filterColumnVBoxe : filterColumnVBoxes) {
             filterColumnVBoxe.getChildren().removeAll(filterColumnVBoxe.getChildren());
         }
+        filterCombinationHbox.getChildren().removeAll(filterCombinationHbox.getChildren());
         filterColumnVBoxes.clear();
         filterColumnSeparator.clear();
         filterColumnChoiceBoxes.clear();
@@ -401,7 +419,7 @@ public class SliceController extends FatherController implements Initializable {
         populateChart(filterResult);
         generateGraphs(filterResult);
 
-        //ToDo ChocieBox füllen Mit registrierten Combine Filter
+        //ToDo ChocieBox füllen Mit registrierten Combine Filter        
         itemsForChocieBox = FXCollections.observableArrayList(filterManagementUtil.getCombineFilter());
 
         addNewChoiceBoxAndSeperator();
@@ -414,24 +432,28 @@ public class SliceController extends FatherController implements Initializable {
                     decrementImageView();
                     this.setValue(this.getValue() - 1);
                 }
+                if (this.getValue() <= 0) {
+                    this.setValue(1);
+                }
             }
 
             @Override
             public void increment(int steps) {
-
                 for (int i = 0; i < steps; i++) {
                     incrementImageView();
                     this.setValue(this.getValue() + 1);
                 }
-
+                if (this.getValue() > currentMaxImportNumber) {
+                    this.setValue(currentMaxImportNumber);
+                }
             }
         };
         valueFactory.setValue(1);
         currentimport.setValueFactory(valueFactory);
 
-        //addItems to listview
-        ObservableList<String> items = listviewfilterelements.getItems();
-        items.addAll(filterManagementUtil.getAllNotCombineFilters());
+        //addItems to listview Filter
+        ObservableList<Node> items = listviewfilterelements.getItems();
+        items.addAll(getItemsForFilterListView());
 
         //Dragevent for Listview
         listviewfilterelements.setOnDragDetected(new EventHandler<MouseEvent>() {
@@ -440,7 +462,10 @@ public class SliceController extends FatherController implements Initializable {
                 Dragboard dragBoard = listviewfilterelements.startDragAndDrop(TransferMode.ANY);
 
                 ClipboardContent content = new ClipboardContent();
-                content.putString(listviewfilterelements.getSelectionModel().getSelectedItem());
+
+                Label label = (Label) ((HBox) listviewfilterelements.getSelectionModel().getSelectedItem()).getChildren().get(1);
+
+                content.putString(label.getText());
                 dragBoard.setContent(content);
 
                 event.consume();
@@ -517,7 +542,7 @@ public class SliceController extends FatherController implements Initializable {
                     Label label = new Label();
                     label.setText(name);
 
-                    tmpInputPane.setStyle("-fx-border-color:grey;");
+                    tmpInputPane.setStyle("-fx-border-color:grey; border-radius: 20px; box-shadow: 2px 3px #888888;");
 
                     calculateLabelPosition(tmpNode);
 
@@ -676,6 +701,7 @@ public class SliceController extends FatherController implements Initializable {
         //Vbox für Filter und ChoiceBox
         VBox vBox = new VBox();
 
+        vBox.setSpacing(5);
         ChoiceBox choiceBox = new ChoiceBox(itemsForChocieBox);
         choiceBox.getSelectionModel().selectFirst();
         filterColumnChoiceBoxes.add(choiceBox);
@@ -706,18 +732,23 @@ public class SliceController extends FatherController implements Initializable {
 
     private void generateGraphs(FilterResult filterResult) {
         try {
-            //Exportieren            Ändern
-            Exporter exporter = getVaultCSVExporter();
+            exportDirectory = new File(exportFileDir);
+            emptyDirectoryForGraphs(exportDirectory);
+
+            //Exportieren
+            //Exporter exporter = getVaultCSVExporter();
+            Exporter exporter = new VaultCsvExporterExtended();
             File file = new File(exportFilePath);
             file.createNewFile();
             exporter.exportDataToFile(exportFilePath, filterResult.filteredData);
 
-            exportDirectory = new File(exportFileDir);
-
-            emptyDirectoryForGraphs(exportDirectory);
-
             String command = "python " + plotPyPath + " -c " + configIniPath + " -d -f " + exportFilePath + " -o " + exportFileDir;
 
+            if (exportThread != null) {
+                importprogressbar.progressProperty().unbind();
+            }
+
+            currentProgress = 0;
             importprogressbar.setProgress(currentProgress);
             //python command
             Task<Void> exportTask = new Task<Void>() {
@@ -759,6 +790,7 @@ public class SliceController extends FatherController implements Initializable {
                     }
                     return null;
                 }
+
             };
 
             exportTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
@@ -797,6 +829,13 @@ public class SliceController extends FatherController implements Initializable {
 
         } catch (Throwable t) {
             t.printStackTrace();
+            Alert alert = new Alert(AlertType.ERROR);
+            alert.setTitle("Import Fehlgeschlagen");
+            alert.setHeaderText("Import Fehlgeschlagen:");
+            alert.setContentText(t.getMessage());
+
+            alert.showAndWait();
+
         }
 
     }
@@ -915,6 +954,50 @@ public class SliceController extends FatherController implements Initializable {
         } catch (Throwable t) {
             t.printStackTrace();
         }
+    }
+
+    private List<Node> getItemsForFilterListView() {
+        List<Node> result = new ArrayList<Node>();
+        List<String> filterNames = filterManagementUtil.getAllNotCombineFilters();
+
+        for (String filterName : filterNames) {
+            HBox hBox = new HBox();
+            ImageView imageView = new ImageView();
+            imageView.setFitHeight(25);
+            imageView.setFitWidth(25);
+
+            if (filterName.toLowerCase().contains("time")) {
+                File file = new File("src/opendiabetesvaultgui/shapes/time.png");
+                Image image = new Image(file.toURI().toString());
+                imageView.setImage(image);
+            } else if (filterName.toLowerCase().contains("date")) {
+                File file = new File("src/opendiabetesvaultgui/shapes/calendar.png");
+                Image image = new Image(file.toURI().toString());
+                imageView.setImage(image);
+            } else if (filterName.toLowerCase().contains("type")) {
+                File file = new File("src/opendiabetesvaultgui/shapes/value.png");
+                Image image = new Image(file.toURI().toString());
+                imageView.setImage(image);
+            } else if (filterName.toLowerCase().contains("thres")) {
+                File file = new File("src/opendiabetesvaultgui/shapes/loading.png");
+                Image image = new Image(file.toURI().toString());
+                imageView.setImage(image);
+            } else {
+                File file = new File("src/opendiabetesvaultgui/shapes/gear.png");
+                Image image = new Image(file.toURI().toString());
+                imageView.setImage(image);
+            }
+
+            hBox.getChildren().add(imageView);
+
+            Label label = new Label();
+            label.setText(filterName);
+            hBox.getChildren().add(label);
+            result.add(hBox);
+
+        }
+
+        return result;
     }
 
 }
