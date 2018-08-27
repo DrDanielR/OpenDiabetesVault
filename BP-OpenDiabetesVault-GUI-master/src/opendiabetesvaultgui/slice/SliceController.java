@@ -525,8 +525,8 @@ public class SliceController extends FatherController implements Initializable {
                 if (db.hasString()) {
 
                     String name = db.getString();
-                    VBox tmpInputPane = new VBox();
-                    tmpInputPane.setSpacing(10);
+                    VBox tmpInputVBox = new VBox();
+                    tmpInputVBox.setSpacing(10);
 
                     FilterNode tmpNode;
                     Map<String, Class> parameterClasses = filterManagementUtil.getParametersFromName(name);
@@ -542,11 +542,11 @@ public class SliceController extends FatherController implements Initializable {
                     Label label = new Label();
                     label.setText(name);
 
-                    tmpInputPane.setStyle("-fx-border-color:grey; border-radius: 20px; box-shadow: 2px 3px #888888;");
+                    tmpInputVBox.setStyle("-fx-border-color:grey; -fx-background-radius: 10; -fx-border-radius: 10; -fx-box-shadow: 2 3 #888888;");
 
                     calculateLabelPosition(tmpNode);
 
-                    tmpInputPane.getChildren().add(label);
+                    tmpInputVBox.getChildren().add(label);
 
                     while (iterator.hasNext()) {
                         Map.Entry pair = (Map.Entry) iterator.next();
@@ -641,7 +641,7 @@ public class SliceController extends FatherController implements Initializable {
                             });
                         }
 
-                        tmpInputPane.getChildren().add(tmpHBox);
+                        tmpInputVBox.getChildren().add(tmpHBox);
 
                     }
                     Button deleteButton = new Button();
@@ -649,7 +649,7 @@ public class SliceController extends FatherController implements Initializable {
                     deleteButton.setOnAction(new EventHandler<ActionEvent>() {
                         @Override
                         public void handle(ActionEvent event) {
-                            filterColumnVBoxes.get(tmpNode.getColumnNumber()).getChildren().remove(tmpInputPane);
+                            filterColumnVBoxes.get(tmpNode.getColumnNumber()).getChildren().remove(tmpInputVBox);
 
                             for (List<FilterNode> columnFilterNode : columnFilterNodes) {
                                 columnFilterNode.remove(tmpNode);
@@ -657,13 +657,13 @@ public class SliceController extends FatherController implements Initializable {
                         }
                     });
 
-                    tmpInputPane.getChildren().add(deleteButton);
+                    tmpInputVBox.getChildren().add(deleteButton);
 
                     if (tmpNode.getColumnNumber() + 1 == columnFilterNodes.size()) {
                         addNewChoiceBoxAndSeperator();
                     }
 
-                    filterColumnVBoxes.get(tmpNode.getColumnNumber()).getChildren().add(tmpInputPane);
+                    filterColumnVBoxes.get(tmpNode.getColumnNumber()).getChildren().add(tmpInputVBox);
                     success = true;
                 }
                 event.setDropCompleted(success);
@@ -729,6 +729,7 @@ public class SliceController extends FatherController implements Initializable {
     private float currentProgress = -1;
     File[] directoryListing;
     int currentMaxImportNumber = 0;
+    Process exportProcess;
 
     private void generateGraphs(FilterResult filterResult) {
         try {
@@ -746,6 +747,9 @@ public class SliceController extends FatherController implements Initializable {
 
             if (exportThread != null) {
                 importprogressbar.progressProperty().unbind();
+                if (exportProcess != null) {
+                    exportProcess.destroyForcibly();
+                }
             }
 
             currentProgress = 0;
@@ -756,7 +760,7 @@ public class SliceController extends FatherController implements Initializable {
                 protected Void call() throws Exception {
                     try {
                         Runtime runtime = Runtime.getRuntime();
-                        Process exportProcess = runtime.exec(command);
+                        exportProcess = runtime.exec(command);
 
                         while (currentProgress < 1) {
                             BufferedReader in = new BufferedReader(new InputStreamReader(exportProcess.getInputStream()));
