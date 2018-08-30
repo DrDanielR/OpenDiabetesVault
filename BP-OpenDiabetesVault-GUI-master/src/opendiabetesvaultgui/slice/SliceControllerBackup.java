@@ -86,7 +86,6 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
-import javafx.scene.layout.Border;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -105,7 +104,7 @@ import org.apache.commons.io.FilenameUtils;
  *
  * @author Daniel Schäfer, Martin Steil, Julian Schwind, Kai Worsch
  */
-public class SliceController extends FatherController implements Initializable {
+public class SliceControllerBackup extends FatherController implements Initializable {
 
     @FXML
     private GridPane gridPane;
@@ -153,7 +152,11 @@ public class SliceController extends FatherController implements Initializable {
     private static final String SEPARATOR = ":";
     private static final String COMBINE_FILTER = "CombineFilter";
 
-    private List<VBoxChoiceBoxFilterNodesContainer> vboxChoiceBoxFilterNodesContainers = new ArrayList<>();
+    private List<VBox> filterColumnVBoxes = new ArrayList<>();
+
+    private List<ChoiceBox> filterColumnChoiceBoxes = new ArrayList<>();
+
+    private List<Separator> filterColumnSeparator = new ArrayList<>();
 
     private ObservableList itemsForChocieBox;
 
@@ -162,6 +165,8 @@ public class SliceController extends FatherController implements Initializable {
     private double mousePositionY;
 
     private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("hh:mm dd.MM.yy");
+
+    private List<List<FilterNode>> columnFilterNodes = new ArrayList<>();
 
     private Map<String, FilterNode> importedFilterNodes = new HashMap<>();
 
@@ -186,11 +191,12 @@ public class SliceController extends FatherController implements Initializable {
             FileOutputStream fileOutputStream = new FileOutputStream(file);
             BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(fileOutputStream));
 
-            for (VBoxChoiceBoxFilterNodesContainer vboxChoiceBoxFilterNodesContainer : vboxChoiceBoxFilterNodesContainers) {
-                bufferedWriter.write(COMBINE_FILTER + SEPARATOR + vboxChoiceBoxFilterNodesContainer.getChoicebox().getSelectionModel().getSelectedItem().toString());
+            int counter = 0;
+            for (String currentCombineFilter : getCurrentCombineFilters()) {
+                bufferedWriter.write(COMBINE_FILTER + SEPARATOR + currentCombineFilter);
                 bufferedWriter.newLine();
 
-                for (FilterNode filterNode : vboxChoiceBoxFilterNodesContainer.getFilterNodes()) {
+                for (FilterNode filterNode : columnFilterNodes.get(counter)) {
                     bufferedWriter.write(FILTER_NAME + SEPARATOR + filterNode.getName());
                     bufferedWriter.newLine();
 
@@ -203,6 +209,7 @@ public class SliceController extends FatherController implements Initializable {
 
                 }
 
+                counter++;
             }
 
             bufferedWriter.close();
@@ -286,9 +293,6 @@ public class SliceController extends FatherController implements Initializable {
             FilterResult filterResult = filterManagementUtil.sliceVaultEntries(filters, importedData);
 
             if (filterResult != null) {
-
-                importedData = filterResult.filteredData;
-
                 //For JavaFx
                 populateChart(filterResult);
 
@@ -301,8 +305,16 @@ public class SliceController extends FatherController implements Initializable {
     @FXML
     private void doReset(ActionEvent event) {
 
+        //Alle Filter löschen      
+        for (VBox filterColumnVBoxe : filterColumnVBoxes) {
+            filterColumnVBoxe.getChildren().removeAll(filterColumnVBoxe.getChildren());
+        }
         filterCombinationHbox.getChildren().removeAll(filterCombinationHbox.getChildren());
-        vboxChoiceBoxFilterNodesContainers.clear();
+        filterColumnVBoxes.clear();
+        filterColumnSeparator.clear();
+        filterColumnChoiceBoxes.clear();
+        columnFilterNodes.clear();
+
         addNewChoiceBoxAndSeperator();
     }
 
@@ -345,20 +357,14 @@ public class SliceController extends FatherController implements Initializable {
     }
 
     private List<Filter> getFiltersFromCurrentState() {
-        List<List<FilterNode>> columnFilterNodes = new ArrayList<>();
-
-        for (VBoxChoiceBoxFilterNodesContainer vboxChoiceBoxFilterNodesContainer : vboxChoiceBoxFilterNodesContainers) {
-            columnFilterNodes.add(vboxChoiceBoxFilterNodesContainer.getFilterNodes());
-        }
-
         List<Filter> filters = filterManagementUtil.combineFilters(getCurrentCombineFilters(), columnFilterNodes);
         return filters;
     }
 
     private List<String> getCurrentCombineFilters() {
         List<String> combineFilters = new ArrayList<>();
-        for (VBoxChoiceBoxFilterNodesContainer vBoxChoiceBoxFilterNodesContainer : vboxChoiceBoxFilterNodesContainers) {
-            combineFilters.add(vBoxChoiceBoxFilterNodesContainer.getChoicebox().getSelectionModel().getSelectedItem().toString());
+        for (ChoiceBox choiceBox : filterColumnChoiceBoxes) {
+            combineFilters.add(choiceBox.getSelectionModel().getSelectedItem().toString());
         }
         return combineFilters;
     }
@@ -467,37 +473,71 @@ public class SliceController extends FatherController implements Initializable {
             }
         });
 
+        //Nach dem Drag and drop
+        listviewfilterelements.setOnDragDone(new EventHandler<DragEvent>() {
+            public void handle(DragEvent event) {
+
+            }
+        });
+
+        //DragOver for scrollpane
+        filtercombinationfield.setOnDragOver(new EventHandler<DragEvent>() {
+            public void handle(DragEvent event) {
+                if (event.getGestureSource() != filtercombinationfield
+                        && event.getDragboard().hasString()) {
+                    event.acceptTransferModes(TransferMode.ANY);
+                    mousePositionX = event.getX();
+                    mousePositionY = event.getY();
+
+                    //filterbutton.setText("X: " + mousePositionX + " Y: " + mousePositionY);
+                }
+
+                event.consume();
+            }
+        });
+
+        //Drag Bereich betreten
+        filtercombinationfield.setOnDragEntered(new EventHandler<DragEvent>() {
+            public void handle(DragEvent event) {
+                if (event.getGestureSource() != filtercombinationfield
+                        && event.getDragboard().hasString()) {
+
+                }
+
+                event.consume();
+            }
+        });
+
+        //Drag Bereich verlassen
+        filtercombinationfield.setOnDragExited(new EventHandler<DragEvent>() {
+            public void handle(DragEvent event) {
+                /* mouse moved away, remove the graphical cues */
+
+                event.consume();
+            }
+        });
+
+        //Drag loslassen
+        filtercombinationfield.setOnDragDropped(new EventHandler<DragEvent>() {
+            public void handle(DragEvent event) {
+
+                Dragboard db = event.getDragboard();
+                boolean success = false;
+
+                if (db.hasString()) {
+                    success = DragDropFilter(db.getString(), success);
+                }
+
+                event.setDropCompleted(success);
+
+                event.consume();
+            }
+
+        });
     }
 
-    public void onDragOverFilter(DragEvent event) {
-        if (event.getGestureSource() != filtercombinationfield
-                && event.getDragboard().hasString()) {
-            event.acceptTransferModes(TransferMode.ANY);
-            mousePositionX = event.getX();
-            mousePositionY = event.getY();
-
-            //filterbutton.setText("X: " + mousePositionX + " Y: " + mousePositionY);
-        }
-
-        event.consume();
-    }
-
-    public void onDragDroppedFilter(DragEvent event, Node node, List<FilterNode> filterNodes) {
-
-        Dragboard db = event.getDragboard();
-        boolean success = false;
-
-        if (db.hasString()) {
-            success = onDragDropFilter(db.getString(), node, filterNodes);
-        }
-
-        event.setDropCompleted(success);
-
-        event.consume();
-    }
-
-    private boolean onDragDropFilter(String name, Node node, List<FilterNode> filterNodes) {
-
+    private boolean DragDropFilter(String name, boolean success) {
+        
         VBox tmpInputVBox = new VBox();
         tmpInputVBox.setSpacing(10);
 
@@ -516,6 +556,8 @@ public class SliceController extends FatherController implements Initializable {
         label.setText(name);
 
         tmpInputVBox.setStyle("-fx-border-color:grey; -fx-background-radius: 10; -fx-border-radius: 10; -fx-box-shadow: 2 3 #888888;");
+
+        calculateLabelPosition(tmpNode);
 
         tmpInputVBox.getChildren().add(label);
 
@@ -584,33 +626,6 @@ public class SliceController extends FatherController implements Initializable {
                         tmpNode.addParam(simpleName, filterOption.getDropDownEntries().get(choiceBox.getSelectionModel().getSelectedItem()));
                     }
                 });
-            } else if (typeClass.getSimpleName().toLowerCase().contains("data")) {
-                tmpNode.setData(importedData);
-                tmpHBox.getChildren().remove(tmpHBox.getChildren().get(tmpHBox.getChildren().size() - 1));
-            } else if (typeClass.getSimpleName().toLowerCase().contains("filter")) {
-                Pane pane = new Pane();
-                pane.setStyle("-fx-border-color:grey; -fx-background-radius: 10; -fx-border-radius: 10; -fx-box-shadow: 2 3 #888888;");
-                pane.setMinHeight(50);
-                pane.setMinWidth(50);
-
-                tmpNode.setFilterNodes(new ArrayList<FilterNode>());
-
-                //DragOver for vBox
-                pane.setOnDragOver(new EventHandler<DragEvent>() {
-                    public void handle(DragEvent event) {
-                        onDragOverFilter(event);
-                    }
-                });
-                //Drag loslassen
-                pane.setOnDragDropped(new EventHandler<DragEvent>() {
-                    public void handle(DragEvent event) {
-                        onDragDroppedFilter(event, pane, tmpNode.getFilterNodes());
-
-                    }
-                });
-
-                tmpHBox.getChildren().add(pane);
-
             } else {
                 TextField tmpTextField = new TextField();
                 tmpTextField.setMaxWidth(100);
@@ -639,7 +654,6 @@ public class SliceController extends FatherController implements Initializable {
                 });
             }
 
-            filterNodes.add(tmpNode);
             tmpInputVBox.getChildren().add(tmpHBox);
 
         }
@@ -648,73 +662,65 @@ public class SliceController extends FatherController implements Initializable {
         deleteButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                if (node instanceof VBox) {
-                    ((VBox) node).getChildren().remove(tmpInputVBox);
-                }
-                
-                if (node instanceof Pane) {
-                    ((Pane) node).getChildren().remove(tmpInputVBox);
-                }
+                filterColumnVBoxes.get(tmpNode.getColumnNumber()).getChildren().remove(tmpInputVBox);
 
-                filterNodes.clear();
-
+                for (List<FilterNode> columnFilterNode : columnFilterNodes) {
+                    columnFilterNode.remove(tmpNode);
+                }
             }
         });
 
         tmpInputVBox.getChildren().add(deleteButton);
 
-        if (node instanceof VBox) {
-            ((VBox) node).getChildren().add(tmpInputVBox);
+        if (tmpNode.getColumnNumber() + 1 == columnFilterNodes.size()) {
+            addNewChoiceBoxAndSeperator();
         }
 
-        if (node instanceof Pane) {
-            ((Pane) node).getChildren().add(tmpInputVBox);
-        }
+        filterColumnVBoxes.get(tmpNode.getColumnNumber()).getChildren().add(tmpInputVBox);
 
         return true;
+    }
+
+    private void calculateLabelPosition(FilterNode tmpNode) {
+
+        for (Separator separator : filterColumnSeparator) {
+            if (mousePositionX > separator.getLayoutX()) {
+                int index = filterColumnSeparator.indexOf(separator);
+                tmpNode.setColumnNumber(index);
+
+                if (columnFilterNodes.get(index) == null) {
+                    columnFilterNodes.add(new ArrayList<>());
+                }
+
+                columnFilterNodes.get(index).add(tmpNode);
+
+            }
+        }
+
     }
 
     private void addNewChoiceBoxAndSeperator() {
 
         //Separator hinzufügen
         Separator separator = new Separator(Orientation.HORIZONTAL);
+        filterColumnSeparator.add(separator);
         filterCombinationHbox.getChildren().add(separator);
 
         //Vbox für Filter und ChoiceBox
         VBox vBox = new VBox();
+        
         vBox.setSpacing(5);
-
         ChoiceBox choiceBox = new ChoiceBox(itemsForChocieBox);
         choiceBox.getSelectionModel().selectFirst();
+        filterColumnChoiceBoxes.add(choiceBox);
 
         vBox.getChildren().add(choiceBox);
+        filterColumnVBoxes.add(vBox);
 
         filterCombinationHbox.getChildren().add(vBox);
 
-        VBoxChoiceBoxFilterNodesContainer vboxChoiceBoxFilterNodesContainer = new VBoxChoiceBoxFilterNodesContainer(vBox, choiceBox, new ArrayList<>());
-
-        vboxChoiceBoxFilterNodesContainers.add(vboxChoiceBoxFilterNodesContainer);
-
-        //DragOver for vBox
-        vBox.setOnDragOver(new EventHandler<DragEvent>() {
-            public void handle(DragEvent event) {
-                onDragOverFilter(event);
-            }
-        });
-        //Drag loslassen
-        vBox.setOnDragDropped(new EventHandler<DragEvent>() {
-            boolean newvBox = true;
-
-            public void handle(DragEvent event) {
-                onDragDroppedFilter(event, vboxChoiceBoxFilterNodesContainer.getVBox(), vboxChoiceBoxFilterNodesContainer.getFilterNodes());
-
-                if (newvBox) {
-                    addNewChoiceBoxAndSeperator();
-                    newvBox = false;
-                }
-
-            }
-        });
+        //Für FilterNode vorbereitung
+        columnFilterNodes.add(new ArrayList<>());
 
     }
 
@@ -896,7 +902,7 @@ public class SliceController extends FatherController implements Initializable {
             imageViewForFilter.setImage(null);
             FileUtils.cleanDirectory(exportDirectory);
         } catch (IOException ex) {
-            Logger.getLogger(SliceController.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(SliceControllerBackup.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 

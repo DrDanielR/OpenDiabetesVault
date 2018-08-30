@@ -11,6 +11,7 @@ import de.opendiabetes.vault.container.VaultEntryTypeGroup;
 import de.opendiabetes.vault.processing.DataSlicer;
 import de.opendiabetes.vault.processing.VaultEntrySlicer;
 import de.opendiabetes.vault.processing.filter.AndFilter;
+import de.opendiabetes.vault.processing.filter.CombinationFilter;
 import de.opendiabetes.vault.processing.filter.DateTimePointFilter;
 import de.opendiabetes.vault.processing.filter.DateTimeSpanFilter;
 import de.opendiabetes.vault.processing.filter.Filter;
@@ -22,6 +23,7 @@ import de.opendiabetes.vault.processing.filter.TimeSpanFilter;
 import de.opendiabetes.vault.processing.filter.TypeGroupFilter;
 import de.opendiabetes.vault.processing.filter.VaultEntryTypeFilter;
 import de.opendiabetes.vault.processing.filter.options.AndFilterOption;
+import de.opendiabetes.vault.processing.filter.options.CombinationFilterOption;
 import de.opendiabetes.vault.processing.filter.options.DateTimePointFilterOption;
 import de.opendiabetes.vault.processing.filter.options.DateTimeSpanFilterOption;
 import de.opendiabetes.vault.processing.filter.options.FilterOption;
@@ -67,6 +69,7 @@ public class FilterManagementUtil {
         filterAndOptions.add(new FilterAndOption(new TimeSpanFilterOption(LocalTime.now(), LocalTime.now()), new TimeSpanFilter(new TimeSpanFilterOption(LocalTime.now(), LocalTime.now()))));
         filterAndOptions.add(new FilterAndOption(new TypeGroupFilterOption(null), new TypeGroupFilter(new TypeGroupFilterOption(null))));
         filterAndOptions.add(new FilterAndOption(new VaultEntryTypeFilterOption(null), new VaultEntryTypeFilter(new VaultEntryTypeFilterOption(null))));
+        filterAndOptions.add(new FilterAndOption(new CombinationFilterOption(new ArrayList<VaultEntry>(), null, null), new CombinationFilter(new CombinationFilterOption(new ArrayList<VaultEntry>(), null, null))));
     }
 
     public List<String> getAllNotCombineFilters() {
@@ -188,7 +191,8 @@ public class FilterManagementUtil {
                 result = new TypeGroupFilter(new TypeGroupFilterOption(VaultEntryTypeGroup.valueOf(filterNode.getParameterAndValues().get("VaultEntryTypeGroup"))));
             } else if (filterAndOption.getFilterOptionName().equals(VaultEntryTypeFilterOption.class.getSimpleName())) {
                 result = new VaultEntryTypeFilter(new VaultEntryTypeFilterOption(VaultEntryType.valueOf(filterNode.getParameterAndValues().get("VaultEntryType"))));
-            }
+            } 
+            
         } catch (Throwable t) {
             t.printStackTrace();
         }
