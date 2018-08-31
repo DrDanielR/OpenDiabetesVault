@@ -91,8 +91,12 @@ public class FilterNode {
         parameterAndFilterNodes.get(name).add(filterNode);
     }
 
-    public List<FilterNode> getParameterAndFilterNodes(String name) {
+    public List<FilterNode> getParameterAndFilterNodesFromName(String name) {
         return parameterAndFilterNodes.get(name);
+    }
+    
+    public Map<String, List<FilterNode>> getParameterAndFilterNodes() {
+        return parameterAndFilterNodes;
     }
 
 }

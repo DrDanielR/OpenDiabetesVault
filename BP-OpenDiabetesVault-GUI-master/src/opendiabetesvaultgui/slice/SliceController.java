@@ -201,6 +201,17 @@ public class SliceController extends FatherController implements Initializable {
                         bufferedWriter.newLine();
                     }
 
+                    //WeitereFilterNodes
+                    iterator = filterNode.getParameterAndFilterNodes().entrySet().iterator();
+                    while (iterator.hasNext()) {
+                        Map.Entry pair = (Map.Entry) iterator.next();
+                        bufferedWriter.write(pair.getKey() + SEPARATOR);
+                        bufferedWriter.newLine();
+
+                        writeFilterNode(bufferedWriter, (List<FilterNode>) pair.getValue());
+
+                    }
+
                 }
 
             }
@@ -210,6 +221,32 @@ public class SliceController extends FatherController implements Initializable {
 
         } catch (Throwable t) {
             t.printStackTrace();
+        }
+
+    }
+
+    private void writeFilterNode(BufferedWriter bufferedWriter, List<FilterNode> filterNodes) throws IOException {
+        for (FilterNode filterNode : filterNodes) {
+            bufferedWriter.write(FILTER_NAME + SEPARATOR + filterNode.getName());
+            bufferedWriter.newLine();
+
+            Iterator iterator = filterNode.getParameterAndValues().entrySet().iterator();
+            while (iterator.hasNext()) {
+                Map.Entry pair = (Map.Entry) iterator.next();
+                bufferedWriter.write(pair.getKey() + SEPARATOR + pair.getValue());
+                bufferedWriter.newLine();
+            }
+
+            //WeitereFilterNodes
+            iterator = filterNode.getParameterAndFilterNodes().entrySet().iterator();
+            while (iterator.hasNext()) {
+                Map.Entry pair = (Map.Entry) iterator.next();
+                bufferedWriter.write(pair.getKey() + SEPARATOR);
+                bufferedWriter.newLine();
+
+                writeFilterNode(bufferedWriter, (List<FilterNode>) pair.getValue());
+
+            }
         }
 
     }
@@ -604,7 +641,7 @@ public class SliceController extends FatherController implements Initializable {
                 //Drag loslassen
                 filterVBox.setOnDragDropped(new EventHandler<DragEvent>() {
                     public void handle(DragEvent event) {
-                        onDragDroppedFilter(event, filterVBox, tmpNode.getParameterAndFilterNodes(simpleName));
+                        onDragDroppedFilter(event, filterVBox, tmpNode.getParameterAndFilterNodesFromName(simpleName));
 
                     }
                 });
@@ -638,11 +675,10 @@ public class SliceController extends FatherController implements Initializable {
                     }
                 });
             }
-
-            filterNodes.add(tmpNode);
             tmpInputVBox.getChildren().add(tmpHBox);
-
         }
+
+        filterNodes.add(tmpNode);
 
         //LoeschButton
         Button deleteButton = new Button();

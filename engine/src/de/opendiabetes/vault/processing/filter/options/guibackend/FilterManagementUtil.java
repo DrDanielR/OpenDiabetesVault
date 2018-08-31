@@ -191,7 +191,7 @@ public class FilterManagementUtil {
                 } else {
                     List<Filter> tmpFilters = new ArrayList<>();
 
-                    for (FilterNode tmpFilterNode : filterNode.getParameterAndFilterNodes("Filters")) {
+                    for (FilterNode tmpFilterNode : filterNode.getParameterAndFilterNodesFromName("Filters")) {
                         tmpFilters.add(getFilterFromFilterNode(tmpFilterNode, null));
                     }
 
@@ -205,7 +205,7 @@ public class FilterManagementUtil {
                 } else {
                     List<Filter> tmpFilters = new ArrayList<>();
 
-                    for (FilterNode tmpFilterNode : filterNode.getParameterAndFilterNodes("Filters")) {
+                    for (FilterNode tmpFilterNode : filterNode.getParameterAndFilterNodesFromName("Filters")) {
                         tmpFilters.add(getFilterFromFilterNode(tmpFilterNode, null));
                     }
 
@@ -227,14 +227,14 @@ public class FilterManagementUtil {
             } else if (filterAndOption.getFilterOptionName().equals(VaultEntryTypeFilterOption.class.getSimpleName())) {
                 result = new VaultEntryTypeFilter(new VaultEntryTypeFilterOption(VaultEntryType.valueOf(filterNode.getParameterAndValues().get("VaultEntryType"))));
             } else if (filterAndOption.getFilterOptionName().equals(CombinationFilterOption.class.getSimpleName())) {
-                Filter firstFilter = getFilterFromFilterNode(filterNode.getParameterAndFilterNodes("FirstFilter").get(0), null);
-                Filter secondFilter = getFilterFromFilterNode(filterNode.getParameterAndFilterNodes("SecondFilter").get(0), null);
+                Filter firstFilter = getFilterFromFilterNode(filterNode.getParameterAndFilterNodesFromName("FirstFilter").get(0), null);
+                Filter secondFilter = getFilterFromFilterNode(filterNode.getParameterAndFilterNodesFromName("SecondFilter").get(0), null);
                 List<VaultEntry> data = filterNode.getData();
                 result = new CombinationFilter(new CombinationFilterOption(data, firstFilter, secondFilter));
 
             } else if (filterAndOption.getFilterOptionName().equals(QueryFilterOption.class.getSimpleName())) {
-                Filter mainFilter = getFilterFromFilterNode(filterNode.getParameterAndFilterNodes("MainFilter").get(0), null);
-                Filter innerFilter = getFilterFromFilterNode(filterNode.getParameterAndFilterNodes("InnerFilter").get(0), null);
+                Filter mainFilter = getFilterFromFilterNode(filterNode.getParameterAndFilterNodesFromName("MainFilter").get(0), null);
+                Filter innerFilter = getFilterFromFilterNode(filterNode.getParameterAndFilterNodesFromName("InnerFilter").get(0), null);
                 result = new QueryFilter(new QueryFilterOption(mainFilter, innerFilter, Integer.parseInt(filterNode.getParameterAndValues().get("minSize").trim()), Integer.parseInt(filterNode.getParameterAndValues().get("maxSize").trim())));
 
             }
