@@ -17,6 +17,7 @@ import de.opendiabetes.vault.processing.filter.DateTimeSpanFilter;
 import de.opendiabetes.vault.processing.filter.Filter;
 import de.opendiabetes.vault.processing.filter.FilterResult;
 import de.opendiabetes.vault.processing.filter.OrFilter;
+import de.opendiabetes.vault.processing.filter.QueryFilter;
 import de.opendiabetes.vault.processing.filter.ThresholdFilter;
 import de.opendiabetes.vault.processing.filter.TimePointFilter;
 import de.opendiabetes.vault.processing.filter.TimeSpanFilter;
@@ -28,6 +29,7 @@ import de.opendiabetes.vault.processing.filter.options.DateTimePointFilterOption
 import de.opendiabetes.vault.processing.filter.options.DateTimeSpanFilterOption;
 import de.opendiabetes.vault.processing.filter.options.FilterOption;
 import de.opendiabetes.vault.processing.filter.options.OrFilterOption;
+import de.opendiabetes.vault.processing.filter.options.QueryFilterOption;
 import de.opendiabetes.vault.processing.filter.options.ThresholdFilterOption;
 import de.opendiabetes.vault.processing.filter.options.TimePointFilterOption;
 import de.opendiabetes.vault.processing.filter.options.TimeSpanFilterOption;
@@ -70,6 +72,17 @@ public class FilterManagementUtil {
         filterAndOptions.add(new FilterAndOption(new TypeGroupFilterOption(null), new TypeGroupFilter(new TypeGroupFilterOption(null))));
         filterAndOptions.add(new FilterAndOption(new VaultEntryTypeFilterOption(null), new VaultEntryTypeFilter(new VaultEntryTypeFilterOption(null))));
         filterAndOptions.add(new FilterAndOption(new CombinationFilterOption(new ArrayList<VaultEntry>(), null, null), new CombinationFilter(new CombinationFilterOption(new ArrayList<VaultEntry>(), null, null))));
+        filterAndOptions.add(new FilterAndOption(new QueryFilterOption(null, null, 0, 0), new QueryFilter(new QueryFilterOption(null, null, 0, 0))));
+    }
+
+    public List<String> getAllFilters() {
+        List<String> result = new ArrayList<>();
+
+        for (FilterAndOption filterAndOption : filterAndOptions) {
+            result.add(filterAndOption.getName());
+        }
+
+        return result;
     }
 
     public List<String> getAllNotCombineFilters() {
@@ -173,9 +186,31 @@ public class FilterManagementUtil {
         try {
             //CombineFilter
             if (filterAndOption.getFilterOptionName().equals(AndFilterOption.class.getSimpleName())) {
-                result = new AndFilter(new AndFilterOption(filtersForCombine));
+                if (filtersForCombine != null && filtersForCombine.size() > 0) {
+                    result = new AndFilter(new AndFilterOption(filtersForCombine));
+                } else {
+                    List<Filter> tmpFilters = new ArrayList<>();
+
+                    for (FilterNode tmpFilterNode : filterNode.getParameterAndFilterNodes("Filters")) {
+                        tmpFilters.add(getFilterFromFilterNode(tmpFilterNode, null));
+                    }
+
+                    result = new AndFilter(new AndFilterOption(tmpFilters));
+                }
+
             } else if (filterAndOption.getFilterOptionName().equals(OrFilterOption.class.getSimpleName())) {
-                result = new OrFilter(new OrFilterOption(filtersForCombine));
+
+                if (filtersForCombine != null && filtersForCombine.size() > 0) {
+                    result = new OrFilter(new OrFilterOption(filtersForCombine));
+                } else {
+                    List<Filter> tmpFilters = new ArrayList<>();
+
+                    for (FilterNode tmpFilterNode : filterNode.getParameterAndFilterNodes("Filters")) {
+                        tmpFilters.add(getFilterFromFilterNode(tmpFilterNode, null));
+                    }
+
+                    result = new OrFilter(new OrFilterOption(tmpFilters));
+                }
             }//NonCombineFilter
             else if (filterAndOption.getFilterOptionName().equals(DateTimePointFilterOption.class.getSimpleName())) {
                 result = new DateTimePointFilter(new DateTimePointFilterOption(formatter.parse(filterNode.getParameterAndValues().get("DateTimePoint")), Integer.parseInt(filterNode.getParameterAndValues().get("MarginInMinutes").trim())));
@@ -191,8 +226,19 @@ public class FilterManagementUtil {
                 result = new TypeGroupFilter(new TypeGroupFilterOption(VaultEntryTypeGroup.valueOf(filterNode.getParameterAndValues().get("VaultEntryTypeGroup"))));
             } else if (filterAndOption.getFilterOptionName().equals(VaultEntryTypeFilterOption.class.getSimpleName())) {
                 result = new VaultEntryTypeFilter(new VaultEntryTypeFilterOption(VaultEntryType.valueOf(filterNode.getParameterAndValues().get("VaultEntryType"))));
-            } 
-            
+            } else if (filterAndOption.getFilterOptionName().equals(CombinationFilterOption.class.getSimpleName())) {
+                Filter firstFilter = getFilterFromFilterNode(filterNode.getParameterAndFilterNodes("FirstFilter").get(0), null);
+                Filter secondFilter = getFilterFromFilterNode(filterNode.getParameterAndFilterNodes("SecondFilter").get(0), null);
+                List<VaultEntry> data = filterNode.getData();
+                result = new CombinationFilter(new CombinationFilterOption(data, firstFilter, secondFilter));
+
+            } else if (filterAndOption.getFilterOptionName().equals(QueryFilterOption.class.getSimpleName())) {
+                Filter mainFilter = getFilterFromFilterNode(filterNode.getParameterAndFilterNodes("MainFilter").get(0), null);
+                Filter innerFilter = getFilterFromFilterNode(filterNode.getParameterAndFilterNodes("InnerFilter").get(0), null);
+                result = new QueryFilter(new QueryFilterOption(mainFilter, innerFilter, Integer.parseInt(filterNode.getParameterAndValues().get("minSize").trim()), Integer.parseInt(filterNode.getParameterAndValues().get("maxSize").trim())));
+
+            }
+
         } catch (Throwable t) {
             t.printStackTrace();
         }

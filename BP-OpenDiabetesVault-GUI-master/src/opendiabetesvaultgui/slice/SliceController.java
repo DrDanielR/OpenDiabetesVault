@@ -588,28 +588,28 @@ public class SliceController extends FatherController implements Initializable {
                 tmpNode.setData(importedData);
                 tmpHBox.getChildren().remove(tmpHBox.getChildren().get(tmpHBox.getChildren().size() - 1));
             } else if (typeClass.getSimpleName().toLowerCase().contains("filter")) {
-                Pane pane = new Pane();
-                pane.setStyle("-fx-border-color:grey; -fx-background-radius: 10; -fx-border-radius: 10; -fx-box-shadow: 2 3 #888888;");
-                pane.setMinHeight(50);
-                pane.setMinWidth(50);
+                VBox filterVBox = new VBox();
+                filterVBox.setStyle("-fx-border-color:grey; -fx-background-radius: 10; -fx-border-radius: 10; -fx-box-shadow: 2 3 #888888;");
+                filterVBox.setMinHeight(50);
+                filterVBox.setMinWidth(50);
 
-                tmpNode.setFilterNodes(new ArrayList<FilterNode>());
+                tmpNode.setParameterAndFilterNodes(simpleName, new ArrayList<FilterNode>());
 
                 //DragOver for vBox
-                pane.setOnDragOver(new EventHandler<DragEvent>() {
+                filterVBox.setOnDragOver(new EventHandler<DragEvent>() {
                     public void handle(DragEvent event) {
                         onDragOverFilter(event);
                     }
                 });
                 //Drag loslassen
-                pane.setOnDragDropped(new EventHandler<DragEvent>() {
+                filterVBox.setOnDragDropped(new EventHandler<DragEvent>() {
                     public void handle(DragEvent event) {
-                        onDragDroppedFilter(event, pane, tmpNode.getFilterNodes());
+                        onDragDroppedFilter(event, filterVBox, tmpNode.getParameterAndFilterNodes(simpleName));
 
                     }
                 });
 
-                tmpHBox.getChildren().add(pane);
+                tmpHBox.getChildren().add(filterVBox);
 
             } else {
                 TextField tmpTextField = new TextField();
@@ -643,6 +643,8 @@ public class SliceController extends FatherController implements Initializable {
             tmpInputVBox.getChildren().add(tmpHBox);
 
         }
+
+        //LoeschButton
         Button deleteButton = new Button();
         deleteButton.setText("Entfernen");
         deleteButton.setOnAction(new EventHandler<ActionEvent>() {
@@ -651,7 +653,7 @@ public class SliceController extends FatherController implements Initializable {
                 if (node instanceof VBox) {
                     ((VBox) node).getChildren().remove(tmpInputVBox);
                 }
-                
+
                 if (node instanceof Pane) {
                     ((Pane) node).getChildren().remove(tmpInputVBox);
                 }
@@ -706,12 +708,11 @@ public class SliceController extends FatherController implements Initializable {
             boolean newvBox = true;
 
             public void handle(DragEvent event) {
-                onDragDroppedFilter(event, vboxChoiceBoxFilterNodesContainer.getVBox(), vboxChoiceBoxFilterNodesContainer.getFilterNodes());
-
                 if (newvBox) {
                     addNewChoiceBoxAndSeperator();
                     newvBox = false;
                 }
+                onDragDroppedFilter(event, vboxChoiceBoxFilterNodesContainer.getVBox(), vboxChoiceBoxFilterNodesContainer.getFilterNodes());
 
             }
         });
@@ -964,7 +965,8 @@ public class SliceController extends FatherController implements Initializable {
 
     private List<Node> getItemsForFilterListView() {
         List<Node> result = new ArrayList<Node>();
-        List<String> filterNames = filterManagementUtil.getAllNotCombineFilters();
+        //List<String> filterNames = filterManagementUtil.getAllNotCombineFilters();
+        List<String> filterNames = filterManagementUtil.getAllFilters();
 
         for (String filterName : filterNames) {
             HBox hBox = new HBox();

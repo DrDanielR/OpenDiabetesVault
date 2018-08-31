@@ -21,10 +21,10 @@ public class FilterNode {
     private String name;
 
     private Map<String, String> parameterAndValues;
+    private Map<String, List<FilterNode>> parameterAndFilterNodes = new HashMap<>();    
     private int columnNumber;
     private List<Filter> filters;
     private List<VaultEntry> data;
-    private List<FilterNode> filterNodes;
 
     public FilterNode(String name, int columnNumber) {
         this.name = name;
@@ -83,12 +83,16 @@ public class FilterNode {
         return data;
     }
 
-    public void setFilterNodes(ArrayList<FilterNode> filterNodes) {
-        this.filterNodes = filterNodes;
+    public void setParameterAndFilterNodes(String name, List<FilterNode> filterNodes) {
+        parameterAndFilterNodes.put(name, filterNodes);
     }
 
-    public List<FilterNode> getFilterNodes() {
-        return filterNodes;
+    public void addParameterAndFilterNodes(String name, FilterNode filterNode) {
+        parameterAndFilterNodes.get(name).add(filterNode);
+    }
+
+    public List<FilterNode> getParameterAndFilterNodes(String name) {
+        return parameterAndFilterNodes.get(name);
     }
 
 }
