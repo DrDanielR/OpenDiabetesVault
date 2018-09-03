@@ -20,23 +20,19 @@ public class FilterNode {
 
     private String name;
 
-    private Map<String, String> parameterAndValues;
-    private Map<String, List<FilterNode>> parameterAndFilterNodes = new HashMap<>();    
-    private int columnNumber;
+    private Map<String, String> parameterAndValues = new HashMap<>();
+    ;
+    private Map<String, List<FilterNode>> parameterAndFilterNodes = new HashMap<>();
     private List<Filter> filters;
     private List<VaultEntry> data;
 
-    public FilterNode(String name, int columnNumber) {
+    public FilterNode(String name) {
         this.name = name;
-        this.columnNumber = columnNumber;
-        parameterAndValues = new HashMap<>();
     }
 
     public FilterNode(String name, List<Filter> filters) {
         this.name = name;
         this.filters = filters;
-        columnNumber = 0;
-        parameterAndValues = new HashMap<>();
     }
 
     public String getName() {
@@ -57,14 +53,6 @@ public class FilterNode {
 
     public void setParameterAndValue(Map<String, String> parameterAndValue) {
         this.parameterAndValues = parameterAndValue;
-    }
-
-    public int getColumnNumber() {
-        return columnNumber;
-    }
-
-    public void setColumnNumber(int columnNumber) {
-        this.columnNumber = columnNumber;
     }
 
     public List<Filter> getFilters() {
@@ -88,13 +76,19 @@ public class FilterNode {
     }
 
     public void addParameterAndFilterNodes(String name, FilterNode filterNode) {
-        parameterAndFilterNodes.get(name).add(filterNode);
+        if (parameterAndFilterNodes.get(name) == null) {
+            List<FilterNode> filterNodes = new ArrayList<>();
+            filterNodes.add(filterNode);
+            parameterAndFilterNodes.put(name, filterNodes);
+        } else {
+            parameterAndFilterNodes.get(name).add(filterNode);
+        }
     }
 
     public List<FilterNode> getParameterAndFilterNodesFromName(String name) {
         return parameterAndFilterNodes.get(name);
     }
-    
+
     public Map<String, List<FilterNode>> getParameterAndFilterNodes() {
         return parameterAndFilterNodes;
     }

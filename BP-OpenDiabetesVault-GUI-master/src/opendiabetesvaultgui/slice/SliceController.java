@@ -5,6 +5,7 @@
  */
 package opendiabetesvaultgui.slice;
 
+import com.google.gson.JsonObject;
 import de.opendiabetes.vault.processing.filter.options.guibackend.FilterManagementUtil;
 import de.opendiabetes.vault.processing.filter.options.guibackend.FilterNode;
 import de.opendiabetes.vault.container.VaultEntry;
@@ -14,9 +15,11 @@ import de.opendiabetes.vault.data.VaultDao;
 import de.opendiabetes.vault.plugin.exporter.Exporter;
 import de.opendiabetes.vault.plugin.exporter.VaultExporter;
 import de.opendiabetes.vault.plugin.management.OpenDiabetesPluginManager;
+import de.opendiabetes.vault.processing.filter.DateTimeSpanFilter;
 import de.opendiabetes.vault.processing.filter.Filter;
 import de.opendiabetes.vault.processing.filter.FilterResult;
 import de.opendiabetes.vault.processing.filter.VaultEntryTypeFilter;
+import de.opendiabetes.vault.processing.filter.options.DateTimeSpanFilterOption;
 import de.opendiabetes.vault.processing.filter.options.FilterOption;
 import de.opendiabetes.vault.processing.filter.options.VaultEntryTypeFilterOption;
 import java.io.BufferedReader;
@@ -36,6 +39,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -149,9 +153,37 @@ public class SliceController extends FatherController implements Initializable {
     @FXML
     private Spinner currentimport;
 
+    @FXML
+    private HBox filteroptiontypehbox;
+
+    @FXML
+    private Spinner hourspinnerbefore;
+
+    @FXML
+    private Spinner minutespinnerbefore;
+
+    @FXML
+    private Spinner secondspinnerbefore;
+
+    @FXML
+    private Spinner hourspinnerafter;
+
+    @FXML
+    private Spinner minutespinnerafter;
+
+    @FXML
+    private Spinner secondspinnerafter;
+
+    @FXML
+    private CheckBox checkboxforsplit;
+
+    private ChoiceBox filtertypechoiceboxforsplit = new ChoiceBox();
+
     private static final String FILTER_NAME = "FilterName";
-    private static final String SEPARATOR = ":";
+    private static final String SEPARATOR = "%";
     private static final String COMBINE_FILTER = "CombineFilter";
+    private static final String END_OF_SUBFILTER = "EndOfSubFilter";
+    private static final String NO_SELECTION = "-----";
 
     private List<VBoxChoiceBoxFilterNodesContainer> vboxChoiceBoxFilterNodesContainers = new ArrayList<>();
 
@@ -210,6 +242,9 @@ public class SliceController extends FatherController implements Initializable {
 
                         writeFilterNode(bufferedWriter, (List<FilterNode>) pair.getValue());
 
+                        bufferedWriter.write(END_OF_SUBFILTER + SEPARATOR);
+                        bufferedWriter.newLine();
+
                     }
 
                 }
@@ -246,10 +281,15 @@ public class SliceController extends FatherController implements Initializable {
 
                 writeFilterNode(bufferedWriter, (List<FilterNode>) pair.getValue());
 
+                bufferedWriter.write(END_OF_SUBFILTER + SEPARATOR);
+                bufferedWriter.newLine();
+
             }
         }
 
     }
+
+    BufferedReader bufferedReader;
 
     @FXML
     private void doLoadFilterCombination(ActionEvent event) {
@@ -261,32 +301,32 @@ public class SliceController extends FatherController implements Initializable {
         fileChooser.setTitle("Open Resource File");
         File file = fileChooser.showOpenDialog(MAIN_STAGE);
 
-        //ToDo: Filter laden        
         try {
-            BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
+            bufferedReader = new BufferedReader(new FileReader(file));
 
-            List<String> combineFilters = new ArrayList<>();
-            List<List<FilterNode>> filterNodes = new ArrayList<>();
+            List<String> combineFiltersForImport = new ArrayList<>();
+            List<List<FilterNode>> filterNodesForImport = new ArrayList<>();
 
-            int counter = -1;
             String line;
             while ((line = bufferedReader.readLine()) != null) {
                 String[] lineSplit = line.split(SEPARATOR);
 
                 if (lineSplit[0].equals(COMBINE_FILTER)) {
-                    combineFilters.add(lineSplit[1]);
-                    filterNodes.add(new ArrayList<>());
-                    counter++;
+                    combineFiltersForImport.add(lineSplit[1]);
+                    filterNodesForImport.add(new ArrayList<>());
                 } else if (lineSplit[0].equals(FILTER_NAME)) {
-                    filterNodes.get(counter).add(new FilterNode(lineSplit[1], 0));
+                    filterNodesForImport.get(filterNodesForImport.size() - 1).add(new FilterNode(lineSplit[1]));
+                } else if (lineSplit.length == 1) {
+                    FilterNode tempFilterNode = importSubFilter();
+                    filterNodesForImport.get(filterNodesForImport.size() - 1).get(filterNodesForImport.get(filterNodesForImport.size() - 1).size() - 1).addParameterAndFilterNodes(lineSplit[0], tempFilterNode);
                 } else {
-                    filterNodes.get(counter).get(filterNodes.get(counter).size() - 1).addParam(lineSplit[0], lineSplit[1]);
+                    filterNodesForImport.get(filterNodesForImport.size() - 1).get(filterNodesForImport.get(filterNodesForImport.size() - 1).size() - 1).addParam(lineSplit[0], lineSplit[1]);
                 }
 
             }
             bufferedReader.close();
 
-            List<Filter> filters = getFiltersFromLists(combineFilters, filterNodes);
+            List<Filter> filters = getFiltersFromLists(combineFiltersForImport, filterNodesForImport);
             importedFilterNodes.put(file.getName(), new FilterNode(file.getName(), filters));
 
             //Element für listview erstellen
@@ -312,11 +352,136 @@ public class SliceController extends FatherController implements Initializable {
         }
     }
 
+    private FilterNode importSubFilter() throws IOException {
+        FilterNode result = new FilterNode("");
+
+        String line;
+        while ((line = bufferedReader.readLine()) != null) {
+            String[] lineSplit = line.split(SEPARATOR);
+
+            if (lineSplit[0].equals(FILTER_NAME)) {
+                result.setName(lineSplit[1]);
+            } else if (lineSplit.length == 1) {
+                if (lineSplit[0].equals(END_OF_SUBFILTER)) {
+                    break;
+                } else {
+                    FilterNode tempFilterNode = importSubFilter();
+                    result.addParameterAndFilterNodes(lineSplit[0], tempFilterNode);
+                }
+            } else {
+                result.addParam(lineSplit[0], lineSplit[1]);
+            }
+
+        }
+
+        return result;
+    }
+
+    List<FilterResult> filterResultsForSplit;
+    int filterResultPositionForSplit = -1;
+
+    @FXML
+    private void doSplitEntries(ActionEvent event) {
+        Date beginDate = importedData.get(0).getTimestamp();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(beginDate);
+
+        filterResultsForSplit = new ArrayList<>();
+
+        int hoursBefore = Integer.parseInt(hourspinnerbefore.getValue().toString());
+        int minutesBefore = Integer.parseInt(minutespinnerbefore.getValue().toString());
+        int secondsfore = Integer.parseInt(secondspinnerbefore.getValue().toString());
+        int hoursAfter = Integer.parseInt(hourspinnerafter.getValue().toString());
+        int minutesAfter = Integer.parseInt(minutespinnerafter.getValue().toString());
+        int secondsAfter = Integer.parseInt(secondspinnerafter.getValue().toString());
+
+        Date lastVaultEntryTimestamp = importedData.get(importedData.size() - 1).getTimestamp();;
+
+        if (filterResultsForSplit.size() > 0) {
+            lastVaultEntryTimestamp = filterResultsForSplit.get(filterResultsForSplit.size() - 1).filteredData.get(filterResultsForSplit.get(filterResultsForSplit.size() - 1).filteredData.size() - 1).getTimestamp();
+        }
+
+        if (filtertypechoiceboxforsplit.getSelectionModel().getSelectedItem().toString().equals(NO_SELECTION)) {
+
+            while (lastVaultEntryTimestamp.after(calendar.getTime())) {
+                Date startDate = calendar.getTime();
+                calendar.add(Calendar.HOUR_OF_DAY, hoursAfter + hoursBefore);
+                calendar.add(Calendar.MINUTE, minutesAfter + minutesBefore);
+                calendar.add(Calendar.SECOND, secondsAfter + secondsfore);
+                Date endDate = calendar.getTime();
+
+                DateTimeSpanFilter dateTimeSpanFilter = new DateTimeSpanFilter(new DateTimeSpanFilterOption(startDate, endDate));
+
+                filterResultsForSplit.add(dateTimeSpanFilter.filter(importedData));
+            }
+
+        } else {
+            VaultEntryType vaultEntryType = VaultEntryType.valueOf(filtertypechoiceboxforsplit.getSelectionModel().getSelectedItem().toString());
+
+            VaultEntryTypeFilter vaultEntryTypeFilter = new VaultEntryTypeFilter(new VaultEntryTypeFilterOption(vaultEntryType));
+
+            FilterResult tempFilterResult = vaultEntryTypeFilter.filter(importedData);
+
+            for (VaultEntry vaultEntry : tempFilterResult.filteredData) {
+                calendar.setTime(vaultEntry.getTimestamp());
+                calendar.add(Calendar.HOUR_OF_DAY, -hoursBefore);
+                calendar.add(Calendar.MINUTE, -minutesBefore);
+                calendar.add(Calendar.SECOND, -secondsfore);
+                Date startDate = calendar.getTime();
+
+                calendar.setTime(vaultEntry.getTimestamp());
+                calendar.add(Calendar.HOUR_OF_DAY, hoursAfter);
+                calendar.add(Calendar.MINUTE, minutesAfter);
+                calendar.add(Calendar.SECOND, secondsAfter);
+                Date endDate = calendar.getTime();
+
+                DateTimeSpanFilter dateTimeSpanFilter = new DateTimeSpanFilter(new DateTimeSpanFilterOption(startDate, endDate));
+
+                filterResultsForSplit.add(dateTimeSpanFilter.filter(importedData));
+
+            }
+
+        }
+
+        if (filterResultsForSplit != null && filterResultsForSplit.size() > 0) {
+            filterResultPositionForSplit = 0;
+            populateChart(filterResultsForSplit.get(filterResultPositionForSplit));
+        } else {
+            String message = "Das Splitten ist mit den gegebenen Parametern nicht möglich";
+
+            Alert alert = new Alert(AlertType.ERROR);
+            alert.setTitle("Splitten Fehlgeschlagen");
+            alert.setHeaderText("Splitten Fehlgeschlagen:");
+            alert.setContentText(message);
+
+            alert.showAndWait();
+        }
+
+    }
+
+    @FXML
+    private void getNextFilterSplit(ActionEvent event) {
+        if (filterResultPositionForSplit >= 0 && filterResultPositionForSplit < filterResultsForSplit.size()) {
+            filterResultPositionForSplit++;
+            populateChart(filterResultsForSplit.get(filterResultPositionForSplit));
+        }
+    }
+
+    @FXML
+    private void getPreviousFilterSplit(ActionEvent event) {
+        if (filterResultPositionForSplit > 0) {
+            filterResultPositionForSplit--;
+            populateChart(filterResultsForSplit.get(filterResultPositionForSplit));
+        }
+    }
+
     @FXML
     private void doFilter(ActionEvent event) {
 
+        boolean splitFilter = checkboxforsplit.isSelected();
+
         List<Filter> filters = getFiltersFromCurrentState();
-        if (filters != null) {
+        if (filters != null && !splitFilter) {
             //null entfernen normalerweise keine drinnen
             while (filters.remove(null));
 
@@ -332,6 +497,25 @@ public class SliceController extends FatherController implements Initializable {
                 //Plotteria
                 generateGraphs(filterResult);
             }
+        } else if (splitFilter && filterResultsForSplit != null && filterResultsForSplit.size() > 0) {
+
+            List<FilterResult> tempFilterResults = new ArrayList<>();
+
+            for (FilterResult filterResult : filterResultsForSplit) {
+
+                FilterResult tempFilterResult = filterManagementUtil.sliceVaultEntries(filters, filterResult.filteredData);
+
+                if (tempFilterResult != null && tempFilterResult.filteredData.size() > 0) {
+                    tempFilterResults.add(tempFilterResult);
+                }
+
+            }
+
+            filterResultsForSplit.clear();
+            filterResultsForSplit.addAll(tempFilterResults);
+            filterResultPositionForSplit = 0;
+            populateChart(filterResultsForSplit.get(filterResultPositionForSplit));
+
         }
     }
 
@@ -341,6 +525,11 @@ public class SliceController extends FatherController implements Initializable {
         filterCombinationHbox.getChildren().removeAll(filterCombinationHbox.getChildren());
         vboxChoiceBoxFilterNodesContainers.clear();
         addNewChoiceBoxAndSeperator();
+
+        importedData = vaultDao.queryAllVaultEntries();
+        FilterResult filterResult = filterManagementUtil.getLastDay(importedData);
+        populateChart(filterResult);
+        generateGraphs(filterResult);
     }
 
     @FXML
@@ -451,10 +640,17 @@ public class SliceController extends FatherController implements Initializable {
         populateChart(filterResult);
         generateGraphs(filterResult);
 
-        //ToDo ChocieBox füllen Mit registrierten Combine Filter        
+        //Choiceboxen füllen
         itemsForChocieBox = FXCollections.observableArrayList(filterManagementUtil.getCombineFilter());
 
         addNewChoiceBoxAndSeperator();
+
+        ObservableList itemsForTmpChocieBox = FXCollections.observableArrayList(new VaultEntryTypeFilterOption(null).getDropDownEntries().keySet());
+        itemsForTmpChocieBox.add(NO_SELECTION);
+        filtertypechoiceboxforsplit.setItems(itemsForTmpChocieBox);
+        filtertypechoiceboxforsplit.getSelectionModel().selectLast();
+
+        filteroptiontypehbox.getChildren().add(filtertypechoiceboxforsplit);
 
         //ValueFactory for Spinner
         SpinnerValueFactory<Integer> valueFactory = new SpinnerValueFactory<Integer>() {
@@ -545,7 +741,7 @@ public class SliceController extends FatherController implements Initializable {
         if (importedFilterNodes.get(name) != null) {
             tmpNode = importedFilterNodes.get(name);
         } else {
-            tmpNode = new FilterNode(name, 0);
+            tmpNode = new FilterNode(name);
         }
 
         //Input für Values                    
@@ -1043,5 +1239,4 @@ public class SliceController extends FatherController implements Initializable {
 
         return result;
     }
-
 }

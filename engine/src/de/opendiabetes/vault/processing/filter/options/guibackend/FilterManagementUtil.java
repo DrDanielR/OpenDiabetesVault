@@ -157,7 +157,7 @@ public class FilterManagementUtil {
                     }
                 }
 
-                Filter tempFilter = getFilterFromFilterNode(new FilterNode(combineFilter, 0), filtersForCombine);
+                Filter tempFilter = getFilterFromFilterNode(new FilterNode(combineFilter), filtersForCombine);
                 result.add(tempFilter);
             }
 
