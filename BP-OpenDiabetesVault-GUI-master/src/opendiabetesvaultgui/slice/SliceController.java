@@ -859,6 +859,11 @@ public class SliceController extends FatherController implements Initializable {
                     TextFormatter textFormatter = new TextFormatter(new NumberStringConverter());
                     tmpTextField.setTextFormatter(textFormatter);
                     tmpNode.addParam(simpleName, "0");
+                } else if (typeClass.getSimpleName().equals("double") || typeClass.getSimpleName().equals("float")) {
+                    tmpTextField.setPromptText("0.0");
+                    TextFormatter textFormatter = new TextFormatter(new NumberStringConverter());
+                    tmpTextField.setTextFormatter(textFormatter);
+                    tmpNode.addParam(simpleName, "0.0");
                 }
 
                 tmpHBox.getChildren().add(tmpTextField);

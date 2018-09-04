@@ -17,6 +17,14 @@
 package de.opendiabetes.vault.processing.filter;
 
 import de.opendiabetes.vault.container.VaultEntry;
+import de.opendiabetes.vault.container.VaultEntryType;
+import de.opendiabetes.vault.processing.filter.options.CompactQueryFilterOption;
+import de.opendiabetes.vault.processing.filter.options.ElevationFilterOption;
+import de.opendiabetes.vault.processing.filter.options.FilterOption;
+import java.util.Calendar;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Does nothing.
@@ -25,23 +33,88 @@ import de.opendiabetes.vault.container.VaultEntry;
  */
 public class ElevationFilter extends Filter {
 
-    public ElevationFilter() {
-        super(null);
+    VaultEntryType vaultEntryType;
+    double minElevationPerMinute;
+    int minutesBetweenEntries;
+    double elevation;
+
+    public ElevationFilter(FilterOption option) {
+
+        super(option);
+        if (option instanceof ElevationFilterOption) {
+
+            vaultEntryType = ((ElevationFilterOption) option).getVaultEntryType();
+            minElevationPerMinute = ((ElevationFilterOption) option).getMinElevation();
+            minutesBetweenEntries = ((ElevationFilterOption) option).getMinutesBetweenEntries();
+
+            elevation = minElevationPerMinute * minutesBetweenEntries;
+
+        } else {
+            String msg = "Option has to be an instance of ElevationFilterOption";
+            Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, msg);
+            throw new Error(msg);
+        }
     }
 
     @Override
     public FilterType getType() {
-        return FilterType.NONE;
+        return FilterType.COMPACT_QUERY_FILTER;
     }
 
     @Override
     boolean matchesFilterParameters(VaultEntry entry) {
-        return true;
+        boolean result = false;
+
+        if (vaultEntryType == entry.getType()) {
+            result = true;
+        }
+
+        return result;
     }
 
     @Override
     Filter update(VaultEntry vaultEntry) {
-        return new ElevationFilter();
+        option = new ElevationFilterOption(vaultEntry.getType(), minElevationPerMinute, minutesBetweenEntries);
+        return new CompactQueryFilter(option);
+    }
+
+    @Override
+    protected FilterResult tearDownAfterFilter(FilterResult givenResult) {
+        boolean elevationExist = false;
+
+        if (givenResult != null && givenResult.filteredData.size() > 0) {
+            Calendar cal = Calendar.getInstance();
+
+            for (VaultEntry vaultEntry : givenResult.filteredData) {
+                cal.setTime(vaultEntry.getTimestamp());
+                cal.add(Calendar.MINUTE, minutesBetweenEntries);
+
+                for (VaultEntry vaultEntry1 : givenResult.filteredData) {
+
+                    if (vaultEntry1.getTimestamp().after(cal.getTime())) {
+
+                        double tempElevation = (vaultEntry1.getValue() - vaultEntry.getValue()) / (minutesBetweenEntries - 0);
+
+                        if (elevation <= tempElevation) {
+                            elevationExist = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (elevationExist) {
+                    break;
+                }
+
+            }
+
+        }
+
+        if (!elevationExist) {
+            givenResult = new FilterResult();
+        }
+
+        return givenResult;
     }
 
 }

@@ -17,6 +17,12 @@
 package de.opendiabetes.vault.processing.filter;
 
 import de.opendiabetes.vault.container.VaultEntry;
+import de.opendiabetes.vault.container.VaultEntryType;
+import de.opendiabetes.vault.processing.filter.options.CombinationFilterOption;
+import de.opendiabetes.vault.processing.filter.options.FilterOption;
+import de.opendiabetes.vault.processing.filter.options.InBetweenFilterOption;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Does nothing.
@@ -25,23 +31,59 @@ import de.opendiabetes.vault.container.VaultEntry;
  */
 public class InBetweenFilter extends Filter {
 
-    public InBetweenFilter() {
-        super(null);
+    int minValue;
+    int maxValue;
+    VaultEntryType vaultEntryType;
+    boolean wrongEntry = false;
+
+    public InBetweenFilter(FilterOption option) {
+        super(option);
+        if (option instanceof InBetweenFilterOption) {
+
+            vaultEntryType = ((InBetweenFilterOption) option).getVaultEntryType();
+            maxValue = ((InBetweenFilterOption) option).getMaxValue();
+            minValue = ((InBetweenFilterOption) option).getMinValue();
+
+        } else {
+            String msg = "Option has to be an instance of InBetweenFilter";
+            Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, msg);
+            throw new Error(msg);
+        }
     }
 
     @Override
     public FilterType getType() {
-        return FilterType.NONE;
+        return FilterType.IN_BETWEEN_FILTER;
     }
 
     @Override
     boolean matchesFilterParameters(VaultEntry entry) {
-        return true;
+        boolean result = false;
+
+        if (entry.getType().equals(vaultEntryType)) {
+            if (entry.getValue() <= maxValue && entry.getValue() >= minValue) {
+                result = true;
+            } else {
+                result = false;
+                wrongEntry = true;
+            }
+        }
+
+        return result;
     }
 
     @Override
     Filter update(VaultEntry vaultEntry) {
-        return new InBetweenFilter();
+        option = new InBetweenFilterOption(vaultEntry.getType(), minValue, maxValue);
+        return new InBetweenFilter(option);
+    }
+
+    @Override
+    protected FilterResult tearDownAfterFilter(FilterResult givenResult) {
+        if (wrongEntry) {
+            givenResult = new FilterResult();
+        }
+        return givenResult;
     }
 
 }
