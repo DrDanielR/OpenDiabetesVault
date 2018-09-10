@@ -85,4 +85,14 @@ public class AndFilter extends Filter {
         AndFilterOption tempOption = new AndFilterOption(tempFilters);
         return new AndFilter(tempOption);
     }
+
+    @Override
+    FilterResult tearDownAfterFilter(FilterResult givenResult) {
+        
+        for (Filter filter : filters) {
+            givenResult = filter.tearDownAfterFilter(givenResult);
+        }
+        
+        return givenResult;
+    }
 }

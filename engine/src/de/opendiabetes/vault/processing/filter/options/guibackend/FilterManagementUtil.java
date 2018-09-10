@@ -81,7 +81,7 @@ public class FilterManagementUtil {
         filterAndOptions.add(new FilterAndOption(new QueryFilterOption(null, null, 0, 0), new QueryFilter(new QueryFilterOption(null, null, 0, 0))));
         filterAndOptions.add(new FilterAndOption(new ElevationFilterOption(null, 0, 0), new ElevationFilter(new ElevationFilterOption(null, 0, 0))));
         filterAndOptions.add(new FilterAndOption(new CompactQueryFilterOption(null), new CompactQueryFilter(new CompactQueryFilterOption(null))));
-        filterAndOptions.add(new FilterAndOption(new InBetweenFilterOption(null, 0, 0), new InBetweenFilter(new InBetweenFilterOption(null, 0, 0))));
+        filterAndOptions.add(new FilterAndOption(new InBetweenFilterOption(null, 0, 0, false), new InBetweenFilter(new InBetweenFilterOption(null, 0, 0, false))));
     }
 
     public List<String> getAllFilters() {
@@ -255,14 +255,15 @@ public class FilterManagementUtil {
                 Filter mainFilter = getFilterFromFilterNode(filterNode.getParameterAndFilterNodesFromName("MainFilter").get(0), null);
                 Filter innerFilter = getFilterFromFilterNode(filterNode.getParameterAndFilterNodesFromName("InnerFilter").get(0), null);
                 result = new QueryFilter(new QueryFilterOption(mainFilter, innerFilter, Integer.parseInt(filterNode.getParameterAndValues().get("minSize").trim()), Integer.parseInt(filterNode.getParameterAndValues().get("maxSize").trim())));
-            } else if (filterAndOption.getFilterOptionName().equals(InBetweenFilterOption.class.getSimpleName())) {
-                result = new InBetweenFilter(new InBetweenFilterOption(VaultEntryType.valueOf(filterNode.getParameterAndValues().get("VaultEntryType")), Integer.parseInt(filterNode.getParameterAndValues().get("MinValue").trim()), Integer.parseInt(filterNode.getParameterAndValues().get("MaxValue").trim())));
+            } else if (filterAndOption.getFilterOptionName().equals(InBetweenFilterOption.class.getSimpleName())) {                
+                result = new InBetweenFilter(new InBetweenFilterOption(VaultEntryType.valueOf(filterNode.getParameterAndValues().get("VaultEntryType")), Integer.parseInt(filterNode.getParameterAndValues().get("MinValue").trim()), Integer.parseInt(filterNode.getParameterAndValues().get("MaxValue").trim()), Boolean.valueOf(filterNode.getParameterAndValues().get("Normalize").trim())));
             } else if (filterAndOption.getFilterOptionName().equals(CompactQueryFilterOption.class.getSimpleName())) {
 
                 List<Filter> filters = getFiltersFromFilterNodes(filterNode.getParameterAndFilterNodesFromName("Filters"));
                 result = new CompactQueryFilter(new CompactQueryFilterOption(filters));
             } else if (filterAndOption.getFilterOptionName().equals(ElevationFilterOption.class.getSimpleName())) {
-                result = new ElevationFilter(new ElevationFilterOption(VaultEntryType.valueOf(filterNode.getParameterAndValues().get("VaultEntryType")), Double.parseDouble(filterNode.getParameterAndValues().get("MinElevationPerMinute").trim()), Integer.parseInt(filterNode.getParameterAndValues().get("MinutesBetweenEntries").trim())));
+                String doubleString = filterNode.getParameterAndValues().get("MinElevationPerMinute").trim().replace(",", ".");
+                result = new ElevationFilter(new ElevationFilterOption(VaultEntryType.valueOf(filterNode.getParameterAndValues().get("VaultEntryType")), Double.parseDouble(doubleString), Integer.parseInt(filterNode.getParameterAndValues().get("MinutesBetweenEntries").trim())));
             }
 
         } catch (Throwable t) {

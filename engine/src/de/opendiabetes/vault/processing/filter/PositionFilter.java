@@ -116,4 +116,10 @@ public class PositionFilter extends Filter {
     Filter update(VaultEntry vaultEntry) {
         return new PositionFilter(new PositionFilterOption(filter.update(vaultEntry), filterMode, weightedType));
     }
+
+    @Override
+    FilterResult tearDownAfterFilter(FilterResult givenResult) {
+        return givenResult;
+    }
+
 }

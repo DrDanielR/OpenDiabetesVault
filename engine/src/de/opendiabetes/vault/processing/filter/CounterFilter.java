@@ -74,4 +74,9 @@ public class CounterFilter extends Filter {
         CounterFilterOption tempOption = new CounterFilterOption(filter, hitCounter, onlyOneResult);
         return new CounterFilter(tempOption);
     }
+
+    @Override
+    FilterResult tearDownAfterFilter(FilterResult givenResult) {
+        return givenResult;
+    }
 }

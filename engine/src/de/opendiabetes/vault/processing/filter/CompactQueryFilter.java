@@ -42,7 +42,10 @@ public class CompactQueryFilter extends Filter {
 
             filters = ((CompactQueryFilterOption) option).getFilters();
 
-            boolForFilters = new boolean[filters.size()];
+            if(filters != null)
+                boolForFilters = new boolean[filters.size()];
+            else
+                boolForFilters = new boolean[0];
 
             for (int i = 0; i < boolForFilters.length; i++) {
                 boolForFilters[i] = false;
@@ -62,14 +65,13 @@ public class CompactQueryFilter extends Filter {
 
     @Override
     boolean matchesFilterParameters(VaultEntry entry) {
-        boolean result = false;
+        boolean result = true;
 
         int counter = 0;
         for (Filter filter : filters) {
             if (filter.matchesFilterParameters(entry)) {
                 boolForFilters[counter] = true;
             }
-
             counter++;
         }
 

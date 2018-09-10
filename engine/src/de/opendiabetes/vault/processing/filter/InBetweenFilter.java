@@ -21,6 +21,8 @@ import de.opendiabetes.vault.container.VaultEntryType;
 import de.opendiabetes.vault.processing.filter.options.CombinationFilterOption;
 import de.opendiabetes.vault.processing.filter.options.FilterOption;
 import de.opendiabetes.vault.processing.filter.options.InBetweenFilterOption;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -35,6 +37,7 @@ public class InBetweenFilter extends Filter {
     int maxValue;
     VaultEntryType vaultEntryType;
     boolean wrongEntry = false;
+    boolean normalize = false;
 
     public InBetweenFilter(FilterOption option) {
         super(option);
@@ -43,6 +46,7 @@ public class InBetweenFilter extends Filter {
             vaultEntryType = ((InBetweenFilterOption) option).getVaultEntryType();
             maxValue = ((InBetweenFilterOption) option).getMaxValue();
             minValue = ((InBetweenFilterOption) option).getMinValue();
+            normalize = ((InBetweenFilterOption) option).getNormalize();
 
         } else {
             String msg = "Option has to be an instance of InBetweenFilter";
@@ -74,7 +78,7 @@ public class InBetweenFilter extends Filter {
 
     @Override
     Filter update(VaultEntry vaultEntry) {
-        option = new InBetweenFilterOption(vaultEntry.getType(), minValue, maxValue);
+        option = new InBetweenFilterOption(vaultEntry.getType(), minValue, maxValue, normalize);
         return new InBetweenFilter(option);
     }
 
@@ -82,7 +86,13 @@ public class InBetweenFilter extends Filter {
     protected FilterResult tearDownAfterFilter(FilterResult givenResult) {
         if (wrongEntry) {
             givenResult = new FilterResult();
+        } else if (normalize) {
+            for (VaultEntry vaultEntry : givenResult.filteredData) {
+                double newValue = 2*((vaultEntry.getValue() - minValue) / (maxValue - minValue)) - 1;
+                vaultEntry.setValue(newValue);
+            }
         }
+
         return givenResult;
     }
 

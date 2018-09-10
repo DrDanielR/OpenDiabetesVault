@@ -44,4 +44,8 @@ public class NoneFilter extends Filter {
         return new NoneFilter();
     }
 
+    @Override
+    FilterResult tearDownAfterFilter(FilterResult givenResult) {
+        return givenResult;
+    }
 }

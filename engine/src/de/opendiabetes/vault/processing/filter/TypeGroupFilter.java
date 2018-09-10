@@ -25,7 +25,8 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author tiweGH This class extends filter. The TypeGroupFilter will check if an given Group equals the Group from the vaultEntry.
+ * @author tiweGH This class extends filter. The TypeGroupFilter will check if
+ * an given Group equals the Group from the vaultEntry.
  */
 public class TypeGroupFilter extends Filter {
 
@@ -33,7 +34,7 @@ public class TypeGroupFilter extends Filter {
 
     /**
      * Sets the VaulEntryTypeGroup from the given Filteroption
-     * 
+     *
      * @param option TypeGroupFilterOption
      */
     public TypeGroupFilter(FilterOption option) {
@@ -61,4 +62,10 @@ public class TypeGroupFilter extends Filter {
     Filter update(VaultEntry vaultEntry) {
         return new TypeGroupFilter(new TypeGroupFilterOption(vaultEntry.getType().getGroup()));
     }
+
+    @Override
+    FilterResult tearDownAfterFilter(FilterResult givenResult) {
+        return givenResult;
+    }
+
 }

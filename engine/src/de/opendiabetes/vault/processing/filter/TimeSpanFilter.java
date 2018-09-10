@@ -26,8 +26,8 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author juehv
- * This Filter extends Filter and checks durring the filter() method if the vaultentry lays between two localTimes.
+ * @author juehv This Filter extends Filter and checks durring the filter()
+ * method if the vaultentry lays between two localTimes.
  */
 public class TimeSpanFilter extends Filter {
 
@@ -35,8 +35,9 @@ public class TimeSpanFilter extends Filter {
     private final LocalTime endTime;
 
     /**
-     * Sets the startTime and the endTime, which will be given from the options object.
-     * 
+     * Sets the startTime and the endTime, which will be given from the options
+     * object.
+     *
      * @param option TimeSpanFilterOption
      */
     public TimeSpanFilter(FilterOption option) {
@@ -65,6 +66,11 @@ public class TimeSpanFilter extends Filter {
     Filter update(VaultEntry vaultEntry) {
         option = new TimeSpanFilterOption(TimestampUtils.dateToLocalTime(vaultEntry.getTimestamp()), endTime);
         return new TimeSpanFilter(option);
+    }
+
+    @Override
+    FilterResult tearDownAfterFilter(FilterResult givenResult) {
+        return givenResult;
     }
 
 }

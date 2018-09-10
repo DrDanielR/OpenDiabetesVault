@@ -134,8 +134,6 @@ public abstract class Filter {
      * @param givenResult data after the filter process was executed
      * @return modified or unmodified FilterResult
      */
-    protected FilterResult tearDownAfterFilter(FilterResult givenResult) {
-        return givenResult;
-    }
+    abstract FilterResult tearDownAfterFilter(FilterResult givenResult);
 
 }

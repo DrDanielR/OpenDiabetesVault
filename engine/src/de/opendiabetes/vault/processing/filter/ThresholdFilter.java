@@ -38,8 +38,8 @@ public class ThresholdFilter extends Filter {
     public static final int BANDPASS = 2;
 
     /**
-     * 
-     * @param option 
+     *
+     * @param option
      */
     public ThresholdFilter(FilterOption option) {
         super(option);
@@ -72,4 +72,10 @@ public class ThresholdFilter extends Filter {
     Filter update(VaultEntry vaultEntry) {
         return new ThresholdFilter(super.option);
     }
+
+    @Override
+    FilterResult tearDownAfterFilter(FilterResult givenResult) {
+        return givenResult;
+    }
+
 }

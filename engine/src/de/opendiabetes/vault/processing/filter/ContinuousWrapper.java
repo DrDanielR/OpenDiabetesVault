@@ -92,4 +92,9 @@ public class ContinuousWrapper extends Filter {
     Filter update(VaultEntry vaultEntry) {
         return new ContinuousWrapper(super.option);
     }
+
+    @Override
+    FilterResult tearDownAfterFilter(FilterResult givenResult) {
+        return givenResult;
+    }
 }

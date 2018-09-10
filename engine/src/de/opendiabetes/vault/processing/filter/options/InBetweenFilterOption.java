@@ -33,6 +33,7 @@ public class InBetweenFilterOption extends FilterOption {
     private final int minValue;
     private final VaultEntryType type;
     private final int maxValue;
+    private final boolean normalize;
 
     /**
      *
@@ -40,17 +41,19 @@ public class InBetweenFilterOption extends FilterOption {
      * @param minValue
      * @param maxValue
      */
-    public InBetweenFilterOption(VaultEntryType type, int minValue, int maxValue) {
+    public InBetweenFilterOption(VaultEntryType type, int minValue, int maxValue, boolean normalize) {
         super(new HashMap<>(), null);
         super.setDropDownEntries(this.getDropDownEntries());
 
         super.getParameterNameAndType().put("VaultEntryType", Map.class);
         super.getParameterNameAndType().put("MinValue", int.class);
         super.getParameterNameAndType().put("MaxValue", int.class);
+        super.getParameterNameAndType().put("Normalize", boolean.class);
 
         this.type = type;
         this.minValue = minValue;
         this.maxValue = maxValue;
+        this.normalize = normalize;
     }
 
     public VaultEntryType getVaultEntryType() {
@@ -74,6 +77,10 @@ public class InBetweenFilterOption extends FilterOption {
         }
 
         return result;
+    }
+
+    public boolean getNormalize() {
+        return normalize;
     }
 
 }

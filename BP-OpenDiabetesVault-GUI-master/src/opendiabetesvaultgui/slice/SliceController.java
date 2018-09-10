@@ -500,6 +500,8 @@ public class SliceController extends FatherController implements Initializable {
         } else if (splitFilter && filterResultsForSplit != null && filterResultsForSplit.size() > 0) {
 
             List<FilterResult> tempFilterResults = new ArrayList<>();
+            List<FilterResult> backup = new ArrayList<>();
+            backup.addAll(filterResultsForSplit);
 
             for (FilterResult filterResult : filterResultsForSplit) {
 
@@ -514,7 +516,17 @@ public class SliceController extends FatherController implements Initializable {
             filterResultsForSplit.clear();
             filterResultsForSplit.addAll(tempFilterResults);
             filterResultPositionForSplit = 0;
-            populateChart(filterResultsForSplit.get(filterResultPositionForSplit));
+            if (filterResultsForSplit != null && filterResultsForSplit.size() > 0) {
+                populateChart(filterResultsForSplit.get(filterResultPositionForSplit));
+            } else {
+                Alert alert = new Alert(AlertType.ERROR);
+                alert.setTitle("Keine Daten gefunden");
+                alert.setHeaderText("Keine Daten gefunden");
+
+                alert.showAndWait();
+
+                filterResultsForSplit = backup;
+            }
 
         }
     }
@@ -734,6 +746,18 @@ public class SliceController extends FatherController implements Initializable {
         VBox tmpInputVBox = new VBox();
         tmpInputVBox.setSpacing(10);
 
+        HBox tmpHeadHBox = new HBox();
+        tmpHeadHBox.setSpacing(10);
+
+        ImageView imageView = new ImageView();
+        imageView.setFitHeight(20);
+        imageView.setFitWidth(20);
+
+        Image image = new Image(getIcon(name).toURI().toString());
+        imageView.setImage(image);
+
+        tmpHeadHBox.getChildren().add(imageView);
+
         FilterNode tmpNode;
         Map<String, Class> parameterClasses = filterManagementUtil.getParametersFromName(name);
         Iterator iterator = iterator = parameterClasses.entrySet().iterator();
@@ -750,7 +774,9 @@ public class SliceController extends FatherController implements Initializable {
 
         tmpInputVBox.setStyle("-fx-border-color:grey; -fx-background-radius: 10; -fx-border-radius: 10; -fx-box-shadow: 2 3 #888888;");
 
-        tmpInputVBox.getChildren().add(label);
+        tmpHeadHBox.getChildren().add(label);
+
+        tmpInputVBox.getChildren().add(tmpHeadHBox);
 
         while (iterator.hasNext()) {
             Map.Entry pair = (Map.Entry) iterator.next();
@@ -759,7 +785,8 @@ public class SliceController extends FatherController implements Initializable {
             final Class typeClass = (Class) pair.getValue();
 
             HBox tmpHBox = new HBox();
-            tmpHBox.setAlignment(Pos.CENTER);
+            tmpHBox.setAlignment(Pos.CENTER_LEFT);
+            tmpHBox.setSpacing(10);
             //tmpHBox.setMaxWidth(200);
 
             tmpHBox.getChildren().add(new Label(simpleName));
@@ -1207,39 +1234,41 @@ public class SliceController extends FatherController implements Initializable {
 
         for (String filterName : filterNames) {
             HBox hBox = new HBox();
+            hBox.setSpacing(20);
             ImageView imageView = new ImageView();
-            imageView.setFitHeight(15);
-            imageView.setFitWidth(15);
+            imageView.setFitHeight(20);
+            imageView.setFitWidth(20);
 
-            if (filterName.toLowerCase().contains("date")) {
-                File file = new File("src/opendiabetesvaultgui/shapes/calendar.png");
-                Image image = new Image(file.toURI().toString());
-                imageView.setImage(image);
-            } else if (filterName.toLowerCase().contains("time")) {
-                File file = new File("src/opendiabetesvaultgui/shapes/time.png");
-                Image image = new Image(file.toURI().toString());
-                imageView.setImage(image);
-            } else if (filterName.toLowerCase().contains("type")) {
-                File file = new File("src/opendiabetesvaultgui/shapes/value.png");
-                Image image = new Image(file.toURI().toString());
-                imageView.setImage(image);
-            } else if (filterName.toLowerCase().contains("thres")) {
-                File file = new File("src/opendiabetesvaultgui/shapes/loading.png");
-                Image image = new Image(file.toURI().toString());
-                imageView.setImage(image);
-            } else {
-                File file = new File("src/opendiabetesvaultgui/shapes/gear.png");
-                Image image = new Image(file.toURI().toString());
-                imageView.setImage(image);
-            }
+            Image image = new Image(getIcon(filterName).toURI().toString());
+            imageView.setImage(image);
 
             hBox.getChildren().add(imageView);
 
             Label label = new Label();
             label.setText(filterName);
+            label.setScaleX(1.3);
+            label.setScaleY(1.3);
             hBox.getChildren().add(label);
             result.add(hBox);
 
+        }
+
+        return result;
+    }
+
+    private File getIcon(String filterName) {
+        File result;
+
+        if (filterName.toLowerCase().contains("date")) {
+            result = new File("src/opendiabetesvaultgui/shapes/calendar.png");
+        } else if (filterName.toLowerCase().contains("time")) {
+            result = new File("src/opendiabetesvaultgui/shapes/time.png");
+        } else if (filterName.toLowerCase().contains("type")) {
+            result = new File("src/opendiabetesvaultgui/shapes/value.png");
+        } else if (filterName.toLowerCase().contains("thres")) {
+            result = new File("src/opendiabetesvaultgui/shapes/loading.png");
+        } else {
+            result = new File("src/opendiabetesvaultgui/shapes/gear.png");
         }
 
         return result;
