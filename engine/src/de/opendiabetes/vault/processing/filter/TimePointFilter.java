@@ -78,4 +78,9 @@ public class TimePointFilter extends Filter {
         return new TimePointFilter(option);
     }
 
+    @Override
+    FilterResult tearDownAfterFilter(FilterResult givenResult) {
+        return givenResult;
+    }
+
 }

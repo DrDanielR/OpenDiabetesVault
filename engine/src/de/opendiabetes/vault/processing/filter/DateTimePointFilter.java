@@ -71,4 +71,9 @@ public class DateTimePointFilter extends Filter {
         return new DateTimePointFilter(option);
     }
 
+    @Override
+    FilterResult tearDownAfterFilter(FilterResult givenResult) {
+        return givenResult;
+    }
+
 }

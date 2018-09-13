@@ -5,7 +5,9 @@
  */
 package de.opendiabetes.vault.processing.filter.options.guibackend;
 
+import de.opendiabetes.vault.processing.filter.AndFilter;
 import de.opendiabetes.vault.processing.filter.Filter;
+import de.opendiabetes.vault.processing.filter.OrFilter;
 import de.opendiabetes.vault.processing.filter.options.FilterOption;
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
@@ -24,7 +26,7 @@ public class FilterAndOption {
     private boolean isCombine;
     private final FilterOption option;
     private final Filter filter;
-    private Map<String, Class> parameterAndType;    
+    private Map<String, Class> parameterAndType;
 
     public FilterAndOption(FilterOption option, Filter filter) {
         this.option = option;
@@ -52,7 +54,7 @@ public class FilterAndOption {
     public Filter getFilter() {
         return filter;
     }
-    
+
     public Map<String, Class> getParameterAndType() {
         return parameterAndType;
     }
@@ -72,8 +74,8 @@ public class FilterAndOption {
 
         while (it.hasNext()) {
             Map.Entry pair = (Map.Entry) it.next();
-            
-            if (((Class) pair.getValue()).getSimpleName().contains("List")) {
+
+            if (filter instanceof AndFilter || filter instanceof OrFilter) {
                 isCombine = true;
             }
             //it.remove();

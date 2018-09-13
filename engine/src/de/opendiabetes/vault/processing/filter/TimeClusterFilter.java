@@ -143,4 +143,9 @@ public class TimeClusterFilter extends Filter {
         return new TimeClusterFilter(option);
     }
 
+    @Override
+    FilterResult tearDownAfterFilter(FilterResult givenResult) {
+        return givenResult;
+    }
+
 }

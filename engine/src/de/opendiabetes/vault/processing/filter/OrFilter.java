@@ -83,4 +83,14 @@ public class OrFilter extends Filter {
         OrFilterOption tempOption = new OrFilterOption(tempFilters);
         return new OrFilter(tempOption);
     }
+
+    @Override
+    FilterResult tearDownAfterFilter(FilterResult givenResult) {
+        for (Filter filter : filters) {
+            givenResult = filter.tearDownAfterFilter(givenResult);
+        }
+
+        return givenResult;
+    }
+
 }

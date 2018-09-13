@@ -25,8 +25,8 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author Daniel 
- * This class extends Filter. The filter() Method checks if the vaultentrytype of the vaultEntry equals the given vaultentry.
+ * @author Daniel This class extends Filter. The filter() Method checks if the
+ * vaultentrytype of the vaultEntry equals the given vaultentry.
  */
 public class VaultEntryTypeFilter extends Filter {
 
@@ -34,7 +34,7 @@ public class VaultEntryTypeFilter extends Filter {
 
     /**
      * Sets the vaultEntryType which will later be used in the filter mechanism.
-     * 
+     *
      * @param option VaultEntryTypeFilterOption
      */
     public VaultEntryTypeFilter(FilterOption option) {
@@ -62,5 +62,10 @@ public class VaultEntryTypeFilter extends Filter {
     @Override
     Filter update(VaultEntry vaultEntry) {
         return new VaultEntryTypeFilter(new VaultEntryTypeFilterOption(vaultEntry.getType()));
+    }
+
+    @Override
+    FilterResult tearDownAfterFilter(FilterResult givenResult) {
+        return givenResult;
     }
 }

@@ -84,4 +84,9 @@ public class LogicFilter extends Filter {
     ) {
         return new LogicFilter(option);
     }
+
+    @Override
+    FilterResult tearDownAfterFilter(FilterResult givenResult) {
+        return givenResult;
+    }
 }

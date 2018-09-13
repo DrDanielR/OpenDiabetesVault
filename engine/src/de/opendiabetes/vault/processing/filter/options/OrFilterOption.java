@@ -31,14 +31,14 @@ public class OrFilterOption extends FilterOption {
 
     public OrFilterOption(List<Filter> filters) {
         super(new HashMap<>(), null);
-        super.getParameterNameAndType().put("Filters", List.class);
+        super.getParameterNameAndType().put("Filters", Filter.class);
         
         this.filters = filters;
     }
 
     public OrFilterOption(Filter firstFilter, Filter secondFilter) {
         super(new HashMap<>(), null);
-        super.getParameterNameAndType().put("Filters", List.class);
+        super.getParameterNameAndType().put("Filters", Filter.class);
         
         this.filters = new ArrayList<>();
         filters.add(firstFilter);

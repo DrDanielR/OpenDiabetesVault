@@ -79,4 +79,9 @@ public class TypeAbsenceFilter extends Filter {
         return new TypeAbsenceFilter(option);
     }
 
+    @Override
+    FilterResult tearDownAfterFilter(FilterResult givenResult) {
+        return givenResult;
+    }
+
 }

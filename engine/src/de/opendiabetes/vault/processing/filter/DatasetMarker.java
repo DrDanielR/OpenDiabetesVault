@@ -73,4 +73,9 @@ public class DatasetMarker extends Filter {
         return basedata;
     }
 
+    @Override
+    FilterResult tearDownAfterFilter(FilterResult givenResult) {
+        return givenResult;
+    }
+
 }

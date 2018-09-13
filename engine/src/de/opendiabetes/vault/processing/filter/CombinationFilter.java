@@ -41,8 +41,9 @@ public class CombinationFilter extends Filter {
     private List<Filter> filters;
 
     /**
-     * 
-     * @param option CombinationFilterOption contains all options, which will be used later on.
+     *
+     * @param option CombinationFilterOption contains all options, which will be
+     * used later on.
      */
     public CombinationFilter(FilterOption option) {
         super(option);
@@ -96,6 +97,11 @@ public class CombinationFilter extends Filter {
     @Override
     Filter update(VaultEntry vaultEntry) {
         return new CombinationFilter(option);
+    }
+
+    @Override
+    FilterResult tearDownAfterFilter(FilterResult givenResult) {
+        return givenResult;
     }
 
 }

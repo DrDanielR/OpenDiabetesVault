@@ -77,4 +77,9 @@ public class DateTimeSpanFilter extends Filter {
         return new DateTimeSpanFilter(option);
     }
 
+    @Override
+    FilterResult tearDownAfterFilter(FilterResult givenResult) {
+        return givenResult;
+    }
+    
 }

@@ -84,4 +84,9 @@ public class QueryFilter extends Filter {
         return new QueryFilter(new QueryFilterOption(mainFilter.update(vaultEntry), innerFilter, minSize, maxSize));
     }
 
+    @Override
+    FilterResult tearDownAfterFilter(FilterResult givenResult) {
+        return givenResult;
+    }
+
 }
