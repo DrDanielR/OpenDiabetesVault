@@ -40,6 +40,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -80,6 +81,9 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Separator;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
+import javafx.scene.control.SplitPane;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.image.Image;
@@ -136,6 +140,12 @@ public class SliceController extends FatherController implements Initializable {
     private HBox filterCombinationHbox;
 
     @FXML
+    private ScrollPane filtersamplecombinationfield;
+
+    @FXML
+    private HBox filterSampleCombinationHbox;
+
+    @FXML
     private ImageView imageViewForFilter;
 
     @FXML
@@ -152,9 +162,6 @@ public class SliceController extends FatherController implements Initializable {
 
     @FXML
     private Spinner currentimport;
-
-    @FXML
-    private HBox filteroptiontypehbox;
 
     @FXML
     private Spinner hourspinnerbefore;
@@ -175,17 +182,24 @@ public class SliceController extends FatherController implements Initializable {
     private Spinner secondspinnerafter;
 
     @FXML
-    private CheckBox checkboxforsplit;
+    private CheckBox checkboxforsample;
 
-    private ChoiceBox filtertypechoiceboxforsplit = new ChoiceBox();
+    @FXML
+    private Pane samplefilterinputpane;
+
+    @FXML
+    private GridPane gridpaneforsamplefilter;
+
+    @FXML
+    private SplitPane splitpaneforfilter;
 
     private static final String FILTER_NAME = "FilterName";
     private static final String SEPARATOR = "%";
     private static final String COMBINE_FILTER = "CombineFilter";
     private static final String END_OF_SUBFILTER = "EndOfSubFilter";
-    private static final String NO_SELECTION = "-----";
 
-    private List<VBoxChoiceBoxFilterNodesContainer> vboxChoiceBoxFilterNodesContainers = new ArrayList<>();
+    private List<VBoxChoiceBoxFilterNodesContainer> vboxChoiceBoxFilterNodesContainersForFilter = new ArrayList<>();
+    private List<VBoxChoiceBoxFilterNodesContainer> vboxChoiceBoxFilterNodesContainersForSample = new ArrayList<>();
 
     private ObservableList itemsForChocieBox;
 
@@ -197,6 +211,8 @@ public class SliceController extends FatherController implements Initializable {
 
     private Map<String, FilterNode> importedFilterNodes = new HashMap<>();
 
+    List<FilterNode> sampleFilterNodes = new ArrayList<>();
+
     private boolean combineMode = false;
 
     private List<VaultEntry> importedData;
@@ -206,6 +222,11 @@ public class SliceController extends FatherController implements Initializable {
 
     @FXML
     private void doSaveFilterCombination(ActionEvent event) {
+        exportVBoxChoiceBoxFilterNodesContainers(vboxChoiceBoxFilterNodesContainersForFilter);
+        exportVBoxChoiceBoxFilterNodesContainers(vboxChoiceBoxFilterNodesContainersForSample);
+    }
+
+    private void exportVBoxChoiceBoxFilterNodesContainers(List<VBoxChoiceBoxFilterNodesContainer> vboxChoiceBoxFilterNodesContainers) {
         FileChooser fileChooser = new FileChooser();
 
         FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt");
@@ -257,7 +278,6 @@ public class SliceController extends FatherController implements Initializable {
         } catch (Throwable t) {
             t.printStackTrace();
         }
-
     }
 
     private void writeFilterNode(BufferedWriter bufferedWriter, List<FilterNode> filterNodes) throws IOException {
@@ -380,8 +400,7 @@ public class SliceController extends FatherController implements Initializable {
     List<FilterResult> filterResultsForSplit;
     int filterResultPositionForSplit = -1;
 
-    @FXML
-    private void doSplitEntries(ActionEvent event) {
+    private void splitEntries() {
         Date beginDate = importedData.get(0).getTimestamp();
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(beginDate);
@@ -401,26 +420,10 @@ public class SliceController extends FatherController implements Initializable {
             lastVaultEntryTimestamp = filterResultsForSplit.get(filterResultsForSplit.size() - 1).filteredData.get(filterResultsForSplit.get(filterResultsForSplit.size() - 1).filteredData.size() - 1).getTimestamp();
         }
 
-        if (filtertypechoiceboxforsplit.getSelectionModel().getSelectedItem().toString().equals(NO_SELECTION)) {
+        if (sampleFilterNodes != null && sampleFilterNodes.size() > 0) {
+            Filter filter = filterManagementUtil.getFilterFromFilterNode(sampleFilterNodes.get(0), null);
 
-            while (lastVaultEntryTimestamp.after(calendar.getTime())) {
-                Date startDate = calendar.getTime();
-                calendar.add(Calendar.HOUR_OF_DAY, hoursAfter + hoursBefore);
-                calendar.add(Calendar.MINUTE, minutesAfter + minutesBefore);
-                calendar.add(Calendar.SECOND, secondsAfter + secondsfore);
-                Date endDate = calendar.getTime();
-
-                DateTimeSpanFilter dateTimeSpanFilter = new DateTimeSpanFilter(new DateTimeSpanFilterOption(startDate, endDate));
-
-                filterResultsForSplit.add(dateTimeSpanFilter.filter(importedData));
-            }
-
-        } else {
-            VaultEntryType vaultEntryType = VaultEntryType.valueOf(filtertypechoiceboxforsplit.getSelectionModel().getSelectedItem().toString());
-
-            VaultEntryTypeFilter vaultEntryTypeFilter = new VaultEntryTypeFilter(new VaultEntryTypeFilterOption(vaultEntryType));
-
-            FilterResult tempFilterResult = vaultEntryTypeFilter.filter(importedData);
+            FilterResult tempFilterResult = filter.filter(importedData);
 
             for (VaultEntry vaultEntry : tempFilterResult.filteredData) {
                 calendar.setTime(vaultEntry.getTimestamp());
@@ -441,20 +444,29 @@ public class SliceController extends FatherController implements Initializable {
 
             }
 
-        }
+            if (filterResultsForSplit != null && filterResultsForSplit.size() > 0) {
+                filterResultPositionForSplit = 0;
+                populateChart(filterResultsForSplit.get(filterResultPositionForSplit));
+            } else {
+                String message = "Das sampeln ist mit den gegebenen Parametern nicht möglich";
 
-        if (filterResultsForSplit != null && filterResultsForSplit.size() > 0) {
-            filterResultPositionForSplit = 0;
-            populateChart(filterResultsForSplit.get(filterResultPositionForSplit));
+                Alert alert = new Alert(AlertType.ERROR);
+                alert.setTitle("Sampeln Fehlgeschlagen");
+                alert.setHeaderText("Sampeln Fehlgeschlagen:");
+                alert.setContentText(message);
+
+                alert.showAndWait();
+            }
         } else {
-            String message = "Das Splitten ist mit den gegebenen Parametern nicht möglich";
+            String message = "Ein Filter muss zum Sampeln ausgewählt werden";
 
             Alert alert = new Alert(AlertType.ERROR);
-            alert.setTitle("Splitten Fehlgeschlagen");
-            alert.setHeaderText("Splitten Fehlgeschlagen:");
+            alert.setTitle("Sampeln Fehlgeschlagen");
+            alert.setHeaderText("Sampeln Fehlgeschlagen:");
             alert.setContentText(message);
 
             alert.showAndWait();
+
         }
 
     }
@@ -478,10 +490,13 @@ public class SliceController extends FatherController implements Initializable {
     @FXML
     private void doFilter(ActionEvent event) {
 
-        boolean splitFilter = checkboxforsplit.isSelected();
+        boolean splitFilter = checkboxforsample.isSelected();
 
-        List<Filter> filters = getFiltersFromCurrentState();
-        if (filters != null && !splitFilter) {
+        List<Filter> filters = getFiltersFromVBoxChoiceBoxFilterNodesContainer(vboxChoiceBoxFilterNodesContainersForFilter);
+
+        List<Filter> sampleFilters = getFiltersFromVBoxChoiceBoxFilterNodesContainer(vboxChoiceBoxFilterNodesContainersForSample);
+
+        if (filters != null) {
             //null entfernen normalerweise keine drinnen
             while (filters.remove(null));
 
@@ -497,7 +512,11 @@ public class SliceController extends FatherController implements Initializable {
                 //Plotteria
                 generateGraphs(filterResult);
             }
-        } else if (splitFilter && filterResultsForSplit != null && filterResultsForSplit.size() > 0) {
+        }
+
+        splitEntries();
+
+        if (splitFilter && filterResultsForSplit != null && filterResultsForSplit.size() > 0 && sampleFilters != null && sampleFilters.size() > 0) {
 
             List<FilterResult> tempFilterResults = new ArrayList<>();
             List<FilterResult> backup = new ArrayList<>();
@@ -505,7 +524,7 @@ public class SliceController extends FatherController implements Initializable {
 
             for (FilterResult filterResult : filterResultsForSplit) {
 
-                FilterResult tempFilterResult = filterManagementUtil.sliceVaultEntries(filters, filterResult.filteredData);
+                FilterResult tempFilterResult = filterManagementUtil.sliceVaultEntries(sampleFilters, filterResult.filteredData);
 
                 if (tempFilterResult != null && tempFilterResult.filteredData.size() > 0) {
                     tempFilterResults.add(tempFilterResult);
@@ -535,8 +554,15 @@ public class SliceController extends FatherController implements Initializable {
     private void doReset(ActionEvent event) {
 
         filterCombinationHbox.getChildren().removeAll(filterCombinationHbox.getChildren());
-        vboxChoiceBoxFilterNodesContainers.clear();
-        addNewChoiceBoxAndSeperator();
+        filterSampleCombinationHbox.getChildren().removeAll(filterSampleCombinationHbox.getChildren());
+        vboxChoiceBoxFilterNodesContainersForFilter.clear();
+        vboxChoiceBoxFilterNodesContainersForSample.clear();
+
+        addNewChoiceBoxAndSeperator(filterCombinationHbox, vboxChoiceBoxFilterNodesContainersForFilter);
+        addNewChoiceBoxAndSeperator(filterSampleCombinationHbox, vboxChoiceBoxFilterNodesContainersForSample);
+
+        samplefilterinputpane.getChildren().removeAll(samplefilterinputpane.getChildren());
+        sampleFilterNodes.clear();
 
         importedData = vaultDao.queryAllVaultEntries();
         FilterResult filterResult = filterManagementUtil.getLastDay(importedData);
@@ -582,20 +608,20 @@ public class SliceController extends FatherController implements Initializable {
         currentimport.increment();
     }
 
-    private List<Filter> getFiltersFromCurrentState() {
+    private List<Filter> getFiltersFromVBoxChoiceBoxFilterNodesContainer(List<VBoxChoiceBoxFilterNodesContainer> vBoxChoiceBoxFilterNodesContainers) {
         List<List<FilterNode>> columnFilterNodes = new ArrayList<>();
 
-        for (VBoxChoiceBoxFilterNodesContainer vboxChoiceBoxFilterNodesContainer : vboxChoiceBoxFilterNodesContainers) {
+        for (VBoxChoiceBoxFilterNodesContainer vboxChoiceBoxFilterNodesContainer : vBoxChoiceBoxFilterNodesContainers) {
             columnFilterNodes.add(vboxChoiceBoxFilterNodesContainer.getFilterNodes());
         }
 
-        List<Filter> filters = filterManagementUtil.combineFilters(getCurrentCombineFilters(), columnFilterNodes);
+        List<Filter> filters = filterManagementUtil.combineFilters(getCurrentCombineFiltersFromVBoxChoiceBoxFilterNodesContainer(vBoxChoiceBoxFilterNodesContainers), columnFilterNodes);
         return filters;
     }
 
-    private List<String> getCurrentCombineFilters() {
+    private List<String> getCurrentCombineFiltersFromVBoxChoiceBoxFilterNodesContainer(List<VBoxChoiceBoxFilterNodesContainer> vBoxChoiceBoxFilterNodesContainers) {
         List<String> combineFilters = new ArrayList<>();
-        for (VBoxChoiceBoxFilterNodesContainer vBoxChoiceBoxFilterNodesContainer : vboxChoiceBoxFilterNodesContainers) {
+        for (VBoxChoiceBoxFilterNodesContainer vBoxChoiceBoxFilterNodesContainer : vBoxChoiceBoxFilterNodesContainers) {
             combineFilters.add(vBoxChoiceBoxFilterNodesContainer.getChoicebox().getSelectionModel().getSelectedItem().toString());
         }
         return combineFilters;
@@ -652,17 +678,23 @@ public class SliceController extends FatherController implements Initializable {
         populateChart(filterResult);
         generateGraphs(filterResult);
 
+        //hide sampleFilter
+        gridpaneforsamplefilter.setVisible(false);
+        splitpaneforfilter.setDividerPosition(0, 1);
+
         //Choiceboxen füllen
         itemsForChocieBox = FXCollections.observableArrayList(filterManagementUtil.getCombineFilter());
+        itemsForChocieBox.sort(new Comparator() {
+            @Override
+            public int compare(Object o1, Object o2) {
+                String name = o1.toString();
+                String name2 = o2.toString();
+                return name.compareTo(name2);
+            }
+        });
 
-        addNewChoiceBoxAndSeperator();
-
-        ObservableList itemsForTmpChocieBox = FXCollections.observableArrayList(new VaultEntryTypeFilterOption(null).getDropDownEntries().keySet());
-        itemsForTmpChocieBox.add(NO_SELECTION);
-        filtertypechoiceboxforsplit.setItems(itemsForTmpChocieBox);
-        filtertypechoiceboxforsplit.getSelectionModel().selectLast();
-
-        filteroptiontypehbox.getChildren().add(filtertypechoiceboxforsplit);
+        addNewChoiceBoxAndSeperator(filterCombinationHbox, vboxChoiceBoxFilterNodesContainersForFilter);
+        addNewChoiceBoxAndSeperator(filterSampleCombinationHbox, vboxChoiceBoxFilterNodesContainersForSample);
 
         //ValueFactory for Spinner
         SpinnerValueFactory<Integer> valueFactory = new SpinnerValueFactory<Integer>() {
@@ -712,10 +744,38 @@ public class SliceController extends FatherController implements Initializable {
             }
         });
 
+        samplefilterinputpane.setOnDragOver(new EventHandler<DragEvent>() {
+            public void handle(DragEvent event) {
+                event.acceptTransferModes(TransferMode.ANY);
+                mousePositionX = event.getX();
+                mousePositionY = event.getY();
+            }
+        });
+
+        samplefilterinputpane.setOnDragDropped(new EventHandler<DragEvent>() {
+            public void handle(DragEvent event) {
+                onDragDroppedFilter(event, samplefilterinputpane, sampleFilterNodes);
+
+            }
+        });
+
+        checkboxforsample.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                gridpaneforsamplefilter.setVisible(checkboxforsample.isSelected());
+
+                if (checkboxforsample.isSelected()) {
+                    splitpaneforfilter.setDividerPosition(0, 0.5);
+                } else {
+                    splitpaneforfilter.setDividerPosition(0, 1);
+                }
+            }
+        });
+
     }
 
     public void onDragOverFilter(DragEvent event) {
-        if (event.getGestureSource() != filtercombinationfield
+        if ((event.getGestureSource() != filtercombinationfield || event.getGestureSource() != filtersamplecombinationfield)
                 && event.getDragboard().hasString()) {
             event.acceptTransferModes(TransferMode.ANY);
             mousePositionX = event.getX();
@@ -831,6 +891,14 @@ public class SliceController extends FatherController implements Initializable {
                 final FilterOption filterOption = filterManagementUtil.getFilterAndOptionFromName(name).getOption();
 
                 ObservableList itemsForTmpChocieBox = FXCollections.observableArrayList(filterOption.getDropDownEntries().keySet());
+                itemsForTmpChocieBox.sort(new Comparator() {
+                    @Override
+                    public int compare(Object o1, Object o2) {
+                        String name = o1.toString();
+                        String name2 = o2.toString();
+                        return name.compareTo(name2);
+                    }
+                });
                 choiceBox.setItems(itemsForTmpChocieBox);
                 choiceBox.getSelectionModel().selectFirst();
 
@@ -848,6 +916,7 @@ public class SliceController extends FatherController implements Initializable {
                 tmpNode.setData(importedData);
                 tmpHBox.getChildren().remove(tmpHBox.getChildren().get(tmpHBox.getChildren().size() - 1));
             } else if (typeClass.getSimpleName().toLowerCase().contains("filter")) {
+                ScrollPane filterScrollPane = new ScrollPane();
                 VBox filterVBox = new VBox();
                 filterVBox.setStyle("-fx-border-color:grey; -fx-background-radius: 10; -fx-border-radius: 10; -fx-box-shadow: 2 3 #888888;");
                 filterVBox.setMinHeight(50);
@@ -869,7 +938,8 @@ public class SliceController extends FatherController implements Initializable {
                     }
                 });
 
-                tmpHBox.getChildren().add(filterVBox);
+                filterScrollPane.setContent(filterVBox);
+                tmpHBox.getChildren().add(filterScrollPane);
 
             } else {
                 TextField tmpTextField = new TextField();
@@ -940,11 +1010,11 @@ public class SliceController extends FatherController implements Initializable {
         return true;
     }
 
-    private void addNewChoiceBoxAndSeperator() {
+    private void addNewChoiceBoxAndSeperator(HBox hBox, List<VBoxChoiceBoxFilterNodesContainer> vBoxChoiceBoxFilterNodesContainers) {
 
         //Separator hinzufügen
         Separator separator = new Separator(Orientation.HORIZONTAL);
-        filterCombinationHbox.getChildren().add(separator);
+        hBox.getChildren().add(separator);
 
         //Vbox für Filter und ChoiceBox
         VBox vBox = new VBox();
@@ -954,12 +1024,11 @@ public class SliceController extends FatherController implements Initializable {
         choiceBox.getSelectionModel().selectFirst();
 
         vBox.getChildren().add(choiceBox);
-
-        filterCombinationHbox.getChildren().add(vBox);
+        hBox.getChildren().add(vBox);
 
         VBoxChoiceBoxFilterNodesContainer vboxChoiceBoxFilterNodesContainer = new VBoxChoiceBoxFilterNodesContainer(vBox, choiceBox, new ArrayList<>());
 
-        vboxChoiceBoxFilterNodesContainers.add(vboxChoiceBoxFilterNodesContainer);
+        vBoxChoiceBoxFilterNodesContainers.add(vboxChoiceBoxFilterNodesContainer);
 
         //DragOver for vBox
         vBox.setOnDragOver(new EventHandler<DragEvent>() {
@@ -973,7 +1042,7 @@ public class SliceController extends FatherController implements Initializable {
 
             public void handle(DragEvent event) {
                 if (newvBox) {
-                    addNewChoiceBoxAndSeperator();
+                    addNewChoiceBoxAndSeperator(hBox, vBoxChoiceBoxFilterNodesContainers);
                     newvBox = false;
                 }
                 onDragDroppedFilter(event, vboxChoiceBoxFilterNodesContainer.getVBox(), vboxChoiceBoxFilterNodesContainer.getFilterNodes());
@@ -1229,7 +1298,6 @@ public class SliceController extends FatherController implements Initializable {
 
     private List<Node> getItemsForFilterListView() {
         List<Node> result = new ArrayList<Node>();
-        //List<String> filterNames = filterManagementUtil.getAllNotCombineFilters();
         List<String> filterNames = filterManagementUtil.getAllFilters();
 
         for (String filterName : filterNames) {
@@ -1273,4 +1341,5 @@ public class SliceController extends FatherController implements Initializable {
 
         return result;
     }
+
 }

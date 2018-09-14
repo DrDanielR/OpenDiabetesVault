@@ -88,7 +88,7 @@ public class InBetweenFilter extends Filter {
             givenResult = new FilterResult();
         } else if (normalize) {
             for (VaultEntry vaultEntry : givenResult.filteredData) {
-                double newValue = 2*((vaultEntry.getValue() - minValue) / (maxValue - minValue)) - 1;
+                double newValue = (vaultEntry.getValue() - minValue) / (maxValue - minValue);
                 vaultEntry.setValue(newValue);
             }
         }
