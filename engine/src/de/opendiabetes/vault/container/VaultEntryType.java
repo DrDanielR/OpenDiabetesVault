@@ -47,7 +47,6 @@ public enum VaultEntryType {
      * Highly demanding exercise.
      */
     EXERCISE_HIGH,
-    
     // Glucose
     GLUCOSE_CGM(VaultEntryTypeGroup.GLUCOSE, false, true),
     GLUCOSE_CGM_RAW(VaultEntryTypeGroup.GLUCOSE),
@@ -106,7 +105,7 @@ public enum VaultEntryType {
     DM_INSULIN_SENSITIVITY(VaultEntryTypeGroup.DATA_MINING, false, VaultEntryType.MAYBE),
     // More unspecific input
     OTHER_ANNOTATION,
-    Tag,    
+    Tag,
     //Cluster Types
     CLUSTER_MEAL,
     CLUSTER_GLUCOSE_CGM,
@@ -191,6 +190,46 @@ public enum VaultEntryType {
      */
     public VaultEntryTypeGroup getGroup() {
         return GROUP;
+    }
+
+    public boolean isEvent() {
+        boolean result = false;
+
+        if (isUserEvent() || isSystemEvent() || isGeneratedEvent()) {
+            result = true;
+        }
+
+        return result;
+    }
+
+    private boolean isUserEvent() {
+        boolean result = false;
+
+        if (this == BOLUS_NORMAL || this == BOLUS_SQUARE || this == BASAL_MANUAL || this == EXERCISE_MANUAL || this == GLUCOSE_CGM_CALIBRATION || this == GLUCOSE_BG || this == GLUCOSE_BG_MANUAL || this == GLUCOSE_BOLUS_CALCULATION || this == MEAL_BOLUS_CALCULATOR || this == MEAL_MANUAL || this == PUMP_REWIND || this == PUMP_PRIME || this == PUMP_FILL || this == PUMP_SUSPEND || this == PUMP_UNSUSPEND) {
+            result = true;
+        }
+
+        return result;
+    }
+
+    private boolean isSystemEvent() {
+        boolean result = false;
+
+        if (this == BASAL_PROFILE || this == CGM_SENSOR_FINISHED || this == CGM_SENSOR_START || this == CGM_CONNECTION_ERROR || this == CGM_CALIBRATION_ERROR || this == CGM_TIME_SYNC || this == PUMP_FILL_INTERPRETER || this == PUMP_NO_DELIVERY || this == PUMP_UNSUSPEND || this == PUMP_UNTRACKED_ERROR || this == PUMP_RESERVOIR_EMPTY || this == PUMP_TIME_SYNC || this == PUMP_AUTONOMOUS_SUSPEND) {
+            result = true;
+        }
+
+        return result;
+    }
+
+    private boolean isGeneratedEvent() {
+        boolean result = false;
+
+        if (this == BASAL_INTERPRETER) {
+            result = true;
+        }
+
+        return result;
     }
 
 }

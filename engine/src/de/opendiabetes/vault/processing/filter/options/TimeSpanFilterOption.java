@@ -30,10 +30,10 @@ public class TimeSpanFilterOption extends FilterOption {
     private final LocalTime endTime;
 
     public TimeSpanFilterOption(LocalTime startTime, LocalTime endTime) {
-        super(new HashMap<>(), null);        
+        super(new HashMap<>(), null);
         super.getParameterNameAndType().put("StartTime", LocalTime.class);
         super.getParameterNameAndType().put("EndTime", LocalTime.class);
-        
+
         this.endTime = endTime;
         this.startTime = startTime;
     }

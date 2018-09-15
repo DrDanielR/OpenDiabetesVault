@@ -241,9 +241,9 @@ public class FilterManagementUtil {
             } else if (filterAndOption.getFilterOptionName().equals(ThresholdFilterOption.class.getSimpleName())) {
                 result = new ThresholdFilter(new ThresholdFilterOption(Integer.parseInt(filterNode.getParameterAndValues().get("MinThreshold").trim()), Integer.parseInt(filterNode.getParameterAndValues().get("MaxThreshold").trim()), Integer.parseInt(filterNode.getParameterAndValues().get("Mode").trim())));
             } else if (filterAndOption.getFilterOptionName().equals(TimePointFilterOption.class.getSimpleName())) {
-                result = new TimePointFilter(new TimePointFilterOption(LocalTime.parse(filterNode.getParameterAndValues().get("LocalTime")), Integer.parseInt(filterNode.getParameterAndValues().get("MarginInMinutes").trim())));
+                result = new TimePointFilter(new TimePointFilterOption(LocalTime.parse(filterNode.getParameterAndValues().get("LocalTime").trim()), Integer.parseInt(filterNode.getParameterAndValues().get("MarginInMinutes").trim())));
             } else if (filterAndOption.getFilterOptionName().equals(TimeSpanFilterOption.class.getSimpleName())) {
-                result = new TimeSpanFilter(new TimeSpanFilterOption(LocalTime.parse(filterNode.getParameterAndValues().get("StartTime")), LocalTime.parse(filterNode.getParameterAndValues().get("EndTime"))));
+                result = new TimeSpanFilter(new TimeSpanFilterOption(LocalTime.parse(filterNode.getParameterAndValues().get("StartTime").trim()), LocalTime.parse(filterNode.getParameterAndValues().get("EndTime").trim())));
             } else if (filterAndOption.getFilterOptionName().equals(TypeGroupFilterOption.class.getSimpleName())) {
                 result = new TypeGroupFilter(new TypeGroupFilterOption(VaultEntryTypeGroup.valueOf(filterNode.getParameterAndValues().get("VaultEntryTypeGroup"))));
             } else if (filterAndOption.getFilterOptionName().equals(VaultEntryTypeFilterOption.class.getSimpleName())) {

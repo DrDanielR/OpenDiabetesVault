@@ -128,6 +128,9 @@ public class SliceController extends FatherController implements Initializable {
     private LineChart<Number, Number> filterchart;
 
     @FXML
+    private LineChart<Number, Number> filterchartforevents;
+
+    @FXML
     private CategoryAxis filterChartXaxis;
 
     @FXML
@@ -185,7 +188,7 @@ public class SliceController extends FatherController implements Initializable {
     private CheckBox checkboxforsample;
 
     @FXML
-    private Pane samplefilterinputpane;
+    private VBox samplefilterinputvbox;
 
     @FXML
     private GridPane gridpaneforsamplefilter;
@@ -490,6 +493,9 @@ public class SliceController extends FatherController implements Initializable {
     @FXML
     private void doFilter(ActionEvent event) {
 
+        //Daten wieder laden um Filtern immer gleich zu machen
+        importedData = vaultDao.queryAllVaultEntries();
+
         boolean splitFilter = checkboxforsample.isSelected();
 
         List<Filter> filters = getFiltersFromVBoxChoiceBoxFilterNodesContainer(vboxChoiceBoxFilterNodesContainersForFilter);
@@ -514,13 +520,13 @@ public class SliceController extends FatherController implements Initializable {
             }
         }
 
-        splitEntries();
+        if (splitFilter) {
+            splitEntries();
+        }
 
         if (splitFilter && filterResultsForSplit != null && filterResultsForSplit.size() > 0 && sampleFilters != null && sampleFilters.size() > 0) {
 
             List<FilterResult> tempFilterResults = new ArrayList<>();
-            List<FilterResult> backup = new ArrayList<>();
-            backup.addAll(filterResultsForSplit);
 
             for (FilterResult filterResult : filterResultsForSplit) {
 
@@ -543,8 +549,6 @@ public class SliceController extends FatherController implements Initializable {
                 alert.setHeaderText("Keine Daten gefunden");
 
                 alert.showAndWait();
-
-                filterResultsForSplit = backup;
             }
 
         }
@@ -561,7 +565,7 @@ public class SliceController extends FatherController implements Initializable {
         addNewChoiceBoxAndSeperator(filterCombinationHbox, vboxChoiceBoxFilterNodesContainersForFilter);
         addNewChoiceBoxAndSeperator(filterSampleCombinationHbox, vboxChoiceBoxFilterNodesContainersForSample);
 
-        samplefilterinputpane.getChildren().removeAll(samplefilterinputpane.getChildren());
+        samplefilterinputvbox.getChildren().removeAll(samplefilterinputvbox.getChildren());
         sampleFilterNodes.clear();
 
         importedData = vaultDao.queryAllVaultEntries();
@@ -634,6 +638,7 @@ public class SliceController extends FatherController implements Initializable {
     private void populateChart(FilterResult filterResult) {
 
         filterchart.getData().removeAll(filterchart.getData());
+        filterchartforevents.getData().removeAll(filterchartforevents.getData());
 
         Map<String, List<VaultEntry>> clusteredVaultEnries = new HashMap<>();
 
@@ -649,16 +654,34 @@ public class SliceController extends FatherController implements Initializable {
         }
 
         for (String key : clusteredVaultEnries.keySet()) {
+            boolean isEvent = false;
+
             XYChart.Series series = new XYChart.Series();
-            series.setName(key);
+            XYChart.Series seriesForEvents = new XYChart.Series();            
+
             XYChart.Data data;
+            XYChart.Data dataForEvents;
 
             for (VaultEntry vaultEntry : clusteredVaultEnries.get(key)) {
-                data = new Data(simpleDateFormat.format(vaultEntry.getTimestamp()), vaultEntry.getValue());
-                series.getData().add(data);
+                if (vaultEntry.getType().isEvent()) {
+                    dataForEvents = new Data(simpleDateFormat.format(vaultEntry.getTimestamp()), vaultEntry.getValue());
+                    seriesForEvents.getData().add(dataForEvents);
+                    isEvent = true;
+                } else {
+                    data = new Data(simpleDateFormat.format(vaultEntry.getTimestamp()), vaultEntry.getValue());
+                    series.getData().add(data);
+                    isEvent = false;
+                }
             }
 
-            filterchart.getData().add(series);
+            if (isEvent) {
+                seriesForEvents.setName(key);
+                filterchartforevents.getData().add(seriesForEvents);
+            } else {
+                series.setName(key);
+                filterchart.getData().add(series);
+            }
+
         }
     }
 
@@ -744,7 +767,7 @@ public class SliceController extends FatherController implements Initializable {
             }
         });
 
-        samplefilterinputpane.setOnDragOver(new EventHandler<DragEvent>() {
+        samplefilterinputvbox.setOnDragOver(new EventHandler<DragEvent>() {
             public void handle(DragEvent event) {
                 event.acceptTransferModes(TransferMode.ANY);
                 mousePositionX = event.getX();
@@ -752,9 +775,9 @@ public class SliceController extends FatherController implements Initializable {
             }
         });
 
-        samplefilterinputpane.setOnDragDropped(new EventHandler<DragEvent>() {
+        samplefilterinputvbox.setOnDragDropped(new EventHandler<DragEvent>() {
             public void handle(DragEvent event) {
-                onDragDroppedFilter(event, samplefilterinputpane, sampleFilterNodes);
+                onDragDroppedFilter(event, samplefilterinputvbox, sampleFilterNodes);
 
             }
         });
@@ -1300,6 +1323,8 @@ public class SliceController extends FatherController implements Initializable {
         List<Node> result = new ArrayList<Node>();
         List<String> filterNames = filterManagementUtil.getAllFilters();
 
+        filterNames.sort(String.CASE_INSENSITIVE_ORDER);
+        
         for (String filterName : filterNames) {
             HBox hBox = new HBox();
             hBox.setSpacing(20);
