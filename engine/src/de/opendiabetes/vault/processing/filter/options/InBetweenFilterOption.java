@@ -48,7 +48,7 @@ public class InBetweenFilterOption extends FilterOption {
         super.getParameterNameAndType().put("VaultEntryType", Map.class);
         super.getParameterNameAndType().put("MinValue", int.class);
         super.getParameterNameAndType().put("MaxValue", int.class);
-        super.getParameterNameAndType().put("Normalize", boolean.class);
+        super.getParameterNameAndType().put("Normalisieren", boolean.class);
 
         this.type = type;
         this.minValue = minValue;

@@ -182,7 +182,7 @@
                                       </LineChart>
                               <LineChart fx:id="filterchartforevents">
                                  <xAxis>
-                                    <CategoryAxis fx:id="filterChartXaxis1" side="BOTTOM" />
+                                    <CategoryAxis fx:id="sampleFilterChartXaxis" side="BOTTOM" />
                                  </xAxis>
                                  <yAxis>
                                     <NumberAxis fx:id="filterChartYaxis1" side="LEFT" />

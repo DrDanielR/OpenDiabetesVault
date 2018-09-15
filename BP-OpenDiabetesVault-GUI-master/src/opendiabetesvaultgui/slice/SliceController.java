@@ -134,6 +134,9 @@ public class SliceController extends FatherController implements Initializable {
     private CategoryAxis filterChartXaxis;
 
     @FXML
+    private CategoryAxis sampleFilterChartXaxis;
+
+    @FXML
     private NumberAxis filterChartYaxis;
 
     @FXML
@@ -210,7 +213,7 @@ public class SliceController extends FatherController implements Initializable {
 
     private double mousePositionY;
 
-    private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("hh:mm dd.MM.yy");
+    private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm dd.MM.yy");
 
     private Map<String, FilterNode> importedFilterNodes = new HashMap<>();
 
@@ -637,6 +640,8 @@ public class SliceController extends FatherController implements Initializable {
 
     private void populateChart(FilterResult filterResult) {
 
+        ObservableList<String> categories = FXCollections.observableArrayList();
+
         filterchart.getData().removeAll(filterchart.getData());
         filterchartforevents.getData().removeAll(filterchartforevents.getData());
 
@@ -651,13 +656,23 @@ public class SliceController extends FatherController implements Initializable {
                 clusteredVaultEnries.get(vaultEntry.getType().toString()).add(vaultEntry);
             }
 
+            if (!categories.contains(simpleDateFormat.format(vaultEntry.getTimestamp()))) {
+                categories.add(simpleDateFormat.format(vaultEntry.getTimestamp()));
+            }
+
         }
+
+        filterChartXaxis.setCategories(categories);
+        filterChartXaxis.setAutoRanging(false);
+
+        sampleFilterChartXaxis.setCategories(categories);
+        sampleFilterChartXaxis.setAutoRanging(false);
 
         for (String key : clusteredVaultEnries.keySet()) {
             boolean isEvent = false;
 
             XYChart.Series series = new XYChart.Series();
-            XYChart.Series seriesForEvents = new XYChart.Series();            
+            XYChart.Series seriesForEvents = new XYChart.Series();
 
             XYChart.Data data;
             XYChart.Data dataForEvents;
@@ -777,8 +792,10 @@ public class SliceController extends FatherController implements Initializable {
 
         samplefilterinputvbox.setOnDragDropped(new EventHandler<DragEvent>() {
             public void handle(DragEvent event) {
-                onDragDroppedFilter(event, samplefilterinputvbox, sampleFilterNodes);
 
+                if (sampleFilterNodes.size() < 1) {
+                    onDragDroppedFilter(event, samplefilterinputvbox, sampleFilterNodes);
+                }
             }
         });
 
@@ -1324,7 +1341,7 @@ public class SliceController extends FatherController implements Initializable {
         List<String> filterNames = filterManagementUtil.getAllFilters();
 
         filterNames.sort(String.CASE_INSENSITIVE_ORDER);
-        
+
         for (String filterName : filterNames) {
             HBox hBox = new HBox();
             hBox.setSpacing(20);
