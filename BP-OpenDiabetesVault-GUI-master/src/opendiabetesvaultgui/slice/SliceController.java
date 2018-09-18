@@ -62,6 +62,7 @@ import javafx.fxml.Initializable;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
@@ -225,6 +226,8 @@ public class SliceController extends FatherController implements Initializable {
 
     private VaultDao vaultDao;
     private FilterManagementUtil filterManagementUtil;
+    private boolean allValid = false;
+    private String validationErrorMessage = "";
 
     @FXML
     private void doSaveFilterCombination(ActionEvent event) {
@@ -505,56 +508,68 @@ public class SliceController extends FatherController implements Initializable {
 
         List<Filter> sampleFilters = getFiltersFromVBoxChoiceBoxFilterNodesContainer(vboxChoiceBoxFilterNodesContainersForSample);
 
-        if (filters != null) {
-            //null entfernen normalerweise keine drinnen
-            while (filters.remove(null));
+        if (allValid && validationErrorMessage.trim().isEmpty()) {
+            if (filters != null) {
+                //null entfernen normalerweise keine drinnen
+                while (filters.remove(null));
 
-            FilterResult filterResult = filterManagementUtil.sliceVaultEntries(filters, importedData);
+                FilterResult filterResult = filterManagementUtil.sliceVaultEntries(filters, importedData);
 
-            if (filterResult != null) {
+                if (filterResult != null) {
 
-                importedData = filterResult.filteredData;
+                    importedData = filterResult.filteredData;
 
-                //For JavaFx
-                populateChart(filterResult);
+                    //For JavaFx
+                    populateChart(filterResult);
 
-                //Plotteria
-                generateGraphs(filterResult);
+                    //Plotteria
+                    generateGraphs(filterResult);
+                }
             }
-        }
 
-        if (splitFilter) {
-            splitEntries();
-        }
+            if (splitFilter) {
+                splitEntries();
+            }
 
-        if (splitFilter && filterResultsForSplit != null && filterResultsForSplit.size() > 0 && sampleFilters != null && sampleFilters.size() > 0) {
+            if (splitFilter && filterResultsForSplit != null && filterResultsForSplit.size() > 0 && sampleFilters != null && sampleFilters.size() > 0) {
 
-            List<FilterResult> tempFilterResults = new ArrayList<>();
+                List<FilterResult> tempFilterResults = new ArrayList<>();
 
-            for (FilterResult filterResult : filterResultsForSplit) {
+                for (FilterResult filterResult : filterResultsForSplit) {
 
-                FilterResult tempFilterResult = filterManagementUtil.sliceVaultEntries(sampleFilters, filterResult.filteredData);
+                    FilterResult tempFilterResult = filterManagementUtil.sliceVaultEntries(sampleFilters, filterResult.filteredData);
 
-                if (tempFilterResult != null && tempFilterResult.filteredData.size() > 0) {
-                    tempFilterResults.add(tempFilterResult);
+                    if (tempFilterResult != null && tempFilterResult.filteredData.size() > 0) {
+                        tempFilterResults.add(tempFilterResult);
+                    }
+
+                }
+
+                filterResultsForSplit.clear();
+                filterResultsForSplit.addAll(tempFilterResults);
+                filterResultPositionForSplit = 0;
+                if (filterResultsForSplit != null && filterResultsForSplit.size() > 0) {
+                    populateChart(filterResultsForSplit.get(filterResultPositionForSplit));
+                } else {
+                    Alert alert = new Alert(AlertType.ERROR);
+                    alert.setTitle("Keine Daten gefunden");
+                    alert.setHeaderText("Keine Daten gefunden");
+
+                    alert.showAndWait();
                 }
 
             }
+        } else {
+            Alert alert = new Alert(AlertType.ERROR);
+            alert.setTitle("Nicht alle Daten gesetzt");
+            alert.setHeaderText("Bitte setzen Sie die restlichen Daten");
+            alert.setContentText(validationErrorMessage);
 
-            filterResultsForSplit.clear();
-            filterResultsForSplit.addAll(tempFilterResults);
-            filterResultPositionForSplit = 0;
-            if (filterResultsForSplit != null && filterResultsForSplit.size() > 0) {
-                populateChart(filterResultsForSplit.get(filterResultPositionForSplit));
-            } else {
-                Alert alert = new Alert(AlertType.ERROR);
-                alert.setTitle("Keine Daten gefunden");
-                alert.setHeaderText("Keine Daten gefunden");
+            alert.showAndWait();
 
-                alert.showAndWait();
-            }
-
+            validationErrorMessage = "";
         }
+
     }
 
     @FXML
@@ -575,6 +590,7 @@ public class SliceController extends FatherController implements Initializable {
         FilterResult filterResult = filterManagementUtil.getLastDay(importedData);
         populateChart(filterResult);
         generateGraphs(filterResult);
+        validationErrorMessage = "";
     }
 
     @FXML
@@ -619,6 +635,9 @@ public class SliceController extends FatherController implements Initializable {
         List<List<FilterNode>> columnFilterNodes = new ArrayList<>();
 
         for (VBoxChoiceBoxFilterNodesContainer vboxChoiceBoxFilterNodesContainer : vBoxChoiceBoxFilterNodesContainers) {
+
+            allValid = validateFilterNodes(vboxChoiceBoxFilterNodesContainer.getFilterNodes(), vboxChoiceBoxFilterNodesContainer.getVBox().getScene());
+
             columnFilterNodes.add(vboxChoiceBoxFilterNodesContainer.getFilterNodes());
         }
 
@@ -896,6 +915,7 @@ public class SliceController extends FatherController implements Initializable {
                 final Date dummyDate = importedData.get(0).getTimestamp();
 
                 DatePicker datePicker = new DatePicker();
+                datePicker.setId(getIdFromNodeAndString(tmpNode, simpleName));
                 datePicker.setMaxWidth(100);
                 datePicker.setPromptText("Date");
                 datePicker.setValue(dummyDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
@@ -983,6 +1003,7 @@ public class SliceController extends FatherController implements Initializable {
 
             } else {
                 TextField tmpTextField = new TextField();
+                tmpTextField.setId(getIdFromNodeAndString(tmpNode, simpleName));
                 tmpTextField.setMaxWidth(100);
                 tmpTextField.setPromptText("Value");
 
@@ -1382,6 +1403,78 @@ public class SliceController extends FatherController implements Initializable {
         }
 
         return result;
+    }
+
+    private boolean validateFilterNodes(List<FilterNode> filterNodes, Scene scene) {
+        boolean result = true;
+
+        for (FilterNode filterNode : filterNodes) {
+            result = validateFilterNode(filterNode, scene);
+        }
+
+        return result;
+    }
+
+    private boolean validateFilterNode(FilterNode filterNode, Scene scene) {
+        boolean result = false;
+
+        Iterator iterator = filterNode.getParameterAndFilterNodes().keySet().iterator();
+
+        while (iterator.hasNext()) {
+            String key = iterator.next().toString();
+            List<FilterNode> tempNodes = filterNode.getParameterAndFilterNodesFromName(key);
+
+            if (tempNodes != null && tempNodes.size() > 0) {
+                for (FilterNode node : tempNodes) {
+                    result = validateFilterNode(node, scene);
+                }
+            } else {
+                result = false;
+                validationErrorMessage += filterNode.getName() + ": " + key + " " + "\n";
+            }
+        }
+
+        iterator = filterNode.getParameterAndValues().keySet().iterator();
+
+        while (iterator.hasNext()) {
+            String key = (String) iterator.next();
+            Node node = scene.lookup("#" + getIdFromNodeAndString(filterNode, key));
+
+            if (node instanceof DatePicker) {
+
+                String value = ((DatePicker) node).getValue().toString();
+
+                if (!value.trim().isEmpty()) {
+                    filterNode.addParam(key, value);
+                    result = true;
+                } else {
+                    validationErrorMessage += filterNode.getName() + ": " + key + " " + "\n";
+                }
+            } else if (node instanceof CheckBox) {
+                //immer gesetzt
+                result = true;
+            } else if (node instanceof ChoiceBox) {
+                //immer gesetzt
+                result = true;
+            } else if (node instanceof TextField) {
+                String value = ((TextField) node).getText();
+
+                if (!value.trim().isEmpty()) {
+                    filterNode.addParam(key, value);
+                    result = true;
+                } else {
+                    validationErrorMessage += filterNode.getName() + ": " + key + " " + "\n";
+                }
+            }
+
+        }
+
+        return result;
+
+    }
+
+    private String getIdFromNodeAndString(FilterNode tmpNode, String simpleName) {
+        return tmpNode.getId() + simpleName;
     }
 
 }
