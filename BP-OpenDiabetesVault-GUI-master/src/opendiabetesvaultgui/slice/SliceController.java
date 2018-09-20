@@ -730,7 +730,7 @@ public class SliceController extends FatherController implements Initializable {
 
         //Grafik laden ggf. erstmal heutigen Tag
         exportDirectory = new File(exportFileDir);
-        emptyDirectoryForGraphs(exportDirectory);
+        //emptyDirectoryForGraphs(exportDirectory);
         FilterResult filterResult = filterManagementUtil.getLastDay(importedData);
         populateChart(filterResult);
         generateGraphs(filterResult);
@@ -1151,6 +1151,7 @@ public class SliceController extends FatherController implements Initializable {
 
             currentProgress = 0;
             importprogressbar.setProgress(currentProgress);
+            directoryPosition = 0;
             //python command
             Task<Void> exportTask = new Task<Void>() {
                 @Override
@@ -1365,7 +1366,8 @@ public class SliceController extends FatherController implements Initializable {
 
         for (String filterName : filterNames) {
             HBox hBox = new HBox();
-            hBox.setSpacing(20);
+            hBox.setAlignment(Pos.CENTER_LEFT);
+            hBox.setSpacing(10);
             ImageView imageView = new ImageView();
             imageView.setFitHeight(20);
             imageView.setFitWidth(20);
@@ -1377,8 +1379,6 @@ public class SliceController extends FatherController implements Initializable {
 
             Label label = new Label();
             label.setText(filterName);
-            label.setScaleX(1.3);
-            label.setScaleY(1.3);
             hBox.getChildren().add(label);
             result.add(hBox);
 

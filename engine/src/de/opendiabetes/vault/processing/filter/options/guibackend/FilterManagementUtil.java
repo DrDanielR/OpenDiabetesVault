@@ -18,6 +18,7 @@ import de.opendiabetes.vault.processing.filter.DateTimePointFilter;
 import de.opendiabetes.vault.processing.filter.DateTimeSpanFilter;
 import de.opendiabetes.vault.processing.filter.ElevationFilter;
 import de.opendiabetes.vault.processing.filter.Filter;
+import de.opendiabetes.vault.processing.filter.FilterHitCounterFilter;
 import de.opendiabetes.vault.processing.filter.FilterResult;
 import de.opendiabetes.vault.processing.filter.InBetweenFilter;
 import de.opendiabetes.vault.processing.filter.OrFilter;
@@ -26,6 +27,7 @@ import de.opendiabetes.vault.processing.filter.ThresholdFilter;
 import de.opendiabetes.vault.processing.filter.TimePointFilter;
 import de.opendiabetes.vault.processing.filter.TimeSpanFilter;
 import de.opendiabetes.vault.processing.filter.TypeGroupFilter;
+import de.opendiabetes.vault.processing.filter.VaultEntryTypeCounterFilter;
 import de.opendiabetes.vault.processing.filter.VaultEntryTypeFilter;
 import de.opendiabetes.vault.processing.filter.options.AndFilterOption;
 import de.opendiabetes.vault.processing.filter.options.CombinationFilterOption;
@@ -34,6 +36,7 @@ import de.opendiabetes.vault.processing.filter.options.CounterFilterOption;
 import de.opendiabetes.vault.processing.filter.options.DateTimePointFilterOption;
 import de.opendiabetes.vault.processing.filter.options.DateTimeSpanFilterOption;
 import de.opendiabetes.vault.processing.filter.options.ElevationFilterOption;
+import de.opendiabetes.vault.processing.filter.options.FilterHitCounterFilterOption;
 import de.opendiabetes.vault.processing.filter.options.FilterOption;
 import de.opendiabetes.vault.processing.filter.options.InBetweenFilterOption;
 import de.opendiabetes.vault.processing.filter.options.OrFilterOption;
@@ -42,6 +45,7 @@ import de.opendiabetes.vault.processing.filter.options.ThresholdFilterOption;
 import de.opendiabetes.vault.processing.filter.options.TimePointFilterOption;
 import de.opendiabetes.vault.processing.filter.options.TimeSpanFilterOption;
 import de.opendiabetes.vault.processing.filter.options.TypeGroupFilterOption;
+import de.opendiabetes.vault.processing.filter.options.VaultEntryTypeCounterFilterOption;
 import de.opendiabetes.vault.processing.filter.options.VaultEntryTypeFilterOption;
 import java.lang.reflect.Constructor;
 import java.net.URL;
@@ -83,8 +87,9 @@ public class FilterManagementUtil {
         filterAndOptions.add(new FilterAndOption(new QueryFilterOption(null, null, 0, 0), new QueryFilter(new QueryFilterOption(null, null, 0, 0))));
         filterAndOptions.add(new FilterAndOption(new ElevationFilterOption(null, 0, 0), new ElevationFilter(new ElevationFilterOption(null, 0, 0))));
         filterAndOptions.add(new FilterAndOption(new CompactQueryFilterOption(null), new CompactQueryFilter(new CompactQueryFilterOption(null))));
-        filterAndOptions.add(new FilterAndOption(new CounterFilterOption(null, 0, false), new CounterFilter(new CounterFilterOption(null, 0, false))));
         filterAndOptions.add(new FilterAndOption(new InBetweenFilterOption(null, 0, 0, false), new InBetweenFilter(new InBetweenFilterOption(null, 0, 0, false))));
+        filterAndOptions.add(new FilterAndOption(new VaultEntryTypeCounterFilterOption(null, 0, 0, false), new VaultEntryTypeCounterFilter(new VaultEntryTypeCounterFilterOption(null, 0, 0, false))));
+        filterAndOptions.add(new FilterAndOption(new FilterHitCounterFilterOption(null, 0, 0, false), new FilterHitCounterFilter(new FilterHitCounterFilterOption(null, 0, 0, false))));
     }
 
     public List<String> getAllFilters() {
@@ -253,7 +258,6 @@ public class FilterManagementUtil {
                 Filter secondFilter = getFilterFromFilterNode(filterNode.getParameterAndFilterNodesFromName("SecondFilter").get(0), null);
                 List<VaultEntry> data = filterNode.getData();
                 result = new CombinationFilter(new CombinationFilterOption(data, firstFilter, secondFilter));
-
             } else if (filterAndOption.getFilterOptionName().equals(QueryFilterOption.class.getSimpleName())) {
                 Filter mainFilter = getFilterFromFilterNode(filterNode.getParameterAndFilterNodesFromName("MainFilter").get(0), null);
                 Filter innerFilter = getFilterFromFilterNode(filterNode.getParameterAndFilterNodesFromName("InnerFilter").get(0), null);
@@ -261,15 +265,16 @@ public class FilterManagementUtil {
             } else if (filterAndOption.getFilterOptionName().equals(InBetweenFilterOption.class.getSimpleName())) {
                 result = new InBetweenFilter(new InBetweenFilterOption(VaultEntryType.valueOf(filterNode.getParameterAndValues().get("VaultEntryType")), Integer.parseInt(filterNode.getParameterAndValues().get("MinValue").trim()), Integer.parseInt(filterNode.getParameterAndValues().get("MaxValue").trim()), Boolean.valueOf(filterNode.getParameterAndValues().get("Normalisieren").trim())));
             } else if (filterAndOption.getFilterOptionName().equals(CompactQueryFilterOption.class.getSimpleName())) {
-
                 List<Filter> filters = getFiltersFromFilterNodes(filterNode.getParameterAndFilterNodesFromName("Filters"));
                 result = new CompactQueryFilter(new CompactQueryFilterOption(filters));
             } else if (filterAndOption.getFilterOptionName().equals(ElevationFilterOption.class.getSimpleName())) {
                 String doubleString = filterNode.getParameterAndValues().get("MinElevationPerMinute").trim().replace(",", ".");
                 result = new ElevationFilter(new ElevationFilterOption(VaultEntryType.valueOf(filterNode.getParameterAndValues().get("VaultEntryType")), Double.parseDouble(doubleString), Integer.parseInt(filterNode.getParameterAndValues().get("MinutesBetweenEntries").trim())));
-            } else if (filterAndOption.getFilterOptionName().equals(CounterFilterOption.class.getSimpleName())) {
+            } else if (filterAndOption.getFilterOptionName().equals(VaultEntryTypeCounterFilterOption.class.getSimpleName())) {
+                result = new VaultEntryTypeCounterFilter(new VaultEntryTypeCounterFilterOption(VaultEntryType.valueOf(filterNode.getParameterAndValues().get("VaultEntryType")), Integer.parseInt(filterNode.getParameterAndValues().get("MinHits").trim()), Integer.parseInt(filterNode.getParameterAndValues().get("MaxHits").trim()), Boolean.valueOf(filterNode.getParameterAndValues().get("NoneHits").trim())));
+            } else if (filterAndOption.getFilterOptionName().equals(FilterHitCounterFilterOption.class.getSimpleName())) {
                 Filter filter = getFilterFromFilterNode(filterNode.getParameterAndFilterNodesFromName("Filter").get(0), null);
-                result = new CounterFilter(new CounterFilterOption(filter, Integer.parseInt(filterNode.getParameterAndValues().get("HitCounter").trim()), Boolean.valueOf(filterNode.getParameterAndValues().get("OnlyResult").trim())));
+                result = new FilterHitCounterFilter(new FilterHitCounterFilterOption(filter, Integer.parseInt(filterNode.getParameterAndValues().get("MinHits").trim()), Integer.parseInt(filterNode.getParameterAndValues().get("MaxHits").trim()), Boolean.valueOf(filterNode.getParameterAndValues().get("NoneHits").trim())));
             }
 
         } catch (Throwable t) {

@@ -21,6 +21,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
@@ -213,7 +214,19 @@
                                                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                             </rowConstraints>
                                             <children>
-                                                <Button fx:id="previousbutton" mnemonicParsing="false" onAction="#getPreviousImage" text="previous" />
+                                                <Button fx:id="previousbutton" mnemonicParsing="false" onAction="#getPreviousImage" style="-fx-background-color: transparent;">
+                                       <graphic>
+                                          <StackPane>
+                                             <children>
+                                                <ImageView fitHeight="24.0" fitWidth="140.0" pickOnBounds="true" preserveRatio="true" rotate="180.0">
+                                                   <image>
+                                                      <Image url="@../../shapes/arrow.png" />
+                                                   </image>
+                                                </ImageView>
+                                                <Label alignment="CENTER" contentDisplay="TOP" text="previous" textFill="WHITE" />
+                                             </children>
+                                          </StackPane>
+                                       </graphic></Button>
                                                 <ProgressBar fx:id="importprogressbar" prefHeight="18.0" prefWidth="581.0" progress="0.0" GridPane.columnIndex="1" />                                        
                                                 <Spinner fx:id="currentimport" amountToStepBy="1" initialValue="1" min="1" prefHeight="25.0" prefWidth="75.0" GridPane.columnIndex="2">
                                                     <max>
@@ -225,7 +238,19 @@
                                                         <Font size="15.0" />
                                                     </font>
                                                 </Label>
-                                                <Button fx:id="nextbutton" alignment="CENTER_RIGHT" mnemonicParsing="false" onAction="#getNextImage" text="next" GridPane.columnIndex="4" />
+                                                <Button fx:id="nextbutton" alignment="CENTER_RIGHT" mnemonicParsing="false" onAction="#getNextImage" style="-fx-background-color: transparent;" GridPane.columnIndex="4">
+                                       <graphic>
+                                          <StackPane>
+                                             <children>
+                                                <ImageView fitHeight="24.0" fitWidth="140.0" pickOnBounds="true" preserveRatio="true">
+                                                   <image>
+                                                      <Image url="@../../shapes/arrow.png" />
+                                                   </image>
+                                                </ImageView>
+                                                <Label alignment="CENTER" contentDisplay="TOP" text="next" textFill="WHITE" />
+                                             </children>
+                                          </StackPane>
+                                       </graphic></Button>
                                             </children>
                                         </GridPane>
                                     </children>
