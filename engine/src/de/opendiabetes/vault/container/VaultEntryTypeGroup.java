@@ -25,7 +25,7 @@ import java.util.List;
  */
 public enum VaultEntryTypeGroup {
 
-    EMPTY, // Empty Group for Entries without a group, for null-safity regarding getTypes() calls
+    NONE, // Empty Group for Entries without a group, for null-safity regarding getTypes() calls
     CGM_SYSTEM,
     PUMP_SYSTEM,
     SLEEP,

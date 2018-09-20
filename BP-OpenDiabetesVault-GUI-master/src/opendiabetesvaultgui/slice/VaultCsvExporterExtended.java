@@ -199,13 +199,13 @@ public class VaultCsvExporterExtended extends VaultExporter {
             case EXERCISE_MID:
             case EXERCISE_HIGH:
             case EXERCISE_MANUAL:
-            case EXERCISE_OTHER:
+            /*case EXERCISE_OTHER:
                 csvEntry.setExerciseTimeValue(entry.getValue());
                 csvEntry.addExerciseAnnotation(entry.getType().toString());
                 for (VaultEntryAnnotation item : entry.getAnnotations()) {
                     csvEntry.addExerciseAnnotation(item.toStringWithValue());
                 }
-                break;
+                break;*/
             case PUMP_FILL:
             case PUMP_FILL_INTERPRETER:
             case PUMP_NO_DELIVERY:

@@ -23,164 +23,96 @@ package de.opendiabetes.vault.container;
 public enum VaultEntryType {
 
     // Bolus
-    BOLUS_NORMAL(VaultEntryTypeGroup.BOLUS, false, true),
-    BOLUS_SQUARE(VaultEntryTypeGroup.BOLUS, false, true, BOLUS_NORMAL),
+    BOLUS_NORMAL(VaultEntryTypeGroup.BOLUS, true),
+    BOLUS_SQUARE(VaultEntryTypeGroup.BOLUS, true),
     // Basal
-    BASAL_PROFILE(VaultEntryTypeGroup.BASAL, false, true),
-    BASAL_MANUAL(VaultEntryTypeGroup.BASAL, false, true, BASAL_PROFILE),
-    BASAL_INTERPRETER(VaultEntryTypeGroup.BASAL, false, true, BASAL_PROFILE),
+    BASAL_PROFILE(VaultEntryTypeGroup.BASAL, false),
+    BASAL_MANUAL(VaultEntryTypeGroup.BASAL, false),
+    BASAL_INTERPRETER(VaultEntryTypeGroup.BASAL, false),
     // Exercise
-    EXERCISE_MANUAL(VaultEntryTypeGroup.EXERCISE, true, true),
-    EXERCISE_OTHER(VaultEntryTypeGroup.EXERCISE, true, true),
-    EXERCISE_WALK(VaultEntryTypeGroup.EXERCISE, true, true),
-    EXERCISE_BICYCLE(VaultEntryTypeGroup.EXERCISE, true, true),
-    EXERCISE_RUN(VaultEntryTypeGroup.EXERCISE, true, true),
+    EXERCISE_MANUAL(VaultEntryTypeGroup.EXERCISE, true),
     /**
      * Low demanding exercise.
      */
-    EXERCISE_LOW,
+    EXERCISE_LOW(VaultEntryTypeGroup.EXERCISE, true),
     /**
      * Medium demanding exercise.
      */
-    EXERCISE_MID,
+    EXERCISE_MID(VaultEntryTypeGroup.EXERCISE, true),
     /**
      * Highly demanding exercise.
      */
-    EXERCISE_HIGH,
+    EXERCISE_HIGH(VaultEntryTypeGroup.EXERCISE, true),
     // Glucose
-    GLUCOSE_CGM(VaultEntryTypeGroup.GLUCOSE, false, true),
-    GLUCOSE_CGM_RAW(VaultEntryTypeGroup.GLUCOSE),
-    GLUCOSE_CGM_ALERT(VaultEntryTypeGroup.GLUCOSE, true, VaultEntryType.MAYBE),
-    GLUCOSE_CGM_CALIBRATION(VaultEntryTypeGroup.GLUCOSE, false, VaultEntryType.MAYBE),
-    GLUCOSE_BG(VaultEntryTypeGroup.GLUCOSE, false, VaultEntryType.MAYBE),
-    GLUCOSE_BG_MANUAL(VaultEntryTypeGroup.GLUCOSE, false, VaultEntryType.MAYBE),
-    GLUCOSE_BOLUS_CALCULATION(VaultEntryTypeGroup.GLUCOSE, false, VaultEntryType.MAYBE),
-    GLUCOSE_ELEVATION_30(VaultEntryTypeGroup.GLUCOSE),
+    GLUCOSE_CGM(VaultEntryTypeGroup.GLUCOSE, false),
+    GLUCOSE_CGM_RAW(VaultEntryTypeGroup.GLUCOSE, false),
+    GLUCOSE_CGM_ALERT(VaultEntryTypeGroup.GLUCOSE, true),
+    GLUCOSE_CGM_CALIBRATION(VaultEntryTypeGroup.GLUCOSE, true),
+    GLUCOSE_BG(VaultEntryTypeGroup.GLUCOSE, true),
+    GLUCOSE_BG_MANUAL(VaultEntryTypeGroup.GLUCOSE, true),
+    GLUCOSE_BOLUS_CALCULATION(VaultEntryTypeGroup.GLUCOSE, true),
+    GLUCOSE_ELEVATION_30(VaultEntryTypeGroup.GLUCOSE, false),
     // CGM system
-    CGM_SENSOR_FINISHED(VaultEntryTypeGroup.CGM_SYSTEM, true, VaultEntryType.MAYBE),
-    CGM_SENSOR_START(VaultEntryTypeGroup.CGM_SYSTEM, true, VaultEntryType.MAYBE),
-    CGM_CONNECTION_ERROR(VaultEntryTypeGroup.CGM_SYSTEM, true, VaultEntryType.MAYBE),
-    CGM_CALIBRATION_ERROR(VaultEntryTypeGroup.CGM_SYSTEM, true, true),
-    CGM_TIME_SYNC(VaultEntryTypeGroup.CGM_SYSTEM, false, VaultEntryType.MAYBE),
+    CGM_SENSOR_FINISHED(VaultEntryTypeGroup.CGM_SYSTEM, true),
+    CGM_SENSOR_START(VaultEntryTypeGroup.CGM_SYSTEM, true),
+    CGM_CONNECTION_ERROR(VaultEntryTypeGroup.CGM_SYSTEM, true),
+    CGM_CALIBRATION_ERROR(VaultEntryTypeGroup.CGM_SYSTEM, true),
+    CGM_TIME_SYNC(VaultEntryTypeGroup.CGM_SYSTEM, true),
     // Meal
-    MEAL_BOLUS_CALCULATOR(VaultEntryTypeGroup.MEAL, false, true),
-    MEAL_MANUAL(VaultEntryTypeGroup.MEAL, false, true, MEAL_BOLUS_CALCULATOR),
-    MEAL_DESCRIPTION,
+    MEAL_BOLUS_CALCULATOR(VaultEntryTypeGroup.MEAL, true),
+    MEAL_MANUAL(VaultEntryTypeGroup.MEAL, true),
+    MEAL_DESCRIPTION(VaultEntryTypeGroup.NONE, true),
     // Pump Events
-    PUMP_REWIND(VaultEntryTypeGroup.PUMP_SYSTEM, true, VaultEntryType.MAYBE),
-    PUMP_PRIME(VaultEntryTypeGroup.PUMP_SYSTEM, false, VaultEntryType.MAYBE),
-    PUMP_FILL(VaultEntryTypeGroup.PUMP_SYSTEM, true, VaultEntryType.MAYBE),
-    PUMP_FILL_INTERPRETER(VaultEntryTypeGroup.PUMP_SYSTEM, true, VaultEntryType.MAYBE, PUMP_FILL),
-    PUMP_NO_DELIVERY(VaultEntryTypeGroup.PUMP_SYSTEM, true, true),
-    PUMP_SUSPEND(VaultEntryTypeGroup.PUMP_SYSTEM, true, true),
-    PUMP_UNSUSPEND(VaultEntryTypeGroup.PUMP_SYSTEM, false, true),
-    PUMP_UNTRACKED_ERROR(VaultEntryTypeGroup.PUMP_SYSTEM),
-    PUMP_RESERVOIR_EMPTY(VaultEntryTypeGroup.PUMP_SYSTEM, true, VaultEntryType.MAYBE),
-    PUMP_TIME_SYNC(VaultEntryTypeGroup.PUMP_SYSTEM, false, VaultEntryType.MAYBE),
-    PUMP_AUTONOMOUS_SUSPEND(VaultEntryTypeGroup.PUMP_SYSTEM, true, true, PUMP_SUSPEND),
-    PUMP_CGM_PREDICTION(VaultEntryTypeGroup.PUMP_SYSTEM),
+    PUMP_REWIND(VaultEntryTypeGroup.PUMP_SYSTEM, true),
+    PUMP_PRIME(VaultEntryTypeGroup.PUMP_SYSTEM, true),
+    PUMP_FILL(VaultEntryTypeGroup.PUMP_SYSTEM, true),
+    PUMP_FILL_INTERPRETER(VaultEntryTypeGroup.PUMP_SYSTEM, true),
+    PUMP_NO_DELIVERY(VaultEntryTypeGroup.PUMP_SYSTEM, true),
+    PUMP_SUSPEND(VaultEntryTypeGroup.PUMP_SYSTEM, true),
+    PUMP_UNSUSPEND(VaultEntryTypeGroup.PUMP_SYSTEM, true),
+    PUMP_UNTRACKED_ERROR(VaultEntryTypeGroup.PUMP_SYSTEM, true),
+    PUMP_RESERVOIR_EMPTY(VaultEntryTypeGroup.PUMP_SYSTEM, true),
+    PUMP_TIME_SYNC(VaultEntryTypeGroup.PUMP_SYSTEM, true),
+    PUMP_AUTONOMOUS_SUSPEND(VaultEntryTypeGroup.PUMP_SYSTEM, true),
+    PUMP_CGM_PREDICTION(VaultEntryTypeGroup.PUMP_SYSTEM, false),
     // Sleep
-    SLEEP_LIGHT(VaultEntryTypeGroup.SLEEP, true, true),
-    SLEEP_REM(VaultEntryTypeGroup.SLEEP, true, true, SLEEP_LIGHT),
-    SLEEP_DEEP(VaultEntryTypeGroup.SLEEP, true, true, SLEEP_LIGHT),
+    SLEEP_LIGHT(VaultEntryTypeGroup.SLEEP, true),
+    SLEEP_REM(VaultEntryTypeGroup.SLEEP, true),
+    SLEEP_DEEP(VaultEntryTypeGroup.SLEEP, true),
     // Heart
-    HEART_RATE(VaultEntryTypeGroup.HEART, false, VaultEntryType.MAYBE),
-    HEART_RATE_VARIABILITY(VaultEntryTypeGroup.HEART, false, VaultEntryType.MAYBE),
-    STRESS(VaultEntryTypeGroup.HEART),
-    WEIGHT,
-    KETONES_BLOOD,
-    KETONES_URINE,
-    KETONES_MANUAL,
+    HEART_RATE(VaultEntryTypeGroup.HEART, false),
+    HEART_RATE_VARIABILITY(VaultEntryTypeGroup.HEART, false),
+    BLOOD_PRESSURE(VaultEntryTypeGroup.NONE, true),
+    STRESS(VaultEntryTypeGroup.HEART, false),
+    WEIGHT(VaultEntryTypeGroup.NONE, true),
+    KETONES_BLOOD(VaultEntryTypeGroup.NONE, true),
+    KETONES_URINE(VaultEntryTypeGroup.NONE, true),
+    KETONES_MANUAL(VaultEntryTypeGroup.NONE, true),
     // Location (VaultEntryTypeGroup.Geocoding)
-    LOC_TRANSITION(VaultEntryTypeGroup.LOCATION, true, true),
-    LOC_HOME(VaultEntryTypeGroup.LOCATION, true, true),
-    LOC_WORK(VaultEntryTypeGroup.LOCATION, true, true),
-    LOC_FOOD(VaultEntryTypeGroup.LOCATION, true, true),
-    LOC_SPORTS(VaultEntryTypeGroup.LOCATION, true, true),
-    LOC_OTHER(VaultEntryTypeGroup.LOCATION),
+    LOC_TRANSITION(VaultEntryTypeGroup.LOCATION, true),
+    LOC_HOME(VaultEntryTypeGroup.LOCATION, true),
+    LOC_WORK(VaultEntryTypeGroup.LOCATION, true),
+    LOC_FOOD(VaultEntryTypeGroup.LOCATION, true),
+    LOC_SPORTS(VaultEntryTypeGroup.LOCATION, true),
+    LOC_OTHER(VaultEntryTypeGroup.LOCATION, true),
     // Machine Learning
-    ML_CGM_PREDICTION(VaultEntryTypeGroup.MACHINE_LEARNING),
-    BLOOD_PRESSURE,
+    ML_CGM_PREDICTION(VaultEntryTypeGroup.MACHINE_LEARNING, false),
     // Date Mining
-    DM_INSULIN_SENSITIVITY(VaultEntryTypeGroup.DATA_MINING, false, VaultEntryType.MAYBE),
+    DM_INSULIN_SENSITIVITY(VaultEntryTypeGroup.DATA_MINING, false),
     // More unspecific input
-    OTHER_ANNOTATION,
-    Tag,
-    //Cluster Types
-    CLUSTER_MEAL,
-    CLUSTER_GLUCOSE_CGM,
-    // Empty Type for BucketEntry
-    EMPTY;
+    OTHER_ANNOTATION(VaultEntryTypeGroup.NONE, true),
+    Tag(VaultEntryTypeGroup.NONE, true);
 
     //current handling of MAYBE being true
     private final static boolean MAYBE = true;
 
-    private final boolean ISONEHOT;
-    private final boolean ISMLRELEVANT;
-    private final VaultEntryType MERGETYPE;
-    private final VaultEntryTypeGroup GROUP;
+    private final VaultEntryTypeGroup typeGroup;
 
-    /**
-     *
-     * @param isOneHot
-     * @param isMLrelevant information about the type's ML relevance
-     * @param mergeType
-     */
-    VaultEntryType(VaultEntryTypeGroup group, boolean isOneHot, boolean isMLrelevant, VaultEntryType mergeType) {
-        this.ISONEHOT = isOneHot;
-        this.ISMLRELEVANT = isMLrelevant;
-        this.MERGETYPE = mergeType;
-        this.GROUP = group;
-    }
+    private final boolean isEvent;
 
-    VaultEntryType(VaultEntryTypeGroup group, boolean isOneHot, boolean isMLrelevant) {
-        this.ISONEHOT = isOneHot;
-        this.ISMLRELEVANT = isMLrelevant;
-        this.MERGETYPE = this;
-        this.GROUP = group;
-    }
-
-    VaultEntryType(VaultEntryTypeGroup group) {
-        this.ISONEHOT = false;
-        this.ISMLRELEVANT = false;
-        this.MERGETYPE = this;
-        this.GROUP = group;
-    }
-
-    VaultEntryType() {
-        this.ISONEHOT = false;
-        this.ISMLRELEVANT = false;
-        this.MERGETYPE = this;
-        this.GROUP = VaultEntryTypeGroup.EMPTY;
-    }
-
-    /**
-     * Returns if type-specific values are one-hot encoded.
-     *
-     * @return true if type is one-hot
-     */
-    public boolean isOneHot() {
-        return ISONEHOT;
-    }
-
-    /**
-     * Returns if the EntryType is relevant for ML-processing
-     *
-     * @return True if ML-relevant
-     */
-    public boolean isMLrelevant() {
-        return ISMLRELEVANT;
-    }
-
-    /**
-     * If the type has to be merged to another <code>VaultEntryType</code>
-     * during exporting, it will be returned, if not, the instance of the Enum
-     * will be returned.
-     *
-     * @return the merge type
-     */
-    public VaultEntryType getMergeTo() {
-        return MERGETYPE;
+    VaultEntryType(VaultEntryTypeGroup group, boolean isEvent) {
+        this.isEvent = isEvent;
+        this.typeGroup = group;
     }
 
     /**
@@ -189,47 +121,11 @@ public enum VaultEntryType {
      * @return the Group of the VaultEntryType
      */
     public VaultEntryTypeGroup getGroup() {
-        return GROUP;
+        return typeGroup;
     }
 
     public boolean isEvent() {
-        boolean result = false;
-
-        if (isUserEvent() || isSystemEvent() || isGeneratedEvent()) {
-            result = true;
-        }
-
-        return result;
-    }
-
-    private boolean isUserEvent() {
-        boolean result = false;
-
-        if (this == BOLUS_NORMAL || this == BOLUS_SQUARE || this == BASAL_MANUAL || this == EXERCISE_MANUAL || this == GLUCOSE_CGM_CALIBRATION || this == GLUCOSE_BG || this == GLUCOSE_BG_MANUAL || this == GLUCOSE_BOLUS_CALCULATION || this == MEAL_BOLUS_CALCULATOR || this == MEAL_MANUAL || this == PUMP_REWIND || this == PUMP_PRIME || this == PUMP_FILL || this == PUMP_SUSPEND || this == PUMP_UNSUSPEND) {
-            result = true;
-        }
-
-        return result;
-    }
-
-    private boolean isSystemEvent() {
-        boolean result = false;
-
-        if (this == BASAL_PROFILE || this == CGM_SENSOR_FINISHED || this == CGM_SENSOR_START || this == CGM_CONNECTION_ERROR || this == CGM_CALIBRATION_ERROR || this == CGM_TIME_SYNC || this == PUMP_FILL_INTERPRETER || this == PUMP_NO_DELIVERY || this == PUMP_UNSUSPEND || this == PUMP_UNTRACKED_ERROR || this == PUMP_RESERVOIR_EMPTY || this == PUMP_TIME_SYNC || this == PUMP_AUTONOMOUS_SUSPEND) {
-            result = true;
-        }
-
-        return result;
-    }
-
-    private boolean isGeneratedEvent() {
-        boolean result = false;
-
-        if (this == BASAL_INTERPRETER) {
-            result = true;
-        }
-
-        return result;
+        return isEvent;
     }
 
 }
