@@ -2,6 +2,7 @@
 
 <?import java.lang.Integer?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.BarChart?>
 <?import javafx.scene.chart.CategoryAxis?>
 <?import javafx.scene.chart.LineChart?>
 <?import javafx.scene.chart.NumberAxis?>
@@ -80,7 +81,6 @@
                                         <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
                                         <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
                                         <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
                                     </columnConstraints>
                                     <rowConstraints>
                                         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
@@ -90,7 +90,6 @@
                                     <children>
                                         <Label text="Stunden" GridPane.columnIndex="1" />
                                         <Label text="Minuten" GridPane.columnIndex="2" />
-                                        <Label text="Sekunden" GridPane.columnIndex="3" />
                                         <Label text="Davor" GridPane.rowIndex="1">
                                  <GridPane.margin>
                                     <Insets right="10.0" />
@@ -98,10 +97,8 @@
                                         <Label text="Danach" GridPane.rowIndex="2" />
                                         <Spinner fx:id="hourspinnerbefore" amountToStepBy="1" initialValue="0" max="24" min="0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                                         <Spinner fx:id="minutespinnerbefore" amountToStepBy="1" initialValue="0" max="60" min="0" GridPane.columnIndex="2" GridPane.rowIndex="1" />
-                                        <Spinner fx:id="secondspinnerbefore" amountToStepBy="1" initialValue="0" max="60" min="0" GridPane.columnIndex="3" GridPane.rowIndex="1" />
                                         <Spinner fx:id="hourspinnerafter" amountToStepBy="1" initialValue="0" max="24" min="0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                                         <Spinner fx:id="minutespinnerafter" amountToStepBy="1" initialValue="0" max="60" min="0" GridPane.columnIndex="2" GridPane.rowIndex="2" />
-                                        <Spinner fx:id="secondspinnerafter" amountToStepBy="1" initialValue="0" max="60" min="0" GridPane.columnIndex="3" GridPane.rowIndex="2" />
                                     </children>
                            <VBox.margin>
                               <Insets left="10.0" right="10.0" />
@@ -181,14 +178,14 @@
                                               <NumberAxis fx:id="filterChartYaxis" side="LEFT" />
                                           </yAxis>
                                       </LineChart>
-                              <LineChart fx:id="filterchartforevents">
+                              <BarChart fx:id="filterchartforevents">
                                  <xAxis>
                                     <CategoryAxis fx:id="sampleFilterChartXaxis" side="BOTTOM" />
                                  </xAxis>
                                  <yAxis>
                                     <NumberAxis fx:id="filterChartYaxis1" side="LEFT" />
                                  </yAxis>
-                              </LineChart>
+                              </BarChart>                              
                            </children>
                         </VBox>
                             </content>

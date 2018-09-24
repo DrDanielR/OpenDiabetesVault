@@ -63,6 +63,7 @@ import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
@@ -129,7 +130,7 @@ public class SliceController extends FatherController implements Initializable {
     private LineChart<Number, Number> filterchart;
 
     @FXML
-    private LineChart<Number, Number> filterchartforevents;
+    private BarChart<Number, Number> filterchartforevents;
 
     @FXML
     private CategoryAxis filterChartXaxis;
@@ -177,16 +178,10 @@ public class SliceController extends FatherController implements Initializable {
     private Spinner minutespinnerbefore;
 
     @FXML
-    private Spinner secondspinnerbefore;
-
-    @FXML
     private Spinner hourspinnerafter;
 
     @FXML
     private Spinner minutespinnerafter;
-
-    @FXML
-    private Spinner secondspinnerafter;
 
     @FXML
     private CheckBox checkboxforsample;
@@ -232,7 +227,9 @@ public class SliceController extends FatherController implements Initializable {
     @FXML
     private void doSaveFilterCombination(ActionEvent event) {
         exportVBoxChoiceBoxFilterNodesContainers(vboxChoiceBoxFilterNodesContainersForFilter);
-        exportVBoxChoiceBoxFilterNodesContainers(vboxChoiceBoxFilterNodesContainersForSample);
+        if (checkboxforsample.isSelected()) {
+            exportVBoxChoiceBoxFilterNodesContainers(vboxChoiceBoxFilterNodesContainersForSample);
+        }
     }
 
     private void exportVBoxChoiceBoxFilterNodesContainers(List<VBoxChoiceBoxFilterNodesContainer> vboxChoiceBoxFilterNodesContainers) {
@@ -241,7 +238,7 @@ public class SliceController extends FatherController implements Initializable {
         FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt");
         fileChooser.getExtensionFilters().add(extFilter);
 
-        fileChooser.setTitle("Open Resource File");
+        fileChooser.setTitle("Speichern");
         File file = fileChooser.showSaveDialog(MAIN_STAGE);
 
         try {
@@ -253,28 +250,43 @@ public class SliceController extends FatherController implements Initializable {
                 bufferedWriter.newLine();
 
                 for (FilterNode filterNode : vboxChoiceBoxFilterNodesContainer.getFilterNodes()) {
-                    bufferedWriter.write(FILTER_NAME + SEPARATOR + filterNode.getName());
-                    bufferedWriter.newLine();
-
-                    Iterator iterator = filterNode.getParameterAndValues().entrySet().iterator();
-                    while (iterator.hasNext()) {
-                        Map.Entry pair = (Map.Entry) iterator.next();
-                        bufferedWriter.write(pair.getKey() + SEPARATOR + pair.getValue());
-                        bufferedWriter.newLine();
-                    }
-
-                    //WeitereFilterNodes
-                    iterator = filterNode.getParameterAndFilterNodes().entrySet().iterator();
-                    while (iterator.hasNext()) {
-                        Map.Entry pair = (Map.Entry) iterator.next();
-                        bufferedWriter.write(pair.getKey() + SEPARATOR);
+                    if (!filterNode.getName().contains(".txt")) {
+                        bufferedWriter.write(FILTER_NAME + SEPARATOR + filterNode.getName());
                         bufferedWriter.newLine();
 
-                        writeFilterNode(bufferedWriter, (List<FilterNode>) pair.getValue());
+                        Iterator iterator = filterNode.getParameterAndValues().entrySet().iterator();
+                        while (iterator.hasNext()) {
+                            Map.Entry pair = (Map.Entry) iterator.next();
+                            bufferedWriter.write(pair.getKey() + SEPARATOR + pair.getValue());
+                            bufferedWriter.newLine();
+                        }
 
-                        bufferedWriter.write(END_OF_SUBFILTER + SEPARATOR);
-                        bufferedWriter.newLine();
+                        //WeitereFilterNodes
+                        iterator = filterNode.getParameterAndFilterNodes().entrySet().iterator();
+                        while (iterator.hasNext()) {
+                            Map.Entry pair = (Map.Entry) iterator.next();
+                            bufferedWriter.write(pair.getKey() + SEPARATOR);
+                            bufferedWriter.newLine();
 
+                            writeFilterNode(bufferedWriter, (List<FilterNode>) pair.getValue());
+
+                            bufferedWriter.write(END_OF_SUBFILTER + SEPARATOR);
+                            bufferedWriter.newLine();
+
+                        }
+                    } else {
+                        String message = "Importierte Filter können nicht exportiert werden";
+
+                        Alert alert = new Alert(AlertType.ERROR);
+                        alert.setTitle("Speichern Fehlgeschlagen");
+                        alert.setHeaderText("Speichern Fehlgeschlagen");
+                        alert.setContentText(message);
+
+                        alert.showAndWait();
+
+                        bufferedWriter.close();
+                        fileOutputStream.close();
+                        return;
                     }
 
                 }
@@ -327,7 +339,7 @@ public class SliceController extends FatherController implements Initializable {
         FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt");
         fileChooser.getExtensionFilters().add(extFilter);
 
-        fileChooser.setTitle("Open Resource File");
+        fileChooser.setTitle("Laden");
         File file = fileChooser.showOpenDialog(MAIN_STAGE);
 
         try {
@@ -418,10 +430,9 @@ public class SliceController extends FatherController implements Initializable {
 
         int hoursBefore = Integer.parseInt(hourspinnerbefore.getValue().toString());
         int minutesBefore = Integer.parseInt(minutespinnerbefore.getValue().toString());
-        int secondsfore = Integer.parseInt(secondspinnerbefore.getValue().toString());
+
         int hoursAfter = Integer.parseInt(hourspinnerafter.getValue().toString());
         int minutesAfter = Integer.parseInt(minutespinnerafter.getValue().toString());
-        int secondsAfter = Integer.parseInt(secondspinnerafter.getValue().toString());
 
         Date lastVaultEntryTimestamp = importedData.get(importedData.size() - 1).getTimestamp();;
 
@@ -438,13 +449,13 @@ public class SliceController extends FatherController implements Initializable {
                 calendar.setTime(vaultEntry.getTimestamp());
                 calendar.add(Calendar.HOUR_OF_DAY, -hoursBefore);
                 calendar.add(Calendar.MINUTE, -minutesBefore);
-                calendar.add(Calendar.SECOND, -secondsfore);
+
                 Date startDate = calendar.getTime();
 
                 calendar.setTime(vaultEntry.getTimestamp());
                 calendar.add(Calendar.HOUR_OF_DAY, hoursAfter);
                 calendar.add(Calendar.MINUTE, minutesAfter);
-                calendar.add(Calendar.SECOND, secondsAfter);
+
                 Date endDate = calendar.getTime();
 
                 DateTimeSpanFilter dateTimeSpanFilter = new DateTimeSpanFilter(new DateTimeSpanFilterOption(startDate, endDate));
@@ -456,6 +467,14 @@ public class SliceController extends FatherController implements Initializable {
             if (filterResultsForSplit != null && filterResultsForSplit.size() > 0) {
                 filterResultPositionForSplit = 0;
                 populateChart(filterResultsForSplit.get(filterResultPositionForSplit));
+
+                //TestExport
+                /*
+                int counter = 0;
+                for (FilterResult filterResult : filterResultsForSplit) {
+                    exportFilterResult(filterResult, exportFilePath.replace(".csv", "_" + counter + ".csv"));
+                    counter++;
+                }*/
             } else {
                 String message = "Das sampeln ist mit den gegebenen Parametern nicht möglich";
 
@@ -1134,7 +1153,6 @@ public class SliceController extends FatherController implements Initializable {
             emptyDirectoryForGraphs(exportDirectory);
 
             //Exportieren
-            //Exporter exporter = getVaultCSVExporter();
             Exporter exporter = new VaultCsvExporterExtended();
             File file = new File(exportFilePath);
             file.createNewFile();
@@ -1475,6 +1493,18 @@ public class SliceController extends FatherController implements Initializable {
 
     private String getIdFromNodeAndString(FilterNode tmpNode, String simpleName) {
         return tmpNode.getId() + simpleName;
+    }
+
+    private void exportFilterResult(FilterResult filterResult, String filePath) {
+        try {
+            Exporter exporter = new VaultCsvExporterExtended();
+            File file = new File(filePath);
+            file.createNewFile();
+            exporter.exportDataToFile(filePath, filterResult.filteredData);
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
+
     }
 
 }
