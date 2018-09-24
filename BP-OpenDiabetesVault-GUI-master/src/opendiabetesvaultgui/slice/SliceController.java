@@ -910,7 +910,7 @@ public class SliceController extends FatherController implements Initializable {
         Label label = new Label();
         label.setText(name);
 
-        tmpInputVBox.setStyle("-fx-border-color:grey; -fx-background-radius: 10; -fx-border-radius: 10; -fx-box-shadow: 2 3 #888888;");
+        tmpInputVBox.setStyle("-fx-border-color:grey; -fx-background-radius: 10; -fx-border-radius: 10; -fx-box-shadow: 2 3;");
 
         tmpHeadHBox.getChildren().add(label);
 
@@ -997,7 +997,7 @@ public class SliceController extends FatherController implements Initializable {
             } else if (typeClass.getSimpleName().toLowerCase().contains("filter")) {
                 ScrollPane filterScrollPane = new ScrollPane();
                 VBox filterVBox = new VBox();
-                filterVBox.setStyle("-fx-border-color:grey; -fx-background-radius: 10; -fx-border-radius: 10; -fx-box-shadow: 2 3 #888888;");
+                filterVBox.setStyle("-fx-border-color:grey; -fx-background-radius: 10; -fx-border-radius: 10; -fx-box-shadow: 2 3;");
                 filterVBox.setMinHeight(50);
                 filterVBox.setMinWidth(50);
 
