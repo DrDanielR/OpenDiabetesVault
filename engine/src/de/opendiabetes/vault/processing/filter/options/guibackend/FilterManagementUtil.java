@@ -11,6 +11,7 @@ import de.opendiabetes.vault.container.VaultEntryTypeGroup;
 import de.opendiabetes.vault.processing.DataSlicer;
 import de.opendiabetes.vault.processing.VaultEntrySlicer;
 import de.opendiabetes.vault.processing.filter.AndFilter;
+import de.opendiabetes.vault.processing.filter.ClusterFilter;
 import de.opendiabetes.vault.processing.filter.CombinationFilter;
 import de.opendiabetes.vault.processing.filter.CompactQueryFilter;
 import de.opendiabetes.vault.processing.filter.CounterFilter;
@@ -20,9 +21,12 @@ import de.opendiabetes.vault.processing.filter.ElevationFilter;
 import de.opendiabetes.vault.processing.filter.Filter;
 import de.opendiabetes.vault.processing.filter.FilterHitCounterFilter;
 import de.opendiabetes.vault.processing.filter.FilterResult;
+import de.opendiabetes.vault.processing.filter.GapRemoverFilter;
 import de.opendiabetes.vault.processing.filter.InBetweenFilter;
+import de.opendiabetes.vault.processing.filter.NoneTypeFilter;
 import de.opendiabetes.vault.processing.filter.OrFilter;
 import de.opendiabetes.vault.processing.filter.QueryFilter;
+import de.opendiabetes.vault.processing.filter.StandardizeFilter;
 import de.opendiabetes.vault.processing.filter.ThresholdFilter;
 import de.opendiabetes.vault.processing.filter.TimePointFilter;
 import de.opendiabetes.vault.processing.filter.TimeSpanFilter;
@@ -30,6 +34,7 @@ import de.opendiabetes.vault.processing.filter.TypeGroupFilter;
 import de.opendiabetes.vault.processing.filter.VaultEntryTypeCounterFilter;
 import de.opendiabetes.vault.processing.filter.VaultEntryTypeFilter;
 import de.opendiabetes.vault.processing.filter.options.AndFilterOption;
+import de.opendiabetes.vault.processing.filter.options.ClusterFilterOption;
 import de.opendiabetes.vault.processing.filter.options.CombinationFilterOption;
 import de.opendiabetes.vault.processing.filter.options.CompactQueryFilterOption;
 import de.opendiabetes.vault.processing.filter.options.CounterFilterOption;
@@ -38,9 +43,12 @@ import de.opendiabetes.vault.processing.filter.options.DateTimeSpanFilterOption;
 import de.opendiabetes.vault.processing.filter.options.ElevationFilterOption;
 import de.opendiabetes.vault.processing.filter.options.FilterHitCounterFilterOption;
 import de.opendiabetes.vault.processing.filter.options.FilterOption;
+import de.opendiabetes.vault.processing.filter.options.GapRemoverFilterOption;
 import de.opendiabetes.vault.processing.filter.options.InBetweenFilterOption;
+import de.opendiabetes.vault.processing.filter.options.NoneTypeFilterOption;
 import de.opendiabetes.vault.processing.filter.options.OrFilterOption;
 import de.opendiabetes.vault.processing.filter.options.QueryFilterOption;
+import de.opendiabetes.vault.processing.filter.options.StandardizeFilterOption;
 import de.opendiabetes.vault.processing.filter.options.ThresholdFilterOption;
 import de.opendiabetes.vault.processing.filter.options.TimePointFilterOption;
 import de.opendiabetes.vault.processing.filter.options.TimeSpanFilterOption;
@@ -59,6 +67,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -90,6 +99,10 @@ public class FilterManagementUtil {
         filterAndOptions.add(new FilterAndOption(new InBetweenFilterOption(null, 0, 0, false), new InBetweenFilter(new InBetweenFilterOption(null, 0, 0, false))));
         filterAndOptions.add(new FilterAndOption(new VaultEntryTypeCounterFilterOption(null, 0, 0, false), new VaultEntryTypeCounterFilter(new VaultEntryTypeCounterFilterOption(null, 0, 0, false))));
         filterAndOptions.add(new FilterAndOption(new FilterHitCounterFilterOption(null, 0, 0, false), new FilterHitCounterFilter(new FilterHitCounterFilterOption(null, 0, 0, false))));
+        filterAndOptions.add(new FilterAndOption(new StandardizeFilterOption(null, false), new StandardizeFilter(new StandardizeFilterOption(null, false))));
+        filterAndOptions.add(new FilterAndOption(new ClusterFilterOption(null), new ClusterFilter(new ClusterFilterOption(null))));
+        filterAndOptions.add(new FilterAndOption(new NoneTypeFilterOption(null), new NoneTypeFilter(new NoneTypeFilterOption(null))));
+        filterAndOptions.add(new FilterAndOption(new GapRemoverFilterOption(null, 0), new GapRemoverFilter(new GapRemoverFilterOption(null, 0))));
     }
 
     public List<String> getAllFilters() {
@@ -275,6 +288,14 @@ public class FilterManagementUtil {
             } else if (filterAndOption.getFilterOptionName().equals(FilterHitCounterFilterOption.class.getSimpleName())) {
                 Filter filter = getFilterFromFilterNode(filterNode.getParameterAndFilterNodesFromName("Filter").get(0), null);
                 result = new FilterHitCounterFilter(new FilterHitCounterFilterOption(filter, Integer.parseInt(filterNode.getParameterAndValues().get("MinHits").trim()), Integer.parseInt(filterNode.getParameterAndValues().get("MaxHits").trim()), Boolean.valueOf(filterNode.getParameterAndValues().get("NoneHits").trim())));
+            } else if (filterAndOption.getFilterOptionName().equals(StandardizeFilterOption.class.getSimpleName())) {
+                result = new StandardizeFilter(new StandardizeFilterOption(VaultEntryType.valueOf(filterNode.getParameterAndValues().get("VaultEntryType")), Boolean.valueOf(filterNode.getParameterAndValues().get("BetweenZeroAndOne").trim())));
+            } else if (filterAndOption.getFilterOptionName().equals(ClusterFilterOption.class.getSimpleName())) {
+                result = new ClusterFilter(new ClusterFilterOption(VaultEntryType.valueOf(filterNode.getParameterAndValues().get("VaultEntryType"))));
+            } else if (filterAndOption.getFilterOptionName().equals(NoneTypeFilterOption.class.getSimpleName())) {
+                result = new NoneTypeFilter(new NoneTypeFilterOption(VaultEntryType.valueOf(filterNode.getParameterAndValues().get("VaultEntryType"))));
+            } else if (filterAndOption.getFilterOptionName().equals(GapRemoverFilterOption.class.getSimpleName())) {
+                result = new GapRemoverFilter(new GapRemoverFilterOption(VaultEntryType.valueOf(filterNode.getParameterAndValues().get("VaultEntryType")), Long.parseLong(filterNode.getParameterAndValues().get("ClusterTimeInMinutes").trim())));
             }
 
         } catch (Throwable t) {

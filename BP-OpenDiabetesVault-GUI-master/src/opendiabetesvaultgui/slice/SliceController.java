@@ -1204,7 +1204,7 @@ public class SliceController extends FatherController implements Initializable {
                         currentProgress = 1;
                         succeeded();
                     } catch (Throwable t) {
-                        t.printStackTrace();
+                        //t.printStackTrace();
                         updateMessage(t.getMessage());
                         failed();
                     }
