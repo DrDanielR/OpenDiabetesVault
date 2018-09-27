@@ -25,20 +25,23 @@ import java.util.Map;
  *
  * @author Nutzer
  */
-public class GapRemoverFilterOption extends FilterOption {
+public class ValueMoverFilterOption extends FilterOption {
 
-    private final long clusterTimeInMinutes;
+    private final double value;
     private final VaultEntryType type;
+    private final boolean isAdd;
 
-    public GapRemoverFilterOption(VaultEntryType type, long clusterTimeInMinutes) {
+    public ValueMoverFilterOption(VaultEntryType type, double value, boolean isAdd) {
         super(new HashMap<>(), null);
         super.setDropDownEntries(this.getDropDownEntries());
 
         super.getParameterNameAndType().put("VaultEntryType", Map.class);
-        super.getParameterNameAndType().put("ClusterTimeInMinutes", int.class);
+        super.getParameterNameAndType().put("Value", double.class);
+        super.getParameterNameAndType().put("Add", boolean.class);
 
         this.type = type;
-        this.clusterTimeInMinutes = clusterTimeInMinutes;
+        this.value = value;
+        this.isAdd = isAdd;
     }
 
     @Override
@@ -56,8 +59,12 @@ public class GapRemoverFilterOption extends FilterOption {
         return type;
     }
 
-    public long getClusterTimeInMinutes() {
-        return clusterTimeInMinutes;
+    public double getValue() {
+        return value;
+    }
+
+    public boolean getIsAdd() {
+        return isAdd;
     }
 
 }

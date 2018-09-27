@@ -16,6 +16,9 @@
  */
 package de.opendiabetes.vault.processing.filter;
 
+import de.opendiabetes.vault.processing.filter.options.ValueMoverFilterOption;
+import de.opendiabetes.vault.processing.filter.options.GapRemoverFilterOption;
+import de.opendiabetes.vault.processing.filter.options.NoneTypeFilterOption;
 import de.opendiabetes.vault.processing.filter.options.ClusterFilterOption;
 import de.opendiabetes.vault.container.VaultEntry;
 import de.opendiabetes.vault.container.VaultEntryType;
@@ -23,6 +26,8 @@ import de.opendiabetes.vault.processing.filter.options.CombinationFilterOption;
 import de.opendiabetes.vault.processing.filter.options.FilterOption;
 import de.opendiabetes.vault.processing.filter.options.InBetweenFilterOption;
 import de.opendiabetes.vault.processing.filter.options.StandardizeFilterOption;
+import de.opendiabetes.vault.processing.filter.options.TimeClusterFilterOption;
+import de.opendiabetes.vault.util.TimestampUtils;
 import de.opendiabetes.vault.util.VaultEntryUtils;
 import java.util.ArrayList;
 import java.util.Date;
@@ -35,23 +40,22 @@ import java.util.logging.Logger;
  *
  * @author juehv
  */
-public class ClusterFilter extends Filter {
+public class ValueMoverFilter extends Filter {
 
     VaultEntryType vaultEntryType;
-    String vaultEntryClusterString;
+    private double value;
+    private boolean isAdd;
 
-    public ClusterFilter(FilterOption option) {
+    public ValueMoverFilter(FilterOption option) {
         super(option);
-        if (option instanceof ClusterFilterOption) {
+        if (option instanceof ValueMoverFilterOption) {
 
-            vaultEntryType = ((ClusterFilterOption) option).getVaultEntryType();
-
-            if (vaultEntryType != null) {
-                vaultEntryClusterString = vaultEntryType.name().split("_")[0];
-            }
+            vaultEntryType = ((ValueMoverFilterOption) option).getVaultEntryType();
+            value = ((ValueMoverFilterOption) option).getValue();
+            isAdd = ((ValueMoverFilterOption) option).getIsAdd();
 
         } else {
-            String msg = "Option has to be an instance of ClusterFilter";
+            String msg = "Option has to be an instance of ValueMoverFilterOption";
             Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, msg);
             throw new Error(msg);
         }
@@ -59,7 +63,7 @@ public class ClusterFilter extends Filter {
 
     @Override
     public FilterType getType() {
-        return FilterType.CLUSTER_FILTER;
+        return FilterType.VALUE_MOVER_FILTER;
     }
 
     @Override
@@ -69,37 +73,21 @@ public class ClusterFilter extends Filter {
 
     @Override
     Filter update(VaultEntry vaultEntry) {
-        option = new ClusterFilterOption(vaultEntry.getType());
-        return new ClusterFilter(option);
+        option = new ValueMoverFilterOption(vaultEntry.getType(), value, isAdd);
+        return new ValueMoverFilter(option);
     }
 
     @Override
     protected FilterResult tearDownAfterFilter(FilterResult givenResult) {
 
-        List<VaultEntry> listToCluster = new ArrayList<>();
-
         for (VaultEntry vaultEntry : givenResult.filteredData) {
-
-            if (vaultEntry.getType().name().contains(vaultEntryClusterString)) {
-                listToCluster.add(vaultEntry);
+            if(vaultEntry.getType().equals(vaultEntryType))
+            if (isAdd) {
+                vaultEntry.setValue(vaultEntry.getValue() + value);
+            } else {
+                vaultEntry.setValue(vaultEntry.getValue() - value);
             }
-
         }
-
-        double avgValue1 = 0;
-        long timeMillis = 0;
-
-        for (VaultEntry vaultEntry : listToCluster) {
-            givenResult.filteredData.remove(vaultEntry);
-            avgValue1 += vaultEntry.getValue();
-            timeMillis += vaultEntry.getTimestamp().getTime();
-        }
-
-        VaultEntry vaultEntry = new VaultEntry(vaultEntryType, new Date(timeMillis / listToCluster.size()));
-        vaultEntry.setValue(avgValue1);
-
-        givenResult.filteredData.add(vaultEntry);
-        VaultEntryUtils.sort(givenResult.filteredData);
 
         return givenResult;
     }

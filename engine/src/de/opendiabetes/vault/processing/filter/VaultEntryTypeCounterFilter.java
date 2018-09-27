@@ -57,7 +57,7 @@ public class VaultEntryTypeCounterFilter extends Filter {
 
     @Override
     FilterType getType() {
-        return FilterType.COUNTER;
+        return FilterType.VAULT_ENTRY_TYPE_COUNTER_FILTER;
     }
 
     @Override

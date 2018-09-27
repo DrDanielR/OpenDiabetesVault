@@ -60,7 +60,7 @@ public class GapRemoverFilter extends Filter {
 
     @Override
     public FilterType getType() {
-        return FilterType.IN_BETWEEN_FILTER;
+        return FilterType.GAP_REMOVER_FILTER;
     }
 
     @Override

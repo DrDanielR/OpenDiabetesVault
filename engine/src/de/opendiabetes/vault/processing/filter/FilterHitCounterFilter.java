@@ -58,7 +58,7 @@ public class FilterHitCounterFilter extends Filter {
 
     @Override
     FilterType getType() {
-        return FilterType.COUNTER;
+        return FilterType.FILTER_HIT_TYPE_COUNTER_FILTER;
     }
 
     @Override

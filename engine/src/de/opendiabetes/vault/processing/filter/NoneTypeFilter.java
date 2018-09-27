@@ -56,7 +56,7 @@ public class NoneTypeFilter extends Filter {
 
     @Override
     public FilterType getType() {
-        return FilterType.IN_BETWEEN_FILTER;
+        return FilterType.NONE_TYPE_FILTER;
     }
 
     @Override
