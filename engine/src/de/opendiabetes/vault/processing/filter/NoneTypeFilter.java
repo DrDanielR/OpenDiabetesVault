@@ -81,6 +81,8 @@ public class NoneTypeFilter extends Filter {
             givenResult = new FilterResult();
         }
 
+        containsType = false;
+
         return givenResult;
     }
 

@@ -434,12 +434,6 @@ public class SliceController extends FatherController implements Initializable {
         int hoursAfter = Integer.parseInt(hourspinnerafter.getValue().toString());
         int minutesAfter = Integer.parseInt(minutespinnerafter.getValue().toString());
 
-        Date lastVaultEntryTimestamp = importedData.get(importedData.size() - 1).getTimestamp();;
-
-        if (filterResultsForSplit.size() > 0) {
-            lastVaultEntryTimestamp = filterResultsForSplit.get(filterResultsForSplit.size() - 1).filteredData.get(filterResultsForSplit.get(filterResultsForSplit.size() - 1).filteredData.size() - 1).getTimestamp();
-        }
-
         if (sampleFilterNodes != null && sampleFilterNodes.size() > 0) {
             Filter filter = filterManagementUtil.getFilterFromFilterNode(sampleFilterNodes.get(0), null);
 
@@ -463,30 +457,40 @@ public class SliceController extends FatherController implements Initializable {
                 filterResultsForSplit.add(dateTimeSpanFilter.filter(importedData));
 
             }
+        } else {
 
-            if (filterResultsForSplit != null && filterResultsForSplit.size() > 0) {
-                filterResultPositionForSplit = 0;
-                populateChart(filterResultsForSplit.get(filterResultPositionForSplit));
+            Date lastVaultEntryTimestamp = importedData.get(importedData.size() - 1).getTimestamp();
 
-                //TestExport
-                /*
+            if (filterResultsForSplit.size() > 0) {
+                lastVaultEntryTimestamp = filterResultsForSplit.get(filterResultsForSplit.size() - 1).filteredData.get(filterResultsForSplit.get(filterResultsForSplit.size() - 1).filteredData.size() - 1).getTimestamp();
+            }
+
+            while (lastVaultEntryTimestamp.after(calendar.getTime())) {
+                Date startDate = calendar.getTime();
+                calendar.add(Calendar.HOUR_OF_DAY, hoursAfter + hoursBefore);
+                calendar.add(Calendar.MINUTE, minutesAfter + minutesBefore);
+                Date endDate = calendar.getTime();
+
+                DateTimeSpanFilter dateTimeSpanFilter = new DateTimeSpanFilter(new DateTimeSpanFilterOption(startDate, endDate));
+
+                filterResultsForSplit.add(dateTimeSpanFilter.filter(importedData));
+
+            }
+
+        }
+        if (filterResultsForSplit != null && filterResultsForSplit.size() > 0) {
+            filterResultPositionForSplit = 0;
+            populateChart(filterResultsForSplit.get(filterResultPositionForSplit));
+
+            //TestExport
+            /*
                 int counter = 0;
                 for (FilterResult filterResult : filterResultsForSplit) {
                     exportFilterResult(filterResult, exportFilePath.replace(".csv", "_" + counter + ".csv"));
                     counter++;
                 }*/
-            } else {
-                String message = "Das sampeln ist mit den gegebenen Parametern nicht möglich";
-
-                Alert alert = new Alert(AlertType.ERROR);
-                alert.setTitle("Sampeln Fehlgeschlagen");
-                alert.setHeaderText("Sampeln Fehlgeschlagen:");
-                alert.setContentText(message);
-
-                alert.showAndWait();
-            }
         } else {
-            String message = "Ein Filter muss zum Sampeln ausgewählt werden";
+            String message = "Das sampeln ist mit den gegebenen Parametern nicht möglich";
 
             Alert alert = new Alert(AlertType.ERROR);
             alert.setTitle("Sampeln Fehlgeschlagen");
@@ -494,9 +498,17 @@ public class SliceController extends FatherController implements Initializable {
             alert.setContentText(message);
 
             alert.showAndWait();
-
         }
 
+        /**
+         * String message = "Ein Filter muss zum Sampeln ausgewählt werden";
+         *
+         * Alert alert = new Alert(AlertType.ERROR); alert.setTitle("Sampeln
+         * Fehlgeschlagen"); alert.setHeaderText("Sampeln Fehlgeschlagen:");
+         * alert.setContentText(message);
+         *
+         * alert.showAndWait();*
+         */
     }
 
     @FXML
