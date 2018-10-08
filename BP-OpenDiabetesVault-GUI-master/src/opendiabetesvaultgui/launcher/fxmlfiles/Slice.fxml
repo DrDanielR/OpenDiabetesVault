@@ -225,7 +225,7 @@
                                           </StackPane>
                                        </graphic></Button>
                                                 <ProgressBar fx:id="importprogressbar" prefHeight="18.0" prefWidth="581.0" progress="0.0" GridPane.columnIndex="1" />                                        
-                                                <Spinner fx:id="currentimport" amountToStepBy="1" initialValue="1" min="1" prefHeight="25.0" prefWidth="75.0" GridPane.columnIndex="2">
+                                                <Spinner fx:id="currentimport" amountToStepBy="1" initialValue="0" min="1" prefHeight="25.0" prefWidth="75.0" GridPane.columnIndex="2">
                                                     <max>
                                                         <Integer fx:constant="MAX_VALUE" />
                                                     </max>

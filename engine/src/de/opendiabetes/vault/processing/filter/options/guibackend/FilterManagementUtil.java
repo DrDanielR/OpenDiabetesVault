@@ -26,7 +26,7 @@ import de.opendiabetes.vault.processing.filter.InBetweenFilter;
 import de.opendiabetes.vault.processing.filter.InterpolationFilter;
 import de.opendiabetes.vault.processing.filter.NoneTypeFilter;
 import de.opendiabetes.vault.processing.filter.OrFilter;
-import de.opendiabetes.vault.processing.filter.QueryFilter;
+
 import de.opendiabetes.vault.processing.filter.StandardizeFilter;
 import de.opendiabetes.vault.processing.filter.ThresholdFilter;
 import de.opendiabetes.vault.processing.filter.TimePointFilter;
@@ -37,10 +37,9 @@ import de.opendiabetes.vault.processing.filter.VaultEntryTypeCounterFilter;
 import de.opendiabetes.vault.processing.filter.VaultEntryTypeFilter;
 import de.opendiabetes.vault.processing.filter.options.AndFilterOption;
 import de.opendiabetes.vault.processing.filter.options.ClusterFilterOption;
-import de.opendiabetes.vault.processing.filter.options.CombinationFilterOption;
+
 import de.opendiabetes.vault.processing.filter.options.CompactQueryFilterOption;
-import de.opendiabetes.vault.processing.filter.options.CounterFilterOption;
-import de.opendiabetes.vault.processing.filter.options.DateTimePointFilterOption;
+
 import de.opendiabetes.vault.processing.filter.options.DateTimeSpanFilterOption;
 import de.opendiabetes.vault.processing.filter.options.ElevationFilterOption;
 import de.opendiabetes.vault.processing.filter.options.FilterHitCounterFilterOption;
@@ -89,15 +88,15 @@ public class FilterManagementUtil {
         filterAndOptions.add(new FilterAndOption(new OrFilterOption(null), new OrFilter(new OrFilterOption(null))));
 
         //normal Filter
-        filterAndOptions.add(new FilterAndOption(new DateTimePointFilterOption(new Date(), 0), new DateTimePointFilter(new DateTimePointFilterOption(new Date(), 0))));
+        //filterAndOptions.add(new FilterAndOption(new DateTimePointFilterOption(new Date(), 0), new DateTimePointFilter(new DateTimePointFilterOption(new Date(), 0))));
         filterAndOptions.add(new FilterAndOption(new DateTimeSpanFilterOption(new Date(), new Date()), new DateTimeSpanFilter(new DateTimeSpanFilterOption(new Date(), new Date()))));
         filterAndOptions.add(new FilterAndOption(new ThresholdFilterOption(0, 0), new ThresholdFilter(new ThresholdFilterOption(0, 0))));
         filterAndOptions.add(new FilterAndOption(new TimePointFilterOption(LocalTime.now(), 0), new TimePointFilter(new TimePointFilterOption(LocalTime.now(), 0))));
         filterAndOptions.add(new FilterAndOption(new TimeSpanFilterOption(LocalTime.now(), LocalTime.now()), new TimeSpanFilter(new TimeSpanFilterOption(LocalTime.now(), LocalTime.now()))));
         filterAndOptions.add(new FilterAndOption(new TypeGroupFilterOption(null), new TypeGroupFilter(new TypeGroupFilterOption(null))));
         filterAndOptions.add(new FilterAndOption(new VaultEntryTypeFilterOption(null), new VaultEntryTypeFilter(new VaultEntryTypeFilterOption(null))));
-        filterAndOptions.add(new FilterAndOption(new CombinationFilterOption(new ArrayList<VaultEntry>(), null, null), new CombinationFilter(new CombinationFilterOption(new ArrayList<VaultEntry>(), null, null))));
-        filterAndOptions.add(new FilterAndOption(new QueryFilterOption(null, null, 0, 0), new QueryFilter(new QueryFilterOption(null, null, 0, 0))));
+        //filterAndOptions.add(new FilterAndOption(new CombinationFilterOption(new ArrayList<VaultEntry>(), null, null), new CombinationFilter(new CombinationFilterOption(new ArrayList<VaultEntry>(), null, null))));
+//        filterAndOptions.add(new FilterAndOption(new QueryFilterOption(null, null, 0, 0), new QueryFilter(new QueryFilterOption(null, null, 0, 0))));
         filterAndOptions.add(new FilterAndOption(new ElevationFilterOption(null, 0, 0), new ElevationFilter(new ElevationFilterOption(null, 0, 0))));
         filterAndOptions.add(new FilterAndOption(new CompactQueryFilterOption(null), new CompactQueryFilter(new CompactQueryFilterOption(null))));
         filterAndOptions.add(new FilterAndOption(new InBetweenFilterOption(null, 0, 0, false), new InBetweenFilter(new InBetweenFilterOption(null, 0, 0, false))));
@@ -258,9 +257,15 @@ public class FilterManagementUtil {
                     result = new OrFilter(new OrFilterOption(tmpFilters));
                 }
             }//NonCombineFilter
-            else if (filterAndOption.getFilterOptionName().equals(DateTimePointFilterOption.class.getSimpleName())) {
-                result = new DateTimePointFilter(new DateTimePointFilterOption(formatter.parse(filterNode.getParameterAndValues().get("DateTimePoint")), Integer.parseInt(filterNode.getParameterAndValues().get("MarginInMinutes").trim())));
-            } else if (filterAndOption.getFilterOptionName().equals(DateTimeSpanFilterOption.class.getSimpleName())) {
+            /**
+             * ersetzbar durch timespan und Datetime Filter else if
+             * (filterAndOption.getFilterOptionName().equals(DateTimePointFilterOption.class.getSimpleName()))
+             * { result = new DateTimePointFilter(new
+             * DateTimePointFilterOption(formatter.parse(filterNode.getParameterAndValues().get("DateTimePoint")),
+             * Integer.parseInt(filterNode.getParameterAndValues().get("MarginInMinutes").trim())));
+             * } *
+             */
+            else if (filterAndOption.getFilterOptionName().equals(DateTimeSpanFilterOption.class.getSimpleName())) {
                 result = new DateTimeSpanFilter(new DateTimeSpanFilterOption(formatter.parse(filterNode.getParameterAndValues().get("StartTime")), formatter.parse(filterNode.getParameterAndValues().get("EndTime"))));
             } else if (filterAndOption.getFilterOptionName().equals(ThresholdFilterOption.class.getSimpleName())) {
                 result = new ThresholdFilter(new ThresholdFilterOption(Integer.parseInt(filterNode.getParameterAndValues().get("MinThreshold").trim()), Integer.parseInt(filterNode.getParameterAndValues().get("MaxThreshold").trim()), Integer.parseInt(filterNode.getParameterAndValues().get("Mode").trim())));
@@ -272,16 +277,24 @@ public class FilterManagementUtil {
                 result = new TypeGroupFilter(new TypeGroupFilterOption(VaultEntryTypeGroup.valueOf(filterNode.getParameterAndValues().get("VaultEntryTypeGroup"))));
             } else if (filterAndOption.getFilterOptionName().equals(VaultEntryTypeFilterOption.class.getSimpleName())) {
                 result = new VaultEntryTypeFilter(new VaultEntryTypeFilterOption(VaultEntryType.valueOf(filterNode.getParameterAndValues().get("VaultEntryType"))));
-            } else if (filterAndOption.getFilterOptionName().equals(CombinationFilterOption.class.getSimpleName())) {
-                Filter firstFilter = getFilterFromFilterNode(filterNode.getParameterAndFilterNodesFromName("FirstFilter").get(0), null);
-                Filter secondFilter = getFilterFromFilterNode(filterNode.getParameterAndFilterNodesFromName("SecondFilter").get(0), null);
-                List<VaultEntry> data = filterNode.getData();
-                result = new CombinationFilter(new CombinationFilterOption(data, firstFilter, secondFilter));
-            } else if (filterAndOption.getFilterOptionName().equals(QueryFilterOption.class.getSimpleName())) {
+            } /**
+             * Durch Sampeln überflüssig else if
+             * (filterAndOption.getFilterOptionName().equals(CombinationFilterOption.class.getSimpleName()))
+             * { Filter firstFilter =
+             * getFilterFromFilterNode(filterNode.getParameterAndFilterNodesFromName("FirstFilter").get(0),
+             * null); Filter secondFilter =
+             * getFilterFromFilterNode(filterNode.getParameterAndFilterNodesFromName("SecondFilter").get(0),
+             * null); List<VaultEntry> data = filterNode.getData(); result = new
+             * CombinationFilter(new CombinationFilterOption(data, firstFilter,
+             * secondFilter)); }
+             */
+            /** Kann durch CompactQueryFilter und CounterFilterabgebildet werden
+            else if (filterAndOption.getFilterOptionName().equals(QueryFilterOption.class.getSimpleName())) {
                 Filter mainFilter = getFilterFromFilterNode(filterNode.getParameterAndFilterNodesFromName("MainFilter").get(0), null);
                 Filter innerFilter = getFilterFromFilterNode(filterNode.getParameterAndFilterNodesFromName("InnerFilter").get(0), null);
                 result = new QueryFilter(new QueryFilterOption(mainFilter, innerFilter, Integer.parseInt(filterNode.getParameterAndValues().get("minSize").trim()), Integer.parseInt(filterNode.getParameterAndValues().get("maxSize").trim())));
-            } else if (filterAndOption.getFilterOptionName().equals(InBetweenFilterOption.class.getSimpleName())) {
+            } */
+            else if (filterAndOption.getFilterOptionName().equals(InBetweenFilterOption.class.getSimpleName())) {
                 result = new InBetweenFilter(new InBetweenFilterOption(VaultEntryType.valueOf(filterNode.getParameterAndValues().get("VaultEntryType")), Integer.parseInt(filterNode.getParameterAndValues().get("MinValue").trim()), Integer.parseInt(filterNode.getParameterAndValues().get("MaxValue").trim()), Boolean.valueOf(filterNode.getParameterAndValues().get("Normieren").trim())));
             } else if (filterAndOption.getFilterOptionName().equals(CompactQueryFilterOption.class.getSimpleName())) {
                 List<Filter> filters = getFiltersFromFilterNodes(filterNode.getParameterAndFilterNodesFromName("Filters"));
@@ -301,7 +314,7 @@ public class FilterManagementUtil {
             } else if (filterAndOption.getFilterOptionName().equals(NoneTypeFilterOption.class.getSimpleName())) {
                 result = new NoneTypeFilter(new NoneTypeFilterOption(VaultEntryType.valueOf(filterNode.getParameterAndValues().get("VaultEntryType"))));
             } else if (filterAndOption.getFilterOptionName().equals(GapRemoverFilterOption.class.getSimpleName())) {
-                result = new GapRemoverFilter(new GapRemoverFilterOption(VaultEntryType.valueOf(filterNode.getParameterAndValues().get("VaultEntryType")), Long.parseLong(filterNode.getParameterAndValues().get("ClusterTimeInMinutes").trim())));
+                result = new GapRemoverFilter(new GapRemoverFilterOption(VaultEntryType.valueOf(filterNode.getParameterAndValues().get("VaultEntryType")), Long.parseLong(filterNode.getParameterAndValues().get("GapTimeInMinutes").trim())));
             } else if (filterAndOption.getFilterOptionName().equals(InterpolationFilterOption.class.getSimpleName())) {
                 result = new InterpolationFilter(new InterpolationFilterOption(VaultEntryType.valueOf(filterNode.getParameterAndValues().get("VaultEntryType"))));
             } else if (filterAndOption.getFilterOptionName().equals(ValueMoverFilterOption.class.getSimpleName())) {

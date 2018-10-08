@@ -65,7 +65,7 @@ public class InterpolationFilter extends Filter {
 
         double counter = 0;
         if (entry.getType().equals(vaultEntryType)) {
-            Pair<Double, Double> pair = new Pair<>(counter, entry.getValue());
+            Pair<Double, Double> pair = new Pair<>((double)entry.getTimestamp().getTime(), entry.getValue());
             pairsForInterpolation.add(pair);
             counter++;
         }

@@ -42,14 +42,14 @@ import java.util.logging.Logger;
 public class GapRemoverFilter extends Filter {
 
     VaultEntryType vaultEntryType;
-    private long clusterTimeInMinutes;
+    private long gapTimeInMinutes;
 
     public GapRemoverFilter(FilterOption option) {
         super(option);
         if (option instanceof GapRemoverFilterOption) {
 
             vaultEntryType = ((GapRemoverFilterOption) option).getVaultEntryType();
-            clusterTimeInMinutes = ((GapRemoverFilterOption) option).getClusterTimeInMinutes();
+            gapTimeInMinutes = ((GapRemoverFilterOption) option).getClusterTimeInMinutes();
 
         } else {
             String msg = "Option has to be an instance of GapRemoverFilterOption";
@@ -70,7 +70,7 @@ public class GapRemoverFilter extends Filter {
 
     @Override
     Filter update(VaultEntry vaultEntry) {
-        option = new GapRemoverFilterOption(vaultEntry.getType(), clusterTimeInMinutes);
+        option = new GapRemoverFilterOption(vaultEntry.getType(), gapTimeInMinutes);
         return new GapRemoverFilter(option);
     }
 
@@ -79,7 +79,7 @@ public class GapRemoverFilter extends Filter {
 
         FilterResult result = new FilterResult(removeGap(givenResult.filteredData), givenResult.timeSeries);
 
-        return givenResult;
+        return result;
     }
 
     public List<VaultEntry> removeGap(List<VaultEntry> data) {
@@ -91,7 +91,7 @@ public class GapRemoverFilter extends Filter {
         Date currentFoundEndDate = null;
         VaultEntry subListEntry = null;
 
-        if (data != null && vaultEntryType != null && clusterTimeInMinutes > 0) {
+        if (data != null && vaultEntryType != null && gapTimeInMinutes > 0) {
 
             int dataSize = data.size();
             //          double tenthCounter = 1.0;
@@ -126,14 +126,14 @@ public class GapRemoverFilter extends Filter {
                     //currentSubList.add(vaultEntry); //is handled in the other if cases
                     //tempList = new ArrayList<>();
                     startTime = currentFoundEndDate;
-                    endDate = TimestampUtils.addMinutesToTimestamp(startTime, clusterTimeInMinutes);//new Date(startTime.getTime() + gapTimeInMinutes);
+                    endDate = TimestampUtils.addMinutesToTimestamp(startTime, gapTimeInMinutes);//new Date(startTime.getTime() + gapTimeInMinutes);
                     currentFoundEndDate = null;
                 }
 
                 if (vaultEntry.getType() == vaultEntryType) {
                     if (startTime == null) {
                         startTime = vaultEntry.getTimestamp();
-                        endDate = TimestampUtils.addMinutesToTimestamp(startTime, clusterTimeInMinutes);//new Date(startTime.getTime() + gapTimeInMinutes);
+                        endDate = TimestampUtils.addMinutesToTimestamp(startTime, gapTimeInMinutes);//new Date(startTime.getTime() + gapTimeInMinutes);
                     } else {
                         currentFoundEndDate = vaultEntry.getTimestamp();
                     }

@@ -88,6 +88,11 @@ public class ClusterFilter extends Filter {
 
         double avgValue1 = 0;
         long timeMillis = 0;
+        int divider = 1;
+
+        if (listToCluster.size() > 0) {
+            divider = listToCluster.size();
+        }
 
         for (VaultEntry vaultEntry : listToCluster) {
             givenResult.filteredData.remove(vaultEntry);
@@ -95,8 +100,8 @@ public class ClusterFilter extends Filter {
             timeMillis += vaultEntry.getTimestamp().getTime();
         }
 
-        VaultEntry vaultEntry = new VaultEntry(vaultEntryType, new Date(timeMillis / listToCluster.size()));
-        vaultEntry.setValue(avgValue1);
+        VaultEntry vaultEntry = new VaultEntry(vaultEntryType, new Date(timeMillis / divider));
+        vaultEntry.setValue(avgValue1 / divider);
 
         givenResult.filteredData.add(vaultEntry);
         VaultEntryUtils.sort(givenResult.filteredData);

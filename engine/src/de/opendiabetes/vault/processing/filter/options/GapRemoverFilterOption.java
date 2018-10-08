@@ -35,7 +35,7 @@ public class GapRemoverFilterOption extends FilterOption {
         super.setDropDownEntries(this.getDropDownEntries());
 
         super.getParameterNameAndType().put("VaultEntryType", Map.class);
-        super.getParameterNameAndType().put("ClusterTimeInMinutes", int.class);
+        super.getParameterNameAndType().put("GapTimeInMinutes", int.class);
 
         this.type = type;
         this.clusterTimeInMinutes = clusterTimeInMinutes;

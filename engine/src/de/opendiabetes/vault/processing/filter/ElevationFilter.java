@@ -21,6 +21,7 @@ import de.opendiabetes.vault.container.VaultEntryType;
 import de.opendiabetes.vault.processing.filter.options.CompactQueryFilterOption;
 import de.opendiabetes.vault.processing.filter.options.ElevationFilterOption;
 import de.opendiabetes.vault.processing.filter.options.FilterOption;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.logging.Level;
@@ -37,6 +38,7 @@ public class ElevationFilter extends Filter {
     double minElevationPerMinute;
     int minutesBetweenEntries;
     double elevation;
+    List <VaultEntry> positiveVaultEntrys = new ArrayList<>();
 
     public ElevationFilter(FilterOption option) {
 
@@ -63,13 +65,11 @@ public class ElevationFilter extends Filter {
 
     @Override
     boolean matchesFilterParameters(VaultEntry entry) {
-        boolean result = false;
-
         if (vaultEntryType == entry.getType()) {
-            result = true;
+            positiveVaultEntrys.add(entry);
         }
 
-        return result;
+        return true;
     }
 
     @Override
@@ -82,14 +82,14 @@ public class ElevationFilter extends Filter {
     protected FilterResult tearDownAfterFilter(FilterResult givenResult) {
         boolean elevationExist = false;
 
-        if (givenResult != null && givenResult.filteredData.size() > 0) {
+        if (positiveVaultEntrys != null && positiveVaultEntrys.size() > 0) {
             Calendar cal = Calendar.getInstance();
 
-            for (VaultEntry vaultEntry : givenResult.filteredData) {
+            for (VaultEntry vaultEntry : positiveVaultEntrys) {
                 cal.setTime(vaultEntry.getTimestamp());
                 cal.add(Calendar.MINUTE, minutesBetweenEntries);
 
-                for (VaultEntry vaultEntry1 : givenResult.filteredData) {
+                for (VaultEntry vaultEntry1 : positiveVaultEntrys) {
 
                     if (vaultEntry1.getTimestamp().after(cal.getTime())) {
 

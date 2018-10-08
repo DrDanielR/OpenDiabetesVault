@@ -150,6 +150,7 @@ public class VaultCsvExporterExtended extends VaultExporter {
                 csvEntry.setBolusCalculationValue(entry.getValue());
                 break;
             case GLUCOSE_ELEVATION_30:
+                csvEntry.setCgmValue(entry.getValue());
                 csvEntry.addGlucoseAnnotation(entry.getType().toString()
                         + "="
                         + EasyFormatter.formatDouble(entry.getValue()));

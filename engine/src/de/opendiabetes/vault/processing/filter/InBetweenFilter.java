@@ -62,13 +62,10 @@ public class InBetweenFilter extends Filter {
 
     @Override
     boolean matchesFilterParameters(VaultEntry entry) {
-        boolean result = false;
+        boolean result = true;
 
         if (entry.getType().equals(vaultEntryType)) {
-            if (entry.getValue() <= maxValue && entry.getValue() >= minValue) {
-                result = true;
-            } else {
-                result = false;
+            if (entry.getValue() > maxValue || entry.getValue() < minValue) {
                 wrongEntry = true;
             }
         }
@@ -88,8 +85,10 @@ public class InBetweenFilter extends Filter {
             givenResult = new FilterResult();
         } else if (normalize) {
             for (VaultEntry vaultEntry : givenResult.filteredData) {
-                double newValue = (vaultEntry.getValue() - minValue) / (maxValue - minValue);
-                vaultEntry.setValue(newValue);
+                if (vaultEntry.getType().equals(vaultEntryType)) {
+                    double newValue = (vaultEntry.getValue() - minValue) / (maxValue - minValue);
+                    vaultEntry.setValue(newValue);
+                }
             }
         }
 
