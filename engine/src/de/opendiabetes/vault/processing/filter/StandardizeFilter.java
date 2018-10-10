@@ -60,6 +60,12 @@ public class StandardizeFilter extends Filter {
     }
 
     @Override
+    Filter update(VaultEntry vaultEntry) {
+        option = new StandardizeFilterOption(vaultEntry.getType(), betweenZeroAndOne);
+        return new StandardizeFilter(option);
+    }
+
+    @Override
     boolean matchesFilterParameters(VaultEntry entry) {
         boolean result = true;
 
@@ -81,22 +87,18 @@ public class StandardizeFilter extends Filter {
     }
 
     @Override
-    Filter update(VaultEntry vaultEntry) {
-        option = new StandardizeFilterOption(vaultEntry.getType(), betweenZeroAndOne);
-        return new StandardizeFilter(option);
-    }
-
-    @Override
     protected FilterResult tearDownAfterFilter(FilterResult givenResult) {
 
         for (VaultEntry vaultEntry : givenResult.filteredData) {
             double newValue = 0;
-            if (betweenZeroAndOne) {
-                newValue = (vaultEntry.getValue() - minValue) / (maxValue - minValue);
-            } else {
-                newValue = 2 * ((vaultEntry.getValue() - minValue) / (maxValue - minValue)) - 1;
+            if (vaultEntry.getType().equals(vaultEntryType)) {
+                if (betweenZeroAndOne) {
+                    newValue = (vaultEntry.getValue() - minValue) / (maxValue - minValue);
+                } else {
+                    newValue = 2 * ((vaultEntry.getValue() - minValue) / (maxValue - minValue)) - 1;
+                }
+                vaultEntry.setValue(newValue);
             }
-            vaultEntry.setValue(newValue);
         }
 
         return givenResult;

@@ -622,6 +622,13 @@ public class SliceController extends FatherController implements Initializable {
         populateChart(filterResult);
         generateGraphs(filterResult);
         validationErrorMessage = "";
+        hourspinnerbefore.getValueFactory().setValue(0);
+        minutespinnerbefore.getValueFactory().setValue(0);
+        hourspinnerafter.getValueFactory().setValue(0);
+        minutespinnerafter.getValueFactory().setValue(0);
+        checkboxforsample.setSelected(false);
+        gridpaneforsamplefilter.setVisible(checkboxforsample.isSelected());
+        splitpaneforfilter.setDividerPosition(0, 1);
     }
 
     @FXML

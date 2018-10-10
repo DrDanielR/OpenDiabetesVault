@@ -38,7 +38,7 @@ public class ElevationFilter extends Filter {
     double minElevationPerMinute;
     int minutesBetweenEntries;
     double elevation;
-    List <VaultEntry> positiveVaultEntrys = new ArrayList<>();
+    List<VaultEntry> positiveVaultEntrys = new ArrayList<>();
 
     public ElevationFilter(FilterOption option) {
 
@@ -64,18 +64,18 @@ public class ElevationFilter extends Filter {
     }
 
     @Override
+    Filter update(VaultEntry vaultEntry) {
+        option = new ElevationFilterOption(vaultEntry.getType(), minElevationPerMinute, minutesBetweenEntries);
+        return new CompactQueryFilter(option);
+    }
+
+    @Override
     boolean matchesFilterParameters(VaultEntry entry) {
         if (vaultEntryType == entry.getType()) {
             positiveVaultEntrys.add(entry);
         }
 
         return true;
-    }
-
-    @Override
-    Filter update(VaultEntry vaultEntry) {
-        option = new ElevationFilterOption(vaultEntry.getType(), minElevationPerMinute, minutesBetweenEntries);
-        return new CompactQueryFilter(option);
     }
 
     @Override
