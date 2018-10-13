@@ -95,6 +95,7 @@ import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.Border;
 import javafx.scene.layout.GridPane;
@@ -223,6 +224,8 @@ public class SliceController extends FatherController implements Initializable {
     private FilterManagementUtil filterManagementUtil;
     private boolean allValid = false;
     private String validationErrorMessage = "";
+
+    final double SCALE_DELTA = 1.1;
 
     @FXML
     private void doSaveFilterCombination(ActionEvent event) {
@@ -772,6 +775,54 @@ public class SliceController extends FatherController implements Initializable {
         FilterResult filterResult = filterManagementUtil.getLastDay(importedData);
         populateChart(filterResult);
         generateGraphs(filterResult);
+        //charts zoomen
+        filterchart.setOnScroll(new EventHandler<ScrollEvent>() {
+            public void handle(ScrollEvent event) {
+                event.consume();
+
+                if (event.getDeltaY() == 0) {
+                    return;
+                }
+
+                double scaleFactor = (event.getDeltaY() > 0) ? SCALE_DELTA : 1 / SCALE_DELTA;
+
+                filterchart.setScaleX(filterchart.getScaleX() * scaleFactor);
+                filterchart.setScaleY(filterchart.getScaleY() * scaleFactor);
+            }
+        });
+
+        filterchart.setOnMousePressed(new EventHandler<MouseEvent>() {
+            public void handle(MouseEvent event) {
+                if (event.getClickCount() == 2) {
+                    filterchart.setScaleX(1.0);
+                    filterchart.setScaleY(1.0);
+                }
+            }
+        });
+
+        filterchartforevents.setOnScroll(new EventHandler<ScrollEvent>() {
+            public void handle(ScrollEvent event) {
+                event.consume();
+
+                if (event.getDeltaY() == 0) {
+                    return;
+                }
+
+                double scaleFactor = (event.getDeltaY() > 0) ? SCALE_DELTA : 1 / SCALE_DELTA;
+
+                filterchartforevents.setScaleX(filterchartforevents.getScaleX() * scaleFactor);
+                filterchartforevents.setScaleY(filterchartforevents.getScaleY() * scaleFactor);
+            }
+        });
+
+        filterchartforevents.setOnMousePressed(new EventHandler<MouseEvent>() {
+            public void handle(MouseEvent event) {
+                if (event.getClickCount() == 2) {
+                    filterchartforevents.setScaleX(1.0);
+                    filterchartforevents.setScaleY(1.0);
+                }
+            }
+        });
 
         //hide sampleFilter
         gridpaneforsamplefilter.setVisible(false);
@@ -1179,12 +1230,7 @@ public class SliceController extends FatherController implements Initializable {
 
             String command = "python " + plotPyPath + " -c " + configIniPath + " -d -f " + exportFilePath + " -o " + exportFileDir;
 
-            if (exportThread != null) {
-                importprogressbar.progressProperty().unbind();
-                if (exportProcess != null) {
-                    exportProcess.destroyForcibly();
-                }
-            }
+            killExportThread();
 
             currentProgress = 0;
             importprogressbar.setProgress(currentProgress);
@@ -1279,6 +1325,15 @@ public class SliceController extends FatherController implements Initializable {
 
     }
 
+    private void killExportThread() {
+        if (exportThread != null) {
+            importprogressbar.progressProperty().unbind();
+            if (exportProcess != null) {
+                exportProcess.destroyForcibly();
+            }
+        }
+    }
+
     private Exporter getVaultCSVExporter() {
         Exporter result = null;
         OpenDiabetesPluginManager pluginManager;
@@ -1324,10 +1379,13 @@ public class SliceController extends FatherController implements Initializable {
         return dayCellFactory;
     }
 
-    private void emptyDirectoryForGraphs(File exportDirectory) {
+    private void emptyDirectoryForGraphs(File directory) {
         try {
             imageViewForFilter.setImage(null);
-            FileUtils.cleanDirectory(exportDirectory);
+            directoryListing = null;
+            killExportThread();
+            System.gc();
+            FileUtils.cleanDirectory(directory);
         } catch (IOException ex) {
             Logger.getLogger(SliceController.class.getName()).log(Level.SEVERE, null, ex);
         }

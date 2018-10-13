@@ -20,6 +20,7 @@ import de.opendiabetes.vault.container.VaultEntryType;
 import de.opendiabetes.vault.processing.filter.Filter;
 import de.opendiabetes.vault.processing.filter.options.FilterOption;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -34,11 +35,12 @@ public class FilterHitCounterFilterOption extends FilterOption {
     private final boolean noneHits;
 
     public FilterHitCounterFilterOption(Filter filter, int minHits, int maxHits, boolean noneHits) {
-        super(new HashMap<>(), null);
+        super(new LinkedHashMap<>(), null);
         super.getParameterNameAndType().put("Filter", Filter.class);
+        super.getParameterNameAndType().put("NoneHits", boolean.class);
         super.getParameterNameAndType().put("MinHits", int.class);
         super.getParameterNameAndType().put("MaxHits", int.class);
-        super.getParameterNameAndType().put("NoneHits", boolean.class);
+        
 
         this.maxHits = maxHits;
         this.minHits = minHits;

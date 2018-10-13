@@ -234,12 +234,7 @@ public class FilterManagementUtil {
                 if (filtersForCombine != null && filtersForCombine.size() > 0) {
                     result = new AndFilter(new AndFilterOption(filtersForCombine));
                 } else {
-                    List<Filter> tmpFilters = new ArrayList<>();
-
-                    for (FilterNode tmpFilterNode : filterNode.getParameterAndFilterNodesFromName("Filters")) {
-                        tmpFilters.add(getFilterFromFilterNode(tmpFilterNode, null));
-                    }
-
+                    List<Filter> tmpFilters = getFiltersFromFilterNodes(filterNode.getParameterAndFilterNodesFromName("Filters"));
                     result = new AndFilter(new AndFilterOption(tmpFilters));
                 }
 
@@ -248,23 +243,10 @@ public class FilterManagementUtil {
                 if (filtersForCombine != null && filtersForCombine.size() > 0) {
                     result = new OrFilter(new OrFilterOption(filtersForCombine));
                 } else {
-                    List<Filter> tmpFilters = new ArrayList<>();
-
-                    for (FilterNode tmpFilterNode : filterNode.getParameterAndFilterNodesFromName("Filters")) {
-                        tmpFilters.add(getFilterFromFilterNode(tmpFilterNode, null));
-                    }
-
+                    List<Filter> tmpFilters = getFiltersFromFilterNodes(filterNode.getParameterAndFilterNodesFromName("Filters"));
                     result = new OrFilter(new OrFilterOption(tmpFilters));
                 }
-            }//NonCombineFilter
-            /**
-             * ersetzbar durch timespan und Datetime Filter else if
-             * (filterAndOption.getFilterOptionName().equals(DateTimePointFilterOption.class.getSimpleName()))
-             * { result = new DateTimePointFilter(new
-             * DateTimePointFilterOption(formatter.parse(filterNode.getParameterAndValues().get("DateTimePoint")),
-             * Integer.parseInt(filterNode.getParameterAndValues().get("MarginInMinutes").trim())));
-             * } *
-             */
+            } //NonCombineFilter
             else if (filterAndOption.getFilterOptionName().equals(DateTimeSpanFilterOption.class.getSimpleName())) {
                 result = new DateTimeSpanFilter(new DateTimeSpanFilterOption(formatter.parse(filterNode.getParameterAndValues().get("StartTime")), formatter.parse(filterNode.getParameterAndValues().get("EndTime"))));
             } else if (filterAndOption.getFilterOptionName().equals(ThresholdFilterOption.class.getSimpleName())) {
@@ -288,12 +270,20 @@ public class FilterManagementUtil {
              * CombinationFilter(new CombinationFilterOption(data, firstFilter,
              * secondFilter)); }
              */
-            /** Kann durch CompactQueryFilter und CounterFilterabgebildet werden
-            else if (filterAndOption.getFilterOptionName().equals(QueryFilterOption.class.getSimpleName())) {
-                Filter mainFilter = getFilterFromFilterNode(filterNode.getParameterAndFilterNodesFromName("MainFilter").get(0), null);
-                Filter innerFilter = getFilterFromFilterNode(filterNode.getParameterAndFilterNodesFromName("InnerFilter").get(0), null);
-                result = new QueryFilter(new QueryFilterOption(mainFilter, innerFilter, Integer.parseInt(filterNode.getParameterAndValues().get("minSize").trim()), Integer.parseInt(filterNode.getParameterAndValues().get("maxSize").trim())));
-            } */
+            /**
+             * Kann durch CompactQueryFilter und CounterFilterabgebildet werden
+             * else if
+             * (filterAndOption.getFilterOptionName().equals(QueryFilterOption.class.getSimpleName()))
+             * { Filter mainFilter =
+             * getFilterFromFilterNode(filterNode.getParameterAndFilterNodesFromName("MainFilter").get(0),
+             * null); Filter innerFilter =
+             * getFilterFromFilterNode(filterNode.getParameterAndFilterNodesFromName("InnerFilter").get(0),
+             * null); result = new QueryFilter(new QueryFilterOption(mainFilter,
+             * innerFilter,
+             * Integer.parseInt(filterNode.getParameterAndValues().get("minSize").trim()),
+             * Integer.parseInt(filterNode.getParameterAndValues().get("maxSize").trim())));
+             * }
+             */
             else if (filterAndOption.getFilterOptionName().equals(InBetweenFilterOption.class.getSimpleName())) {
                 result = new InBetweenFilter(new InBetweenFilterOption(VaultEntryType.valueOf(filterNode.getParameterAndValues().get("VaultEntryType")), Integer.parseInt(filterNode.getParameterAndValues().get("MinValue").trim()), Integer.parseInt(filterNode.getParameterAndValues().get("MaxValue").trim()), Boolean.valueOf(filterNode.getParameterAndValues().get("Normieren").trim())));
             } else if (filterAndOption.getFilterOptionName().equals(CompactQueryFilterOption.class.getSimpleName())) {

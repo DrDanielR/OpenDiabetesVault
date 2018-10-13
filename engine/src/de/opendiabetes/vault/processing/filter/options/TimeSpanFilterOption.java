@@ -19,6 +19,7 @@ package de.opendiabetes.vault.processing.filter.options;
 import de.opendiabetes.vault.processing.filter.Filter;
 import java.time.LocalTime;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 /**
  *
@@ -30,7 +31,7 @@ public class TimeSpanFilterOption extends FilterOption {
     private final LocalTime endTime;
 
     public TimeSpanFilterOption(LocalTime startTime, LocalTime endTime) {
-        super(new HashMap<>(), null);
+        super(new LinkedHashMap<>(), null);
         super.getParameterNameAndType().put("StartTime", LocalTime.class);
         super.getParameterNameAndType().put("EndTime", LocalTime.class);
 

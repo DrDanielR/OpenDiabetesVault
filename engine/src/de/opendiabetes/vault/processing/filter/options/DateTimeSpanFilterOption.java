@@ -18,6 +18,7 @@ package de.opendiabetes.vault.processing.filter.options;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 /**
@@ -30,10 +31,11 @@ public class DateTimeSpanFilterOption extends FilterOption {
     private final Date endTime;
 
     public DateTimeSpanFilterOption(Date startTime, Date endTime) {
-        super(new HashMap<>(), null);
+        super(new LinkedHashMap<>(), null);
+
         super.getParameterNameAndType().put("StartTime", Date.class);
-        super.getParameterNameAndType().put("EndTime", Date.class);        
-        
+        super.getParameterNameAndType().put("EndTime", Date.class);
+
         this.startTime = startTime;
         this.endTime = endTime;
     }

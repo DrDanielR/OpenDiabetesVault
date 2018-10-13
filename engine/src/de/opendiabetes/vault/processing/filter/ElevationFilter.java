@@ -101,15 +101,11 @@ public class ElevationFilter extends Filter {
                         }
                     }
                 }
-
                 if (elevationExist) {
                     break;
                 }
-
             }
-
         }
-
         if (!elevationExist) {
             givenResult = new FilterResult();
         }

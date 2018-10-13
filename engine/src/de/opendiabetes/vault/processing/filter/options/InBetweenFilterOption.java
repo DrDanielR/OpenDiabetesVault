@@ -21,6 +21,7 @@ import de.opendiabetes.vault.processing.filter.Filter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -42,13 +43,14 @@ public class InBetweenFilterOption extends FilterOption {
      * @param maxValue
      */
     public InBetweenFilterOption(VaultEntryType type, int minValue, int maxValue, boolean normalize) {
-        super(new HashMap<>(), null);
+        super(new LinkedHashMap<>(), null);
         super.setDropDownEntries(this.getDropDownEntries());
 
         super.getParameterNameAndType().put("VaultEntryType", Map.class);
+        super.getParameterNameAndType().put("Normieren", boolean.class);
         super.getParameterNameAndType().put("MinValue", int.class);
         super.getParameterNameAndType().put("MaxValue", int.class);
-        super.getParameterNameAndType().put("Normieren", boolean.class);
+        
 
         this.type = type;
         this.minValue = minValue;
