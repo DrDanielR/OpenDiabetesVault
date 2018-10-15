@@ -14,6 +14,7 @@ import de.opendiabetes.vault.container.csv.VaultCSVEntry;
 import de.opendiabetes.vault.data.VaultDao;
 import de.opendiabetes.vault.plugin.exporter.Exporter;
 import de.opendiabetes.vault.plugin.exporter.VaultExporter;
+import de.opendiabetes.vault.plugin.fileimporter.FileImporter;
 import de.opendiabetes.vault.plugin.management.OpenDiabetesPluginManager;
 import de.opendiabetes.vault.processing.filter.DateTimeSpanFilter;
 import de.opendiabetes.vault.processing.filter.Filter;
@@ -101,8 +102,10 @@ import javafx.scene.layout.Border;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.web.WebView;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.util.Callback;
 import javafx.util.converter.LocalTimeStringConverter;
@@ -111,6 +114,7 @@ import javax.activation.MimetypesFileTypeMap;
 import opendiabetesvaultgui.launcher.FatherController;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.hsqldb.lib.StringUtil;
 
 /**
  *
@@ -131,7 +135,13 @@ public class SliceController extends FatherController implements Initializable {
     private LineChart<Number, Number> filterchart;
 
     @FXML
+    private StackPane filterchartstackpane;
+
+    @FXML
     private BarChart<Number, Number> filterchartforevents;
+
+    @FXML
+    private StackPane filterchartforeventsstackpane;
 
     @FXML
     private CategoryAxis filterChartXaxis;
@@ -484,14 +494,6 @@ public class SliceController extends FatherController implements Initializable {
         if (filterResultsForSplit != null && filterResultsForSplit.size() > 0) {
             filterResultPositionForSplit = 0;
             populateChart(filterResultsForSplit.get(filterResultPositionForSplit));
-
-            //TestExport
-            /*
-                int counter = 0;
-                for (FilterResult filterResult : filterResultsForSplit) {
-                    exportFilterResult(filterResult, exportFilePath.replace(".csv", "_" + counter + ".csv"));
-                    counter++;
-                }*/
         } else {
             String message = "Das sampeln ist mit den gegebenen Parametern nicht möglich";
 
@@ -557,7 +559,7 @@ public class SliceController extends FatherController implements Initializable {
                     populateChart(filterResult);
 
                     //Plotteria
-                    generateGraphs(filterResult);
+                    generateGraphs(filterResult, null);
                 }
             }
 
@@ -623,7 +625,7 @@ public class SliceController extends FatherController implements Initializable {
         importedData = vaultDao.queryAllVaultEntries();
         FilterResult filterResult = filterManagementUtil.getLastDay(importedData);
         populateChart(filterResult);
-        generateGraphs(filterResult);
+        generateGraphs(filterResult, null);
         validationErrorMessage = "";
         hourspinnerbefore.getValueFactory().setValue(0);
         minutespinnerbefore.getValueFactory().setValue(0);
@@ -728,6 +730,9 @@ public class SliceController extends FatherController implements Initializable {
         sampleFilterChartXaxis.setCategories(categories);
         sampleFilterChartXaxis.setAutoRanging(false);
 
+        List<XYChart.Series> allSeriesNormal = new ArrayList<>();
+        List<XYChart.Series> allSeriesEvent = new ArrayList<>();
+
         for (String key : clusteredVaultEnries.keySet()) {
             boolean isEvent = false;
 
@@ -752,12 +757,15 @@ public class SliceController extends FatherController implements Initializable {
             if (isEvent) {
                 seriesForEvents.setName(key);
                 filterchartforevents.getData().add(seriesForEvents);
+                allSeriesEvent.add(seriesForEvents);
             } else {
                 series.setName(key);
                 filterchart.getData().add(series);
+                allSeriesNormal.add(series);
             }
-
         }
+        //new ZoomManager(filterchartforeventsstackpane, filterchartforevents, allSeriesEvent);
+        //new ZoomManager(filterchartstackpane, filterchart, allSeriesNormal);
     }
 
     @Override
@@ -774,7 +782,8 @@ public class SliceController extends FatherController implements Initializable {
         //emptyDirectoryForGraphs(exportDirectory);
         FilterResult filterResult = filterManagementUtil.getLastDay(importedData);
         populateChart(filterResult);
-        generateGraphs(filterResult);
+        generateGraphs(filterResult, null);
+        
         //charts zoomen
         filterchart.setOnScroll(new EventHandler<ScrollEvent>() {
             public void handle(ScrollEvent event) {
@@ -788,6 +797,7 @@ public class SliceController extends FatherController implements Initializable {
 
                 filterchart.setScaleX(filterchart.getScaleX() * scaleFactor);
                 filterchart.setScaleY(filterchart.getScaleY() * scaleFactor);
+
             }
         });
 
@@ -823,6 +833,33 @@ public class SliceController extends FatherController implements Initializable {
                 }
             }
         });
+
+        //DragFileOnImageview
+        imageViewForFilter.setOnDragOver(new EventHandler<DragEvent>() {
+            public void handle(DragEvent event) {
+                Dragboard db = event.getDragboard();
+                if (db.hasFiles()) {
+                    event.acceptTransferModes(TransferMode.COPY);
+                }
+
+            }
+        }
+        );
+
+        imageViewForFilter.setOnDragDropped(new EventHandler<DragEvent>() {
+            public void handle(DragEvent event) {
+                Dragboard db = event.getDragboard();
+                if (db.hasFiles()) {
+                    for (File file : db.getFiles()) {
+                        if (file != null && file.exists()) {
+                            generateGraphs(null, file.getAbsolutePath());
+                        }
+                    }
+                }
+
+            }
+        }
+        );
 
         //hide sampleFilter
         gridpaneforsamplefilter.setVisible(false);
@@ -1217,7 +1254,7 @@ public class SliceController extends FatherController implements Initializable {
     int currentMaxImportNumber = 0;
     Process exportProcess;
 
-    private void generateGraphs(FilterResult filterResult) {
+    private void generateGraphs(FilterResult filterResult, String path) {
         try {
             exportDirectory = new File(exportFileDir);
             emptyDirectoryForGraphs(exportDirectory);
@@ -1226,7 +1263,13 @@ public class SliceController extends FatherController implements Initializable {
             Exporter exporter = new VaultCsvExporterExtended();
             File file = new File(exportFilePath);
             file.createNewFile();
-            exporter.exportDataToFile(exportFilePath, filterResult.filteredData);
+
+            if (path == null) {
+                exportFilePath = plotteriaPath + File.separator + "export.csv";
+                exporter.exportDataToFile(exportFilePath, filterResult.filteredData);
+            } else {
+                exportFilePath = path;
+            }
 
             String command = "python " + plotPyPath + " -c " + configIniPath + " -d -f " + exportFilePath + " -o " + exportFileDir;
 
@@ -1581,7 +1624,25 @@ public class SliceController extends FatherController implements Initializable {
         } catch (Throwable t) {
             t.printStackTrace();
         }
+    }
 
+    @FXML
+    private void doExportSample(ActionEvent event) {
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        directoryChooser.setTitle("Sample Exportieren");
+
+        File file = directoryChooser.showDialog(MAIN_STAGE);
+
+        int counter = 0;
+        for (FilterResult filterResult : filterResultsForSplit) {
+            exportFilterResult(filterResult, file.getAbsolutePath().toString() + File.separator + "SampleExport" + counter + ".csv");
+            counter++;
+        }
+
+        Alert alert = new Alert(AlertType.INFORMATION);
+        alert.setTitle("Export");
+        alert.setHeaderText("Export abgeschlossen");
+        alert.showAndWait();
     }
 
 }

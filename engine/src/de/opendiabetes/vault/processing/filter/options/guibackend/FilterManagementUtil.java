@@ -18,6 +18,7 @@ import de.opendiabetes.vault.processing.filter.CounterFilter;
 import de.opendiabetes.vault.processing.filter.DateTimePointFilter;
 import de.opendiabetes.vault.processing.filter.DateTimeSpanFilter;
 import de.opendiabetes.vault.processing.filter.ElevationFilter;
+import de.opendiabetes.vault.processing.filter.ElevationPointFilter;
 import de.opendiabetes.vault.processing.filter.Filter;
 import de.opendiabetes.vault.processing.filter.FilterHitCounterFilter;
 import de.opendiabetes.vault.processing.filter.FilterResult;
@@ -42,6 +43,7 @@ import de.opendiabetes.vault.processing.filter.options.CompactQueryFilterOption;
 
 import de.opendiabetes.vault.processing.filter.options.DateTimeSpanFilterOption;
 import de.opendiabetes.vault.processing.filter.options.ElevationFilterOption;
+import de.opendiabetes.vault.processing.filter.options.ElevationPointFilterOption;
 import de.opendiabetes.vault.processing.filter.options.FilterHitCounterFilterOption;
 import de.opendiabetes.vault.processing.filter.options.FilterOption;
 import de.opendiabetes.vault.processing.filter.options.GapRemoverFilterOption;
@@ -98,6 +100,7 @@ public class FilterManagementUtil {
         //filterAndOptions.add(new FilterAndOption(new CombinationFilterOption(new ArrayList<VaultEntry>(), null, null), new CombinationFilter(new CombinationFilterOption(new ArrayList<VaultEntry>(), null, null))));
 //        filterAndOptions.add(new FilterAndOption(new QueryFilterOption(null, null, 0, 0), new QueryFilter(new QueryFilterOption(null, null, 0, 0))));
         filterAndOptions.add(new FilterAndOption(new ElevationFilterOption(null, 0, 0), new ElevationFilter(new ElevationFilterOption(null, 0, 0))));
+        filterAndOptions.add(new FilterAndOption(new ElevationPointFilterOption(null, 0, 0), new ElevationPointFilter(new ElevationPointFilterOption(null, 0, 0))));
         filterAndOptions.add(new FilterAndOption(new CompactQueryFilterOption(null), new CompactQueryFilter(new CompactQueryFilterOption(null))));
         filterAndOptions.add(new FilterAndOption(new InBetweenFilterOption(null, 0, 0, false), new InBetweenFilter(new InBetweenFilterOption(null, 0, 0, false))));
         filterAndOptions.add(new FilterAndOption(new VaultEntryTypeCounterFilterOption(null, 0, 0, false), new VaultEntryTypeCounterFilter(new VaultEntryTypeCounterFilterOption(null, 0, 0, false))));
@@ -292,6 +295,9 @@ public class FilterManagementUtil {
             } else if (filterAndOption.getFilterOptionName().equals(ElevationFilterOption.class.getSimpleName())) {
                 String doubleString = filterNode.getParameterAndValues().get("MinElevationPerMinute").trim().replace(",", ".");
                 result = new ElevationFilter(new ElevationFilterOption(VaultEntryType.valueOf(filterNode.getParameterAndValues().get("VaultEntryType")), Double.parseDouble(doubleString), Integer.parseInt(filterNode.getParameterAndValues().get("MinutesBetweenEntries").trim())));
+            } else if (filterAndOption.getFilterOptionName().equals(ElevationPointFilterOption.class.getSimpleName())) {
+                String doubleString = filterNode.getParameterAndValues().get("MinElevationPerMinute").trim().replace(",", ".");
+                result = new ElevationPointFilter(new ElevationPointFilterOption(VaultEntryType.valueOf(filterNode.getParameterAndValues().get("VaultEntryType")), Double.parseDouble(doubleString), Integer.parseInt(filterNode.getParameterAndValues().get("MinutesBetweenEntries").trim())));
             } else if (filterAndOption.getFilterOptionName().equals(VaultEntryTypeCounterFilterOption.class.getSimpleName())) {
                 result = new VaultEntryTypeCounterFilter(new VaultEntryTypeCounterFilterOption(VaultEntryType.valueOf(filterNode.getParameterAndValues().get("VaultEntryType")), Integer.parseInt(filterNode.getParameterAndValues().get("MinHits").trim()), Integer.parseInt(filterNode.getParameterAndValues().get("MaxHits").trim()), Boolean.valueOf(filterNode.getParameterAndValues().get("NoneHits").trim())));
             } else if (filterAndOption.getFilterOptionName().equals(FilterHitCounterFilterOption.class.getSimpleName())) {
