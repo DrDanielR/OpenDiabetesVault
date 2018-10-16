@@ -97,8 +97,8 @@ public class ElevationFilter extends Filter {
 
                         if (elevation <= tempElevation) {
                             elevationExist = true;
-                            break;
                         }
+                        break;
                     }
                 }
                 if (elevationExist) {

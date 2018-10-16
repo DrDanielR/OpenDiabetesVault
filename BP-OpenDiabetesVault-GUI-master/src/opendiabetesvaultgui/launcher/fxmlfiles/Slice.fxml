@@ -26,6 +26,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
+
 <GridPane fx:id="gridPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="-Infinity" prefHeight="677.0" prefWidth="1138.0" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="opendiabetesvaultgui.slice.SliceController">
     <columnConstraints>
         <ColumnConstraints hgrow="ALWAYS" maxWidth="1.7976931348623157E308" percentWidth="80.0" />
@@ -93,7 +94,8 @@
                                         <Label text="Davor" GridPane.rowIndex="1">
                                  <GridPane.margin>
                                     <Insets right="10.0" />
-                                 </GridPane.margin></Label>
+                                 </GridPane.margin>
+                              </Label>
                                         <Label text="Danach" GridPane.rowIndex="2" />
                                         <Spinner fx:id="hourspinnerbefore" amountToStepBy="1" initialValue="0" max="24" min="0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                                         <Spinner fx:id="minutespinnerbefore" amountToStepBy="1" initialValue="0" max="60" min="0" GridPane.columnIndex="2" GridPane.rowIndex="1" />
@@ -117,12 +119,14 @@
                                         <Button mnemonicParsing="false" onAction="#getNextFilterSplit" text="Next" GridPane.columnIndex="2" GridPane.halignment="RIGHT">
                                  <GridPane.margin>
                                     <Insets left="10.0" right="10.0" />
-                                 </GridPane.margin></Button>
+                                 </GridPane.margin>
+                              </Button>
                               <Button mnemonicParsing="false" onAction="#doExportSample" text="Exportieren" GridPane.columnIndex="1" GridPane.halignment="CENTER" />
                                         <Button mnemonicParsing="false" onAction="#getPreviousFilterSplit" text="previous">
                                  <GridPane.margin>
                                     <Insets left="10.0" right="10.0" />
-                                 </GridPane.margin></Button>
+                                 </GridPane.margin>
+                              </Button>
                                     </children>
                                 </GridPane>
                             </children>
@@ -164,9 +168,9 @@
                 </Button>
             </children>
         </GridPane>
-        <SplitPane dividerPositions="0.5511111111111111" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" GridPane.rowSpan="2">
+        <SplitPane id="chartandfiltersplitpane" fx:id="chartandfiltersplitpane" dividerPositions="0.6" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" GridPane.rowSpan="2">
             <items>
-                <TabPane prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE">
+                <TabPane id="filtercharttabpane" onMouseClicked="#resizeTabPane" prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE">
                     <tabs>
                         <Tab text="Dynamic Filter">
                             <content>
@@ -233,7 +237,8 @@
                                                 <Label alignment="CENTER" contentDisplay="TOP" text="previous" textFill="WHITE" />
                                              </children>
                                           </StackPane>
-                                       </graphic></Button>
+                                       </graphic>
+                                    </Button>
                                                 <ProgressBar fx:id="importprogressbar" prefHeight="18.0" prefWidth="581.0" progress="0.0" GridPane.columnIndex="1" />                                        
                                                 <Spinner fx:id="currentimport" amountToStepBy="1" initialValue="0" min="1" prefHeight="25.0" prefWidth="75.0" GridPane.columnIndex="2">
                                                     <max>
@@ -257,7 +262,8 @@
                                                 <Label alignment="CENTER" contentDisplay="TOP" text="next" textFill="WHITE" />
                                              </children>
                                           </StackPane>
-                                       </graphic></Button>
+                                       </graphic>
+                                    </Button>
                                             </children>
                                         </GridPane>
                                     </children>
@@ -266,7 +272,7 @@
                         </Tab>
                     </tabs>
                 </TabPane>
-            <SplitPane id="splitpaneforfilter" fx:id="splitpaneforfilter" dividerPositions="0.5" prefHeight="160.0" prefWidth="200.0">
+            <SplitPane id="splitpaneforfilter" fx:id="splitpaneforfilter" dividerPositions="0.5" onMouseClicked="#resizeFilterPane" prefHeight="160.0" prefWidth="200.0">
               <items>
                   <GridPane id="filtergridpane" fx:id="gridpaneforfilter">
                      <columnConstraints>

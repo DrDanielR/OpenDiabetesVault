@@ -86,7 +86,7 @@ public class ElevationPointFilter extends Filter {
         boolean elevationExist = false;
 
         List<VaultEntry> negativeEntrys = new ArrayList<>();
-        
+
         if (positiveVaultEntrys != null && positiveVaultEntrys.size() > 0) {
             Calendar cal = Calendar.getInstance();
 
@@ -102,8 +102,8 @@ public class ElevationPointFilter extends Filter {
 
                         if (elevation <= tempElevation) {
                             elevationExist = true;
-                            break;
                         }
+                        break;
                     }
                 }
                 if (!elevationExist) {
@@ -111,11 +111,10 @@ public class ElevationPointFilter extends Filter {
                 }
             }
         }
-        
+
         for (VaultEntry negativeEntry : negativeEntrys) {
             givenResult.filteredData.remove(negativeEntry);
         }
-        
 
         return givenResult;
     }

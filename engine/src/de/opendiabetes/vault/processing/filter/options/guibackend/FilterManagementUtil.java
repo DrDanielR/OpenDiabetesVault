@@ -109,8 +109,8 @@ public class FilterManagementUtil {
         filterAndOptions.add(new FilterAndOption(new ClusterFilterOption(null), new ClusterFilter(new ClusterFilterOption(null))));
         filterAndOptions.add(new FilterAndOption(new NoneTypeFilterOption(null), new NoneTypeFilter(new NoneTypeFilterOption(null))));
         filterAndOptions.add(new FilterAndOption(new GapRemoverFilterOption(null, 0), new GapRemoverFilter(new GapRemoverFilterOption(null, 0))));
-        filterAndOptions.add(new FilterAndOption(new InterpolationFilterOption(null), new InterpolationFilter(new InterpolationFilterOption(null))));
-        filterAndOptions.add(new FilterAndOption(new ValueMoverFilterOption(null, 0, false), new ValueMoverFilter(new ValueMoverFilterOption(null, 0, false))));
+        filterAndOptions.add(new FilterAndOption(new InterpolationFilterOption(null, 0), new InterpolationFilter(new InterpolationFilterOption(null, 0))));
+        //filterAndOptions.add(new FilterAndOption(new ValueMoverFilterOption(null, 0, false), new ValueMoverFilter(new ValueMoverFilterOption(null, 0, false))));
     }
 
     public List<String> getAllFilters() {
@@ -312,10 +312,17 @@ public class FilterManagementUtil {
             } else if (filterAndOption.getFilterOptionName().equals(GapRemoverFilterOption.class.getSimpleName())) {
                 result = new GapRemoverFilter(new GapRemoverFilterOption(VaultEntryType.valueOf(filterNode.getParameterAndValues().get("VaultEntryType")), Long.parseLong(filterNode.getParameterAndValues().get("GapTimeInMinutes").trim())));
             } else if (filterAndOption.getFilterOptionName().equals(InterpolationFilterOption.class.getSimpleName())) {
-                result = new InterpolationFilter(new InterpolationFilterOption(VaultEntryType.valueOf(filterNode.getParameterAndValues().get("VaultEntryType"))));
-            } else if (filterAndOption.getFilterOptionName().equals(ValueMoverFilterOption.class.getSimpleName())) {
-                result = new ValueMoverFilter(new ValueMoverFilterOption(VaultEntryType.valueOf(filterNode.getParameterAndValues().get("VaultEntryType")), Double.parseDouble(filterNode.getParameterAndValues().get("Value").trim()), Boolean.valueOf(filterNode.getParameterAndValues().get("Add").trim())));
+                result = new InterpolationFilter(new InterpolationFilterOption(VaultEntryType.valueOf(filterNode.getParameterAndValues().get("VaultEntryType")), Integer.parseInt(filterNode.getParameterAndValues().get("EntriesBetweenTimeStamps").trim())));
             }
+            /**
+             * else if
+             * (filterAndOption.getFilterOptionName().equals(ValueMoverFilterOption.class.getSimpleName()))
+             * { result = new ValueMoverFilter(new
+             * ValueMoverFilterOption(VaultEntryType.valueOf(filterNode.getParameterAndValues().get("VaultEntryType")),
+             * Double.parseDouble(filterNode.getParameterAndValues().get("Value").trim()),
+             * Boolean.valueOf(filterNode.getParameterAndValues().get("Add").trim())));
+             * }*
+             */
 
         } catch (Throwable t) {
             t.printStackTrace();

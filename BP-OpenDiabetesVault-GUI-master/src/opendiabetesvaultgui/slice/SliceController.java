@@ -60,6 +60,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -95,6 +96,7 @@ import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.input.TransferMode;
@@ -205,6 +207,12 @@ public class SliceController extends FatherController implements Initializable {
 
     @FXML
     private SplitPane splitpaneforfilter;
+
+    @FXML
+    private TabPane filtercharttabpane;
+
+    @FXML
+    private SplitPane chartandfiltersplitpane;
 
     private static final String FILTER_NAME = "FilterName";
     private static final String SEPARATOR = "%";
@@ -634,6 +642,7 @@ public class SliceController extends FatherController implements Initializable {
         checkboxforsample.setSelected(false);
         gridpaneforsamplefilter.setVisible(checkboxforsample.isSelected());
         splitpaneforfilter.setDividerPosition(0, 1);
+        chartandfiltersplitpane.setDividerPosition(0, 0.6);
     }
 
     @FXML
@@ -783,56 +792,6 @@ public class SliceController extends FatherController implements Initializable {
         FilterResult filterResult = filterManagementUtil.getLastDay(importedData);
         populateChart(filterResult);
         generateGraphs(filterResult, null);
-        
-        //charts zoomen
-        filterchart.setOnScroll(new EventHandler<ScrollEvent>() {
-            public void handle(ScrollEvent event) {
-                event.consume();
-
-                if (event.getDeltaY() == 0) {
-                    return;
-                }
-
-                double scaleFactor = (event.getDeltaY() > 0) ? SCALE_DELTA : 1 / SCALE_DELTA;
-
-                filterchart.setScaleX(filterchart.getScaleX() * scaleFactor);
-                filterchart.setScaleY(filterchart.getScaleY() * scaleFactor);
-
-            }
-        });
-
-        filterchart.setOnMousePressed(new EventHandler<MouseEvent>() {
-            public void handle(MouseEvent event) {
-                if (event.getClickCount() == 2) {
-                    filterchart.setScaleX(1.0);
-                    filterchart.setScaleY(1.0);
-                }
-            }
-        });
-
-        filterchartforevents.setOnScroll(new EventHandler<ScrollEvent>() {
-            public void handle(ScrollEvent event) {
-                event.consume();
-
-                if (event.getDeltaY() == 0) {
-                    return;
-                }
-
-                double scaleFactor = (event.getDeltaY() > 0) ? SCALE_DELTA : 1 / SCALE_DELTA;
-
-                filterchartforevents.setScaleX(filterchartforevents.getScaleX() * scaleFactor);
-                filterchartforevents.setScaleY(filterchartforevents.getScaleY() * scaleFactor);
-            }
-        });
-
-        filterchartforevents.setOnMousePressed(new EventHandler<MouseEvent>() {
-            public void handle(MouseEvent event) {
-                if (event.getClickCount() == 2) {
-                    filterchartforevents.setScaleX(1.0);
-                    filterchartforevents.setScaleY(1.0);
-                }
-            }
-        });
 
         //DragFileOnImageview
         imageViewForFilter.setOnDragOver(new EventHandler<DragEvent>() {
@@ -990,6 +949,7 @@ public class SliceController extends FatherController implements Initializable {
 
         VBox tmpInputVBox = new VBox();
         tmpInputVBox.setSpacing(10);
+        tmpInputVBox.setPadding(new Insets(10, 10, 10, 10));
 
         HBox tmpHeadHBox = new HBox();
         tmpHeadHBox.setSpacing(10);
@@ -1643,6 +1603,24 @@ public class SliceController extends FatherController implements Initializable {
         alert.setTitle("Export");
         alert.setHeaderText("Export abgeschlossen");
         alert.showAndWait();
+    }
+
+    @FXML
+    private void resizeTabPane(MouseEvent mouseEvent) {
+        if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
+            if (mouseEvent.getClickCount() == 2) {
+                chartandfiltersplitpane.setDividerPosition(0, 1);
+            }
+        }
+    }
+    
+    @FXML
+    private void resizeFilterPane(MouseEvent mouseEvent) {
+        if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
+            if (mouseEvent.getClickCount() == 2) {
+                chartandfiltersplitpane.setDividerPosition(0, 0);
+            }
+        }
     }
 
 }

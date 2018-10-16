@@ -28,13 +28,16 @@ import java.util.Map;
 public class InterpolationFilterOption extends FilterOption {
 
     private final VaultEntryType type;
+    private final int entriesBetweenTimeStamps;
 
-    public InterpolationFilterOption(VaultEntryType type) {
+    public InterpolationFilterOption(VaultEntryType type, int entriesBetweenTimeStamps) {
         super(new HashMap<>(), null);
         super.setDropDownEntries(this.getDropDownEntries());
 
         super.getParameterNameAndType().put("VaultEntryType", Map.class);
+        super.getParameterNameAndType().put("EntriesBetweenTimeStamps", int.class);
         this.type = type;
+        this.entriesBetweenTimeStamps = entriesBetweenTimeStamps;
     }
 
     @Override
@@ -50,6 +53,10 @@ public class InterpolationFilterOption extends FilterOption {
 
     public VaultEntryType getVaultEntryType() {
         return type;
+    }
+
+    public int getEntriesBetweenTimeStamps() {
+        return entriesBetweenTimeStamps;
     }
 
 }

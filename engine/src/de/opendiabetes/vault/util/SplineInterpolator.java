@@ -25,7 +25,7 @@ import javafx.util.Pair;
  */
 public class SplineInterpolator {
 
-    private final List<Pair<Double, Double>> values;
+    private final List<Pair<Long, Double>> values;
     private final double[] moments;
 
     /**
@@ -40,7 +40,7 @@ public class SplineInterpolator {
      *
      * @param values Pairs of x and y values. Have to be null-checked!
      */
-    public SplineInterpolator(List<Pair<Double, Double>> values) {
+    public SplineInterpolator(List<Pair<Long, Double>> values) {
 
         this.values = values;
         if (values != null && values.size() >= 2) {
@@ -90,7 +90,7 @@ public class SplineInterpolator {
         }
     }
 
-    private Double getXvalue(int i) {
+    private Long getXvalue(int i) {
         return values.get(i).getKey();
     }
 

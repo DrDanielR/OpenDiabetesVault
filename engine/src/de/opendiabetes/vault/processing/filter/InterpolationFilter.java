@@ -22,7 +22,9 @@ import de.opendiabetes.vault.container.VaultEntryType;
 import de.opendiabetes.vault.processing.filter.options.FilterOption;
 import de.opendiabetes.vault.processing.filter.options.VaultEntryTypeFilterOption;
 import de.opendiabetes.vault.util.SplineInterpolator;
+import de.opendiabetes.vault.util.VaultEntryUtils;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -36,8 +38,10 @@ import javafx.util.Pair;
 public class InterpolationFilter extends Filter {
 
     private VaultEntryType vaultEntryType;
-    List<Pair<Double, Double>> pairsForInterpolation = new ArrayList<>();
+    List<Pair<Long, Double>> pairsForInterpolation = new ArrayList<>();
+    int entriesBetweenTimeStamps = 0;
     SplineInterpolator splineInterpolator;
+
     /**
      * Sets the vaultEntryType which will later be used in the filter mechanism.
      *
@@ -47,6 +51,7 @@ public class InterpolationFilter extends Filter {
         super(option);
         if (option instanceof InterpolationFilterOption) {
             this.vaultEntryType = ((InterpolationFilterOption) option).getVaultEntryType();
+            this.entriesBetweenTimeStamps = ((InterpolationFilterOption) option).getEntriesBetweenTimeStamps();
         } else {
             String msg = "Option has to be an instance of InterpolationFilterOption";
             Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, msg);
@@ -65,7 +70,7 @@ public class InterpolationFilter extends Filter {
 
         double counter = 0;
         if (entry.getType().equals(vaultEntryType)) {
-            Pair<Double, Double> pair = new Pair<>((double)entry.getTimestamp().getTime(), entry.getValue());
+            Pair<Long, Double> pair = new Pair<>(entry.getTimestamp().getTime(), entry.getValue());
             pairsForInterpolation.add(pair);
             counter++;
         }
@@ -75,19 +80,31 @@ public class InterpolationFilter extends Filter {
 
     @Override
     Filter update(VaultEntry vaultEntry) {
-        return new InterpolationFilter(new InterpolationFilterOption(vaultEntry.getType()));
+        return new InterpolationFilter(new InterpolationFilterOption(vaultEntry.getType(), entriesBetweenTimeStamps));
     }
 
     @Override
     FilterResult tearDownAfterFilter(FilterResult givenResult) {
         splineInterpolator = new SplineInterpolator(pairsForInterpolation);
 
-        for (VaultEntry vaultEntry : givenResult.filteredData) {
-            if (vaultEntry.getType().equals(vaultEntryType)) {
-                vaultEntry.setValue(splineInterpolator.interpolate(vaultEntry.getValue()));
+        List<VaultEntry> vaultEntrys = new ArrayList<>();
+
+        for (int i = 0; i < pairsForInterpolation.size() - 1; i++) {
+            long timeStepBetweenEntries = (pairsForInterpolation.get(i + 1).getKey() - pairsForInterpolation.get(i).getKey()) / entriesBetweenTimeStamps;
+
+            for (int j = 0; j < entriesBetweenTimeStamps; j++) {
+                vaultEntrys.add(new VaultEntry(vaultEntryType, new Date(Long.parseLong((pairsForInterpolation.get(i).getKey() + (j * timeStepBetweenEntries)) + "")), splineInterpolator.interpolate(pairsForInterpolation.get(i).getKey() + (j * timeStepBetweenEntries))));
             }
         }
+        /**
+         * for (VaultEntry vaultEntry : givenResult.filteredData) { if
+         * (vaultEntry.getType().equals(vaultEntryType)) {
+         * vaultEntry.setValue(splineInterpolator.interpolate(vaultEntry.getValue()));
+         * } }*
+         */
 
-        return givenResult;
+        vaultEntrys.addAll(givenResult.filteredData);
+
+        return new FilterResult(VaultEntryUtils.sort(vaultEntrys), givenResult.timeSeries);
     }
 }
