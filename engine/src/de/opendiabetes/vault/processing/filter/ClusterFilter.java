@@ -80,9 +80,16 @@ public class ClusterFilter extends Filter {
 
         for (VaultEntry vaultEntry : givenResult.filteredData) {
 
-            if (vaultEntry.getType().name().contains(vaultEntryClusterString)) {
+            if (vaultEntry.getType().equals(vaultEntryType)) {
                 listToCluster.add(vaultEntry);
             }
+            
+            /**
+            if (vaultEntry.getType().name().contains(vaultEntryClusterString)) {
+                listToCluster.add(vaultEntry);
+            }**/
+            
+            
 
         }
 

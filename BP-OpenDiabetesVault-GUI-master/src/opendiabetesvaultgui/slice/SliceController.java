@@ -1316,7 +1316,7 @@ public class SliceController extends FatherController implements Initializable {
             exportThread.start();
 
         } catch (Throwable t) {
-            t.printStackTrace();
+            //t.printStackTrace();
             Alert alert = new Alert(AlertType.ERROR);
             alert.setTitle("Import Fehlgeschlagen");
             alert.setHeaderText("Import Fehlgeschlagen:");
